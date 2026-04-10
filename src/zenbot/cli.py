@@ -56,6 +56,26 @@ def init() -> None:
         store.set("telegram_bot_token", token)
         typer.echo("✓ Telegram token stored securely.")
 
+    if typer.confirm("Enable Discord?", default=False):
+        config.discord.enabled = True
+        token = typer.prompt("Discord bot token", hide_input=True)
+        store.set("discord_bot_token", token)
+        typer.echo("✓ Discord token stored securely.")
+
+    if typer.confirm("Enable WhatsApp?", default=False):
+        config.whatsapp.enabled = True
+        token = typer.prompt("WhatsApp access token", hide_input=True)
+        store.set("whatsapp_access_token", token)
+        phone_id = typer.prompt("WhatsApp phone number ID")
+        store.set("whatsapp_phone_number_id", phone_id)
+        typer.echo("✓ WhatsApp credentials stored securely.")
+
+    if typer.confirm("Enable Signal?", default=False):
+        config.signal.enabled = True
+        account = typer.prompt("Signal account phone number (e.g., +1234567890)")
+        store.set("signal_account", account)
+        typer.echo("✓ Signal account stored securely.")
+
     # LLM setup
     typer.echo("\n🤖 LLM Setup")
     provider = typer.prompt(
@@ -124,14 +144,82 @@ def run(
         from zenbot.platforms.telegram import TelegramAdapter
         bot.register_platform(TelegramAdapter(token))
 
-    # Register LLM provider
+    if config.discord.enabled:
+        token = store.get(config.discord.credential_key)
+        if not token:
+            typer.echo(
+                "ERROR: Discord token not found. "
+                "Run `zenbot credentials set discord_bot_token`."
+            )
+            raise typer.Exit(1)
+        from zenbot.platforms.discord import DiscordAdapter
+        bot.register_platform(DiscordAdapter(token))
+
+    if config.whatsapp.enabled:
+        access_token = store.get("whatsapp_access_token")
+        phone_id = store.get("whatsapp_phone_number_id")
+        if not access_token or not phone_id:
+            typer.echo(
+                "ERROR: WhatsApp credentials not found. "
+                "Run `zenbot credentials set whatsapp_access_token`."
+            )
+            raise typer.Exit(1)
+        from zenbot.platforms.whatsapp import WhatsAppAdapter
+        bot.register_platform(
+            WhatsAppAdapter(
+                access_token=access_token,
+                phone_number_id=phone_id,
+            )
+        )
+
+    if config.signal.enabled:
+        account = store.get("signal_account")
+        if not account:
+            typer.echo(
+                "ERROR: Signal account not found. "
+                "Run `zenbot credentials set signal_account`."
+            )
+            raise typer.Exit(1)
+        from zenbot.platforms.signal import SignalAdapter
+        bot.register_platform(SignalAdapter(account=account))
+
+    # Register LLM provider with prompt guard
+    from zenbot.llm.prompt_guard import GuardedLLMProvider
+
+    llm_provider = None
+
     if config.llm.provider == "claude":
         api_key = store.get(config.llm.credential_key)
         if not api_key:
-            typer.echo("ERROR: Claude API key not found. Run `zenbot credentials set llm_api_key`.")
+            typer.echo(
+                "ERROR: Claude API key not found. "
+                "Run `zenbot credentials set llm_api_key`."
+            )
             raise typer.Exit(1)
         from zenbot.llm.claude import ClaudeProvider
-        bot.set_llm(ClaudeProvider(api_key, config.llm.model))
+        llm_provider = ClaudeProvider(api_key, config.llm.model)
+
+    elif config.llm.provider == "openai":
+        api_key = store.get(config.llm.credential_key)
+        if not api_key:
+            typer.echo(
+                "ERROR: OpenAI API key not found. "
+                "Run `zenbot credentials set llm_api_key`."
+            )
+            raise typer.Exit(1)
+        from zenbot.llm.openai_gpt import OpenAIProvider
+        llm_provider = OpenAIProvider(api_key, config.llm.model)
+
+    elif config.llm.provider == "local":
+        from zenbot.llm.local import LocalProvider
+        llm_provider = LocalProvider(default_model=config.llm.model)
+
+    if llm_provider is None:
+        typer.echo(f"ERROR: Unknown LLM provider '{config.llm.provider}'.")
+        raise typer.Exit(1)
+
+    # Wrap with prompt injection guard
+    bot.set_llm(GuardedLLMProvider(llm_provider))
 
     typer.echo("Starting ZenBot...")
     asyncio.run(bot.start())
