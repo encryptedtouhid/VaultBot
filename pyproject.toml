@@ -62,7 +62,11 @@ src = ["src"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP", "S", "B", "A", "C4", "PT"]
-ignore = ["S101"]  # Allow assert in tests
+ignore = [
+    "S101",  # Allow assert in tests
+    "B008",  # Allow function calls in argument defaults (typer pattern)
+    "B027",  # Allow empty methods in ABCs without @abstractmethod (lifecycle hooks)
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

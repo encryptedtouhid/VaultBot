@@ -1,0 +1,12 @@
+{
+    "name": "weather",
+    "version": "1.0.0",
+    "description": "Look up current weather by location",
+    "author": "zenbot-team",
+    "min_zenbot_version": "0.1.0",
+    "network_domains": ["api.openweathermap.org"],
+    "filesystem": "none",
+    "secrets": ["OPENWEATHER_API_KEY"],
+    "timeout_seconds": 10.0,
+    "max_memory_mb": 64
+}

@@ -1,0 +1,12 @@
+{
+    "name": "calculator",
+    "version": "1.0.0",
+    "description": "Evaluate simple math expressions safely",
+    "author": "zenbot-team",
+    "min_zenbot_version": "0.1.0",
+    "network_domains": [],
+    "filesystem": "none",
+    "secrets": [],
+    "timeout_seconds": 5.0,
+    "max_memory_mb": 64
+}

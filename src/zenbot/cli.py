@@ -18,6 +18,8 @@ app = typer.Typer(
 )
 credentials_app = typer.Typer(help="Manage credentials securely.")
 app.add_typer(credentials_app, name="credentials")
+plugin_app = typer.Typer(help="Manage plugins.")
+app.add_typer(plugin_app, name="plugin")
 
 logger = get_logger(__name__)
 
@@ -259,3 +261,162 @@ def credentials_check(
         typer.echo(f"✓ Credential '{key}' exists.")
     else:
         typer.echo(f"✗ Credential '{key}' not found.")
+
+
+# --- Plugin commands ---
+
+
+@plugin_app.command("install")
+def plugin_install(
+    plugin_dir: Path = typer.Argument(help="Path to the plugin directory"),
+) -> None:
+    """Install a signed plugin from a directory."""
+    setup_logging()
+    from zenbot.plugins.loader import PluginLoader, PluginLoadError
+    from zenbot.plugins.registry import PluginRegistry
+    from zenbot.plugins.signer import PluginVerifier
+    from zenbot.security.audit import AuditLogger
+
+    registry = PluginRegistry()
+    verifier = PluginVerifier()
+    audit = AuditLogger()
+    loader = PluginLoader(registry, verifier, audit)
+
+    try:
+        entry = loader.load_plugin(plugin_dir)
+        typer.echo(
+            f"✓ Plugin '{entry.manifest.name}' v{entry.manifest.version} installed."
+        )
+    except PluginLoadError as e:
+        typer.echo(f"ERROR: {e}")
+        raise typer.Exit(1) from e
+
+
+@plugin_app.command("list")
+def plugin_list() -> None:
+    """List all installed plugins."""
+    setup_logging()
+    from zenbot.plugins.registry import PluginRegistry
+
+    registry = PluginRegistry()
+    plugins = registry.list_plugins()
+
+    if not plugins:
+        typer.echo("No plugins installed.")
+        return
+
+    for entry in plugins:
+        status = "enabled" if entry.enabled else "disabled"
+        typer.echo(
+            f"  {entry.manifest.name} v{entry.manifest.version} "
+            f"[{status}] — {entry.manifest.description}"
+        )
+
+
+@plugin_app.command("enable")
+def plugin_enable(
+    name: str = typer.Argument(help="Plugin name to enable"),
+) -> None:
+    """Enable a disabled plugin."""
+    setup_logging()
+    from zenbot.plugins.registry import PluginRegistry
+
+    registry = PluginRegistry()
+    if registry.enable(name):
+        typer.echo(f"✓ Plugin '{name}' enabled.")
+    else:
+        typer.echo(f"Plugin '{name}' not found.")
+        raise typer.Exit(1)
+
+
+@plugin_app.command("disable")
+def plugin_disable(
+    name: str = typer.Argument(help="Plugin name to disable"),
+) -> None:
+    """Disable a plugin without uninstalling it."""
+    setup_logging()
+    from zenbot.plugins.registry import PluginRegistry
+
+    registry = PluginRegistry()
+    if registry.disable(name):
+        typer.echo(f"✓ Plugin '{name}' disabled.")
+    else:
+        typer.echo(f"Plugin '{name}' not found.")
+        raise typer.Exit(1)
+
+
+@plugin_app.command("uninstall")
+def plugin_uninstall(
+    name: str = typer.Argument(help="Plugin name to uninstall"),
+) -> None:
+    """Remove a plugin from the registry."""
+    setup_logging()
+    from zenbot.plugins.registry import PluginRegistry
+
+    registry = PluginRegistry()
+    entry = registry.unregister(name)
+    if entry:
+        typer.echo(f"✓ Plugin '{name}' uninstalled.")
+    else:
+        typer.echo(f"Plugin '{name}' not found.")
+        raise typer.Exit(1)
+
+
+@plugin_app.command("sign")
+def plugin_sign(
+    plugin_dir: Path = typer.Argument(help="Path to the plugin directory"),
+    key_file: Path = typer.Argument(help="Path to Ed25519 private key (PEM)"),
+) -> None:
+    """Sign a plugin with an Ed25519 private key."""
+    setup_logging()
+    import json
+
+    from zenbot.plugins.signer import PluginSigner
+
+    if not key_file.exists():
+        typer.echo(f"ERROR: Key file not found: {key_file}")
+        raise typer.Exit(1)
+
+    manifest_path = plugin_dir / "zenbot_plugin.json"
+    if not manifest_path.exists():
+        typer.echo("ERROR: No zenbot_plugin.json found in plugin directory.")
+        raise typer.Exit(1)
+
+    manifest_data = json.loads(manifest_path.read_text())
+    signer = PluginSigner.from_key_bytes(key_file.read_bytes())
+    sig = signer.sign_plugin(
+        manifest_data["name"],
+        manifest_data["version"],
+        plugin_dir,
+    )
+    typer.echo(
+        f"✓ Plugin '{sig.plugin_name}' v{sig.plugin_version} signed.\n"
+        f"  Public key: {sig.signer_public_key.hex()[:32]}..."
+    )
+
+
+@plugin_app.command("keygen")
+def plugin_keygen(
+    output_dir: Path = typer.Argument(
+        help="Directory to write the keypair files"
+    ),
+) -> None:
+    """Generate an Ed25519 keypair for plugin signing."""
+    setup_logging()
+    from zenbot.plugins.signer import PluginSigner
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    signer = PluginSigner.generate()
+    private_path = output_dir / "zenbot_signing_key.pem"
+    public_path = output_dir / "zenbot_signing_key.pub"
+
+    private_path.write_bytes(signer.private_key_pem)
+    private_path.chmod(0o600)
+    public_path.write_text(signer.public_key_bytes.hex())
+    public_path.chmod(0o644)
+
+    typer.echo("✓ Keypair generated:")
+    typer.echo(f"  Private key: {private_path}")
+    typer.echo(f"  Public key:  {public_path}")
+    typer.echo(f"\nTo trust this key: copy {public_path} to ~/.zenbot/trust_store/")
