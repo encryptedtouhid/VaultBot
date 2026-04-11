@@ -72,6 +72,7 @@ class VaultBotConfig(BaseSettings):
     slack: PlatformConfig = PlatformConfig(credential_key="slack_bot_token")
     teams: PlatformConfig = PlatformConfig(credential_key="teams_app_id")
     imessage: PlatformConfig = PlatformConfig(credential_key="imessage")
+    irc: PlatformConfig = PlatformConfig(credential_key="irc_server")
 
     # LLM
     llm: LLMConfig = LLMConfig()
