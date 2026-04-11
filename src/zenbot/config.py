@@ -85,8 +85,12 @@ class ZenBotConfig(BaseSettings):
         """Convert allowlist entries to the format expected by AuthManager."""
         result: dict[str, Role] = {}
         for entry in self.allowlist:
-            qualified = f"{entry.platform}:{entry.user_id}"
-            result[qualified] = Role(entry.role)
+            if isinstance(entry, dict):
+                qualified = f"{entry['platform']}:{entry['user_id']}"
+                result[qualified] = Role(entry.get("role", "user"))
+            else:
+                qualified = f"{entry.platform}:{entry.user_id}"
+                result[qualified] = Role(entry.role)
         return result
 
     @classmethod

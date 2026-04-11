@@ -6,8 +6,13 @@ import asyncio
 from collections.abc import AsyncIterator
 from datetime import UTC
 
-import nextcord
-from nextcord.ext import commands
+try:
+    import nextcord
+    from nextcord.ext import commands
+
+    _NEXTCORD_AVAILABLE = True
+except ImportError:
+    _NEXTCORD_AVAILABLE = False
 
 from zenbot.core.message import InboundMessage, OutboundMessage
 from zenbot.utils.logging import get_logger
@@ -19,6 +24,11 @@ class DiscordAdapter:
     """Discord bot adapter using nextcord."""
 
     def __init__(self, token: str) -> None:
+        if not _NEXTCORD_AVAILABLE:
+            raise ImportError(
+                "Discord support requires the 'nextcord' package. "
+                "Install with: pip install nextcord>=2.6"
+            )
         self._token = token
         self._message_queue: asyncio.Queue[InboundMessage] = asyncio.Queue()
         intents = nextcord.Intents.default()

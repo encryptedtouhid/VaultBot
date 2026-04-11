@@ -142,8 +142,10 @@ def init() -> None:
     user_id = typer.prompt(
         typer.style("  Your user ID on that platform", fg=typer.colors.CYAN),
     )
+    from zenbot.config import AllowlistEntry
+
     config.allowlist.append(
-        {"platform": platform, "user_id": user_id, "role": "admin"}  # type: ignore[arg-type]
+        AllowlistEntry(platform=platform, user_id=user_id, role="admin")
     )
     style.success(f"Added {platform}:{user_id} as admin.")
 
