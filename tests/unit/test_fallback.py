@@ -4,14 +4,13 @@ from __future__ import annotations
 
 import time
 from collections.abc import AsyncIterator
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 
 from vaultbot.core.message import ChatMessage
-from vaultbot.llm.base import LLMChunk, LLMResponse, ToolDefinition
+from vaultbot.llm.base import LLMChunk, LLMResponse
 from vaultbot.llm.fallback import FallbackProvider, ProviderStatus
-
 
 # ---------------------------------------------------------------------------
 # Mock providers
@@ -27,7 +26,9 @@ class SuccessProvider:
         return self._name
 
     async def complete(self, messages: list[ChatMessage], **kw: object) -> LLMResponse:
-        return LLMResponse(content=f"from {self._name}", model=self._name, input_tokens=5, output_tokens=3)
+        return LLMResponse(
+            content=f"from {self._name}", model=self._name, input_tokens=5, output_tokens=3
+        )
 
     async def stream(self, messages: list[ChatMessage], **kw: object) -> AsyncIterator[LLMChunk]:
         yield LLMChunk(content=f"stream from {self._name}", is_final=True)
@@ -106,17 +107,21 @@ class TestFallbackProviderInit:
             FallbackProvider([])
 
     def test_active_provider_is_first(self) -> None:
-        fb = FallbackProvider([
-            (SuccessProvider("primary"), None),
-            (SuccessProvider("secondary"), None),
-        ])
+        fb = FallbackProvider(
+            [
+                (SuccessProvider("primary"), None),
+                (SuccessProvider("secondary"), None),
+            ]
+        )
         assert fb.active_provider == "primary"
 
     def test_chain_status(self) -> None:
-        fb = FallbackProvider([
-            (SuccessProvider("p1"), None),
-            (SuccessProvider("p2"), None),
-        ])
+        fb = FallbackProvider(
+            [
+                (SuccessProvider("p1"), None),
+                (SuccessProvider("p2"), None),
+            ]
+        )
         status = fb.chain_status
         assert len(status) == 2
         assert status[0]["provider"] == "p1"
@@ -131,38 +136,47 @@ class TestFallbackProviderInit:
 class TestFallbackComplete:
     @pytest.mark.asyncio
     async def test_primary_success(self) -> None:
-        fb = FallbackProvider([
-            (SuccessProvider("primary"), None),
-            (SuccessProvider("backup"), None),
-        ])
+        fb = FallbackProvider(
+            [
+                (SuccessProvider("primary"), None),
+                (SuccessProvider("backup"), None),
+            ]
+        )
         result = await fb.complete([ChatMessage(role="user", content="hi")])
         assert "from primary" in result.content
 
     @pytest.mark.asyncio
     async def test_fallback_to_secondary(self) -> None:
-        fb = FallbackProvider([
-            (FailingProvider("primary"), None),
-            (SuccessProvider("backup"), None),
-        ])
+        fb = FallbackProvider(
+            [
+                (FailingProvider("primary"), None),
+                (SuccessProvider("backup"), None),
+            ]
+        )
         result = await fb.complete([ChatMessage(role="user", content="hi")])
         assert "from backup" in result.content
         assert fb.active_provider == "backup"
 
     @pytest.mark.asyncio
     async def test_all_fail_raises(self) -> None:
-        fb = FallbackProvider([
-            (FailingProvider("p1"), None),
-            (FailingProvider("p2"), None),
-        ])
+        fb = FallbackProvider(
+            [
+                (FailingProvider("p1"), None),
+                (FailingProvider("p2"), None),
+            ]
+        )
         with pytest.raises(RuntimeError, match="All providers"):
             await fb.complete([ChatMessage(role="user", content="hi")])
 
     @pytest.mark.asyncio
     async def test_skips_cooldown_providers(self) -> None:
-        fb = FallbackProvider([
-            (FailingProvider("primary"), None),
-            (SuccessProvider("backup"), None),
-        ], cooldown_seconds=9999.0)
+        fb = FallbackProvider(
+            [
+                (FailingProvider("primary"), None),
+                (SuccessProvider("backup"), None),
+            ],
+            cooldown_seconds=9999.0,
+        )
 
         # First call: primary fails, falls to backup
         result = await fb.complete([ChatMessage(role="user", content="hi")])
@@ -181,7 +195,10 @@ class TestFallbackComplete:
         await fb.complete([ChatMessage(role="user", content="hi")])
         # Verify model was passed
         call_kwargs = provider.complete.call_args
-        assert call_kwargs[1].get("model") == "custom-model" or call_kwargs.kwargs.get("model") == "custom-model"
+        assert (
+            call_kwargs[1].get("model") == "custom-model"
+            or call_kwargs.kwargs.get("model") == "custom-model"
+        )
 
     @pytest.mark.asyncio
     async def test_success_resets_failure_count(self) -> None:
@@ -206,10 +223,12 @@ class TestFallbackComplete:
 class TestFallbackStream:
     @pytest.mark.asyncio
     async def test_stream_primary_success(self) -> None:
-        fb = FallbackProvider([
-            (SuccessProvider("primary"), None),
-            (SuccessProvider("backup"), None),
-        ])
+        fb = FallbackProvider(
+            [
+                (SuccessProvider("primary"), None),
+                (SuccessProvider("backup"), None),
+            ]
+        )
         chunks = []
         async for chunk in fb.stream([ChatMessage(role="user", content="hi")]):
             chunks.append(chunk)
@@ -217,10 +236,12 @@ class TestFallbackStream:
 
     @pytest.mark.asyncio
     async def test_stream_fallback(self) -> None:
-        fb = FallbackProvider([
-            (FailingProvider("primary"), None),
-            (SuccessProvider("backup"), None),
-        ])
+        fb = FallbackProvider(
+            [
+                (FailingProvider("primary"), None),
+                (SuccessProvider("backup"), None),
+            ]
+        )
         chunks = []
         async for chunk in fb.stream([ChatMessage(role="user", content="hi")]):
             chunks.append(chunk)
@@ -228,10 +249,12 @@ class TestFallbackStream:
 
     @pytest.mark.asyncio
     async def test_stream_all_fail(self) -> None:
-        fb = FallbackProvider([
-            (FailingProvider("p1"), None),
-            (FailingProvider("p2"), None),
-        ])
+        fb = FallbackProvider(
+            [
+                (FailingProvider("p1"), None),
+                (FailingProvider("p2"), None),
+            ]
+        )
         with pytest.raises(RuntimeError, match="All providers"):
             async for _ in fb.stream([ChatMessage(role="user", content="hi")]):
                 pass
@@ -244,10 +267,12 @@ class TestFallbackStream:
 
 class TestFallbackReset:
     def test_reset_clears_all(self) -> None:
-        fb = FallbackProvider([
-            (SuccessProvider("p1"), None),
-            (SuccessProvider("p2"), None),
-        ])
+        fb = FallbackProvider(
+            [
+                (SuccessProvider("p1"), None),
+                (SuccessProvider("p2"), None),
+            ]
+        )
         fb._chain[0].record_failure()
         fb._chain[1].record_success()
 

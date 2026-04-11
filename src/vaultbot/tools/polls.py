@@ -39,7 +39,7 @@ class Poll:
         return True
 
     def get_results(self) -> dict[str, int]:
-        results: dict[str, int] = {opt: 0 for opt in self.options}
+        results: dict[str, int] = dict.fromkeys(self.options, 0)
         for indices in self.votes.values():
             for i in indices:
                 if 0 <= i < len(self.options):
@@ -59,9 +59,13 @@ class PollManager:
         self._polls: dict[str, Poll] = {}
         self._counter: int = 0
 
-    def create(self, question: str, options: list[str], poll_type: PollType = PollType.SINGLE_CHOICE) -> Poll:
+    def create(
+        self, question: str, options: list[str], poll_type: PollType = PollType.SINGLE_CHOICE
+    ) -> Poll:
         self._counter += 1
-        poll = Poll(id=f"poll_{self._counter}", question=question, options=options, poll_type=poll_type)
+        poll = Poll(
+            id=f"poll_{self._counter}", question=question, options=options, poll_type=poll_type
+        )
         self._polls[poll.id] = poll
         return poll
 

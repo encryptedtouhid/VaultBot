@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
 
-import pytest
-
-from vaultbot.config import VaultBotConfig, PlatformConfig, LLMConfig, RateLimitConfig
+from vaultbot.config import VaultBotConfig
 
 
 class TestVaultBotConfig:
@@ -31,9 +28,22 @@ class TestVaultBotConfig:
 
     def test_all_platforms_disabled_by_default(self) -> None:
         config = VaultBotConfig()
-        for name in ["telegram", "discord", "whatsapp", "signal", "slack", "teams",
-                      "imessage", "irc", "matrix", "mattermost", "line", "googlechat",
-                      "twitch", "nostr"]:
+        for name in [
+            "telegram",
+            "discord",
+            "whatsapp",
+            "signal",
+            "slack",
+            "teams",
+            "imessage",
+            "irc",
+            "matrix",
+            "mattermost",
+            "line",
+            "googlechat",
+            "twitch",
+            "nostr",
+        ]:
             platform = getattr(config, name)
             assert platform.enabled is False, f"{name} should be disabled by default"
 
@@ -62,9 +72,12 @@ class TestVaultBotConfig:
 
     def test_allowlist(self) -> None:
         from vaultbot.security.auth import Role
-        config = VaultBotConfig(allowlist=[
-            {"platform": "telegram", "user_id": "123", "role": "admin"},
-        ])
+
+        config = VaultBotConfig(
+            allowlist=[
+                {"platform": "telegram", "user_id": "123", "role": "admin"},
+            ]
+        )
         al = config.get_allowlist()
         assert "telegram:123" in al
         assert al["telegram:123"] == Role.ADMIN

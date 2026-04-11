@@ -65,9 +65,7 @@ class HealthcheckServer:
 
     async def start(self) -> None:
         """Start the healthcheck server."""
-        self._server = await asyncio.start_server(
-            self._handle, self._host, self._port
-        )
+        self._server = await asyncio.start_server(self._handle, self._host, self._port)
         logger.info("healthcheck_started", host=self._host, port=self._port)
 
     async def stop(self) -> None:
@@ -83,9 +81,7 @@ class HealthcheckServer:
     ) -> None:
         """Handle healthcheck HTTP requests."""
         try:
-            request_line = await asyncio.wait_for(
-                reader.readline(), timeout=5.0
-            )
+            request_line = await asyncio.wait_for(reader.readline(), timeout=5.0)
             request_str = request_line.decode(errors="replace").strip()
             parts = request_str.split(" ")
             path = parts[1] if len(parts) >= 2 else "/"

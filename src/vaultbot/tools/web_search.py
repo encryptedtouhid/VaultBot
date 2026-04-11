@@ -6,7 +6,7 @@ All searches go through audit logging and respect rate limits.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
 import httpx
@@ -19,6 +19,7 @@ logger = get_logger(__name__)
 @dataclass(frozen=True, slots=True)
 class SearchResult:
     """A single search result."""
+
     title: str
     url: str
     snippet: str
@@ -27,6 +28,7 @@ class SearchResult:
 @dataclass(frozen=True, slots=True)
 class SearchResponse:
     """Response from a web search."""
+
     query: str
     results: list[SearchResult]
     provider: str
@@ -64,11 +66,13 @@ class BraveSearchProvider:
 
         results = []
         for item in data.get("web", {}).get("results", [])[:max_results]:
-            results.append(SearchResult(
-                title=item.get("title", ""),
-                url=item.get("url", ""),
-                snippet=item.get("description", ""),
-            ))
+            results.append(
+                SearchResult(
+                    title=item.get("title", ""),
+                    url=item.get("url", ""),
+                    snippet=item.get("description", ""),
+                )
+            )
 
         return SearchResponse(query=query, results=results, provider="brave")
 
@@ -97,11 +101,13 @@ class TavilySearchProvider:
 
         results = []
         for item in data.get("results", [])[:max_results]:
-            results.append(SearchResult(
-                title=item.get("title", ""),
-                url=item.get("url", ""),
-                snippet=item.get("content", "")[:300],
-            ))
+            results.append(
+                SearchResult(
+                    title=item.get("title", ""),
+                    url=item.get("url", ""),
+                    snippet=item.get("content", "")[:300],
+                )
+            )
 
         return SearchResponse(query=query, results=results, provider="tavily")
 

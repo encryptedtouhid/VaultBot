@@ -41,6 +41,7 @@ _MAX_CONTENT_SIZE = 1_000_000  # 1 MB
 @dataclass(frozen=True, slots=True)
 class FetchResult:
     """Result from fetching a URL."""
+
     url: str
     title: str
     text: str
@@ -104,7 +105,7 @@ class WebFetcher:
         resp.raise_for_status()
 
         content_type = resp.headers.get("content-type", "")
-        raw_text = resp.text[:self._max_size]
+        raw_text = resp.text[: self._max_size]
 
         title = ""
         text = raw_text

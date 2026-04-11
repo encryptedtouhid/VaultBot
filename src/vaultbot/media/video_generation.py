@@ -18,6 +18,7 @@ logger = get_logger(__name__)
 
 class VideoStatus(str, Enum):
     """Status of a video generation job."""
+
     PENDING = "pending"
     PROCESSING = "processing"
     COMPLETED = "completed"
@@ -26,6 +27,7 @@ class VideoStatus(str, Enum):
 
 class VideoAspectRatio(str, Enum):
     """Standard video aspect ratios."""
+
     SQUARE = "1:1"
     LANDSCAPE = "16:9"
     PORTRAIT = "9:16"
@@ -35,6 +37,7 @@ class VideoAspectRatio(str, Enum):
 @dataclass(frozen=True, slots=True)
 class VideoGenerationRequest:
     """Parameters for a video generation request."""
+
     prompt: str
     aspect_ratio: VideoAspectRatio = VideoAspectRatio.LANDSCAPE
     duration_seconds: int = 5
@@ -44,6 +47,7 @@ class VideoGenerationRequest:
 @dataclass(frozen=True, slots=True)
 class VideoGenerationResult:
     """Result from a video generation request."""
+
     job_id: str
     status: VideoStatus
     video_url: str = ""

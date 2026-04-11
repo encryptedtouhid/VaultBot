@@ -12,10 +12,10 @@ from __future__ import annotations
 
 import time
 from collections.abc import AsyncIterator
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from vaultbot.core.message import ChatMessage
-from vaultbot.llm.base import LLMChunk, LLMResponse, LLMProvider, ToolDefinition
+from vaultbot.llm.base import LLMChunk, LLMProvider, LLMResponse, ToolDefinition
 from vaultbot.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -154,9 +154,7 @@ class FallbackProvider:
                 )
                 continue
 
-        raise RuntimeError(
-            f"All providers in fallback chain failed. Last error: {last_error}"
-        )
+        raise RuntimeError(f"All providers in fallback chain failed. Last error: {last_error}")
 
     async def stream(
         self,

@@ -6,8 +6,7 @@ import asyncio
 
 import pytest
 
-from vaultbot.agents.subagent import AgentStatus, SubAgent, SubAgentRegistry
-
+from vaultbot.agents.subagent import AgentStatus, SubAgentRegistry
 
 # ---------------------------------------------------------------------------
 # Spawn

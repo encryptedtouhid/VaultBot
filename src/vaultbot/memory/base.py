@@ -35,9 +35,7 @@ class MemoryStore(Protocol):
         """Save a conversation turn."""
         ...
 
-    async def get_history(
-        self, chat_id: str, *, limit: int = 20
-    ) -> list[ConversationTurn]:
+    async def get_history(self, chat_id: str, *, limit: int = 20) -> list[ConversationTurn]:
         """Retrieve conversation history for a chat."""
         ...
 
@@ -53,9 +51,7 @@ class MemoryStore(Protocol):
         """Save user preferences."""
         ...
 
-    async def get_user_preferences(
-        self, user_id: str, platform: str
-    ) -> UserPreferences | None:
+    async def get_user_preferences(self, user_id: str, platform: str) -> UserPreferences | None:
         """Get user preferences."""
         ...
 

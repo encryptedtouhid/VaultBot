@@ -79,7 +79,9 @@ class IrcAdapter:
             ssl_ctx = ssl.create_default_context()
 
         self._reader, self._writer = await asyncio.open_connection(
-            self._server, self._port, ssl=ssl_ctx,
+            self._server,
+            self._port,
+            ssl=ssl_ctx,
         )
 
         # Send IRC registration sequence
@@ -148,7 +150,7 @@ class IrcAdapter:
         if not self._writer or self._writer.is_closing():
             return
         # Truncate to IRC limit minus CRLF
-        raw = data[:_MAX_LINE - 2] + "\r\n"
+        raw = data[: _MAX_LINE - 2] + "\r\n"
         self._writer.write(raw.encode("utf-8", errors="replace"))
         await self._writer.drain()
 

@@ -54,11 +54,16 @@ class MusicGenerationEngine:
         if not self._default_provider:
             self._default_provider = provider.provider_name
 
-    async def generate(self, prompt: str, *, provider: str | None = None, **kwargs: object) -> MusicGenerationResult:
+    async def generate(
+        self, prompt: str, *, provider: str | None = None, **kwargs: object
+    ) -> MusicGenerationResult:
         name = provider or self._default_provider
         if not name or name not in self._providers:
             raise ValueError(f"Unknown music provider '{name}'")
-        req = MusicGenerationRequest(prompt=prompt, **{k: v for k, v in kwargs.items() if k in MusicGenerationRequest.__dataclass_fields__})
+        req = MusicGenerationRequest(
+            prompt=prompt,
+            **{k: v for k, v in kwargs.items() if k in MusicGenerationRequest.__dataclass_fields__},
+        )
         result = await self._providers[name].generate(req)
         self._count += 1
         return result

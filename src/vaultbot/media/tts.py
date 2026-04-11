@@ -18,6 +18,7 @@ logger = get_logger(__name__)
 
 class AudioFormat(str, Enum):
     """Supported audio output formats."""
+
     MP3 = "mp3"
     OPUS = "opus"
     AAC = "aac"
@@ -28,6 +29,7 @@ class AudioFormat(str, Enum):
 
 class TTSVoice(str, Enum):
     """Standard voice presets (OpenAI compatible)."""
+
     ALLOY = "alloy"
     ECHO = "echo"
     FABLE = "fable"
@@ -39,6 +41,7 @@ class TTSVoice(str, Enum):
 @dataclass(frozen=True, slots=True)
 class TTSRequest:
     """Parameters for a TTS request."""
+
     text: str
     voice: str = "alloy"
     model: str = "tts-1"
@@ -49,6 +52,7 @@ class TTSRequest:
 @dataclass(frozen=True, slots=True)
 class TTSResult:
     """Result from a TTS generation request."""
+
     audio_data: bytes
     format: AudioFormat
     provider: str
@@ -107,7 +111,7 @@ class TTSEngine:
         provider: str | None = None,
         voice: str = "alloy",
         model: str = "tts-1",
-        format: AudioFormat = AudioFormat.MP3,
+        audio_format: AudioFormat = AudioFormat.MP3,
         speed: float = 1.0,
     ) -> TTSResult:
         """Convert text to speech audio.
@@ -135,9 +139,7 @@ class TTSEngine:
         provider_name = provider or self._default_provider
         if not provider_name or provider_name not in self._providers:
             available = ", ".join(self._providers.keys()) or "none"
-            raise ValueError(
-                f"Unknown TTS provider '{provider_name}'. Available: {available}"
-            )
+            raise ValueError(f"Unknown TTS provider '{provider_name}'. Available: {available}")
 
         tts_provider = self._providers[provider_name]
 
@@ -145,7 +147,7 @@ class TTSEngine:
             text=text,
             voice=voice,
             model=model,
-            format=format,
+            format=audio_format,
             speed=speed,
         )
 

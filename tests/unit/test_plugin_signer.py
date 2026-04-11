@@ -20,12 +20,16 @@ def plugin_dir() -> Path:
         d = Path(tmpdir) / "test-plugin"
         d.mkdir()
         (d / "plugin.py").write_text("print('hello')")
-        (d / "vaultbot_plugin.json").write_text(json.dumps({
-            "name": "test-plugin",
-            "version": "1.0.0",
-            "description": "A test plugin",
-            "author": "tester",
-        }))
+        (d / "vaultbot_plugin.json").write_text(
+            json.dumps(
+                {
+                    "name": "test-plugin",
+                    "version": "1.0.0",
+                    "description": "A test plugin",
+                    "author": "tester",
+                }
+            )
+        )
         yield d
 
 

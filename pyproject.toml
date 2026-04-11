@@ -71,6 +71,8 @@ ignore = [
     "S110",  # Allow try-except-pass (cleanup handlers)
     "B008",  # Allow function calls in argument defaults (typer pattern)
     "B027",  # Allow empty methods in ABCs without @abstractmethod (lifecycle hooks)
+    "S105",  # Allow hardcoded password strings (test fixtures, default args)
+    "S106",  # Allow hardcoded password arguments (test fixtures)
 ]
 
 [tool.pytest.ini_options]

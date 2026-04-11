@@ -103,9 +103,7 @@ def test_disable_file_logging() -> None:
     """When file logging is disabled, no log directory is created."""
     with tempfile.TemporaryDirectory() as tmpdir:
         log_dir = Path(tmpdir) / "should_not_exist"
-        setup_logging(
-            level="INFO", log_dir=log_dir, enable_file_logging=False
-        )
+        setup_logging(level="INFO", log_dir=log_dir, enable_file_logging=False)
 
         logger = get_logger("test.no_files")
         logger.info("should_not_write_to_file")

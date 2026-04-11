@@ -10,7 +10,6 @@ import pytest
 from vaultbot.core.message import OutboundMessage
 from vaultbot.platforms.irc import IrcAdapter
 
-
 # ---------------------------------------------------------------------------
 # Construction / properties
 # ---------------------------------------------------------------------------

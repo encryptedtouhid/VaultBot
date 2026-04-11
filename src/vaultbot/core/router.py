@@ -39,9 +39,7 @@ class MessageRouter:
         self._llm = llm
         self._broadcaster = broadcaster
 
-    async def handle(
-        self, message: InboundMessage, adapter: PlatformAdapter
-    ) -> None:
+    async def handle(self, message: InboundMessage, adapter: PlatformAdapter) -> None:
         """Process an inbound message through the full pipeline."""
         # 1. Authenticate
         if not self._auth.is_authorized(message.platform, message.sender_id):
@@ -51,10 +49,13 @@ class MessageRouter:
                 success=False,
                 reason="not_in_allowlist",
             )
-            await self._broadcast("auth_denied", {
-                "platform": message.platform,
-                "user_id": message.sender_id,
-            })
+            await self._broadcast(
+                "auth_denied",
+                {
+                    "platform": message.platform,
+                    "user_id": message.sender_id,
+                },
+            )
             await adapter.send(
                 OutboundMessage(
                     chat_id=message.chat_id,
@@ -75,10 +76,13 @@ class MessageRouter:
         qualified_id = f"{message.platform}:{message.sender_id}"
         if not self._rate_limiter.is_allowed(qualified_id):
             wait_time = self._rate_limiter.time_until_allowed(qualified_id)
-            await self._broadcast("rate_limited", {
-                "user_id": message.sender_id,
-                "wait_seconds": round(wait_time, 1),
-            })
+            await self._broadcast(
+                "rate_limited",
+                {
+                    "user_id": message.sender_id,
+                    "wait_seconds": round(wait_time, 1),
+                },
+            )
             await adapter.send(
                 OutboundMessage(
                     chat_id=message.chat_id,
@@ -89,11 +93,14 @@ class MessageRouter:
             return
 
         # 3. Broadcast incoming message
-        await self._broadcast("message_in", {
-            "platform": message.platform,
-            "user_id": message.sender_id,
-            "text": message.text[:100],
-        })
+        await self._broadcast(
+            "message_in",
+            {
+                "platform": message.platform,
+                "user_id": message.sender_id,
+                "text": message.text[:100],
+            },
+        )
 
         # 4. Build conversation context and call LLM
         context = self._context_manager.get(message.chat_id)
@@ -111,13 +118,16 @@ class MessageRouter:
                 user_id=message.sender_id,
             )
 
-            await self._broadcast("message_out", {
-                "platform": message.platform,
-                "user_id": message.sender_id,
-                "text": assistant_text[:100],
-                "tokens_in": getattr(response, "input_tokens", 0),
-                "tokens_out": getattr(response, "output_tokens", 0),
-            })
+            await self._broadcast(
+                "message_out",
+                {
+                    "platform": message.platform,
+                    "user_id": message.sender_id,
+                    "text": assistant_text[:100],
+                    "tokens_in": getattr(response, "input_tokens", 0),
+                    "tokens_out": getattr(response, "output_tokens", 0),
+                },
+            )
 
             await adapter.send(
                 OutboundMessage(
@@ -134,10 +144,13 @@ class MessageRouter:
                 platform=message.platform,
                 user_id=message.sender_id,
             )
-            await self._broadcast("error", {
-                "platform": message.platform,
-                "error": str(e)[:200],
-            })
+            await self._broadcast(
+                "error",
+                {
+                    "platform": message.platform,
+                    "error": str(e)[:200],
+                },
+            )
             await adapter.send(
                 OutboundMessage(
                     chat_id=message.chat_id,
@@ -149,6 +162,4 @@ class MessageRouter:
     async def _broadcast(self, event_type: str, data: dict) -> None:  # type: ignore[type-arg]
         """Broadcast an event to the SSE dashboard if connected."""
         if self._broadcaster:
-            await self._broadcaster.broadcast(
-                DashboardEvent(event_type=event_type, data=data)
-            )
+            await self._broadcaster.broadcast(DashboardEvent(event_type=event_type, data=data))

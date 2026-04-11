@@ -128,10 +128,15 @@ class PluginSandbox:
         Returns:
             PluginResult with the plugin's output or error details.
         """
-        request = json.dumps({
-            "module_path": str(plugin_module_path),
-            "context": context.to_dict(),
-        }) + "\n"
+        request = (
+            json.dumps(
+                {
+                    "module_path": str(plugin_module_path),
+                    "context": context.to_dict(),
+                }
+            )
+            + "\n"
+        )
 
         # Build restricted environment
         env = self._build_restricted_env()
@@ -235,9 +240,17 @@ class PluginSandbox:
 
         # Keep only essential variables
         keep_vars = {
-            "PATH", "HOME", "USER", "LANG", "LC_ALL",
-            "PYTHONPATH", "PYTHONHOME", "VIRTUAL_ENV",
-            "TMPDIR", "TMP", "TEMP",
+            "PATH",
+            "HOME",
+            "USER",
+            "LANG",
+            "LC_ALL",
+            "PYTHONPATH",
+            "PYTHONHOME",
+            "VIRTUAL_ENV",
+            "TMPDIR",
+            "TMP",
+            "TEMP",
         }
         for key in keep_vars:
             value = os.environ.get(key)

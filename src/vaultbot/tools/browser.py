@@ -18,6 +18,7 @@ logger = get_logger(__name__)
 
 class BrowserAction(str, Enum):
     """Supported browser actions."""
+
     NAVIGATE = "navigate"
     SCREENSHOT = "screenshot"
     CLICK = "click"
@@ -29,6 +30,7 @@ class BrowserAction(str, Enum):
 @dataclass(frozen=True, slots=True)
 class BrowserCommand:
     """A command to execute in the browser."""
+
     action: BrowserAction
     url: str = ""
     selector: str = ""
@@ -39,6 +41,7 @@ class BrowserCommand:
 @dataclass(frozen=True, slots=True)
 class BrowserResult:
     """Result from a browser action."""
+
     success: bool
     action: BrowserAction
     data: str = ""  # Text content, screenshot base64, eval result
@@ -78,16 +81,17 @@ class BrowserTool:
         """Launch the browser."""
         try:
             from playwright.async_api import async_playwright
+
             self._playwright = await async_playwright().start()
             self._browser = await self._playwright.chromium.launch(headless=True)
             self._page = await self._browser.new_page()
             self._connected = True
             logger.info("browser_started", sandbox=self._sandbox)
-        except ImportError:
+        except ImportError as exc:
             raise ImportError(
                 "Browser automation requires 'playwright'. "
                 "Install with: pip install playwright && playwright install chromium"
-            )
+            ) from exc
 
     async def stop(self) -> None:
         """Close the browser."""
@@ -103,9 +107,7 @@ class BrowserTool:
     async def execute(self, command: BrowserCommand) -> BrowserResult:
         """Execute a browser command."""
         if not self._connected or not self._page:
-            return BrowserResult(
-                success=False, action=command.action, error="Browser not started"
-            )
+            return BrowserResult(success=False, action=command.action, error="Browser not started")
 
         # SSRF check for navigation
         if command.action == BrowserAction.NAVIGATE and command.url:
@@ -130,9 +132,7 @@ class BrowserTool:
             return result
         except Exception as exc:
             logger.warning("browser_action_failed", action=command.action.value, error=str(exc))
-            return BrowserResult(
-                success=False, action=command.action, error=str(exc)
-            )
+            return BrowserResult(success=False, action=command.action, error=str(exc))
 
     async def _dispatch(self, command: BrowserCommand) -> BrowserResult:
         """Route command to the appropriate handler."""
@@ -141,32 +141,29 @@ class BrowserTool:
 
         if command.action == BrowserAction.NAVIGATE:
             await page.goto(command.url, wait_until="domcontentloaded")
-            return BrowserResult(
-                success=True, action=command.action, url=page.url
-            )
+            return BrowserResult(success=True, action=command.action, url=page.url)
 
         if command.action == BrowserAction.SCREENSHOT:
             screenshot = await page.screenshot()
             import base64
+
             b64 = base64.b64encode(screenshot).decode("utf-8")
-            return BrowserResult(
-                success=True, action=command.action, data=b64, url=page.url
-            )
+            return BrowserResult(success=True, action=command.action, data=b64, url=page.url)
 
         if command.action == BrowserAction.CLICK:
             await page.click(command.selector)
-            return BrowserResult(
-                success=True, action=command.action, url=page.url
-            )
+            return BrowserResult(success=True, action=command.action, url=page.url)
 
         if command.action == BrowserAction.FILL:
             await page.fill(command.selector, command.value)
-            return BrowserResult(
-                success=True, action=command.action, url=page.url
-            )
+            return BrowserResult(success=True, action=command.action, url=page.url)
 
         if command.action == BrowserAction.GET_TEXT:
-            text = await page.inner_text(command.selector) if command.selector else await page.content()
+            text = (
+                await page.inner_text(command.selector)
+                if command.selector
+                else await page.content()
+            )
             return BrowserResult(
                 success=True, action=command.action, data=text[:5000], url=page.url
             )
@@ -174,7 +171,8 @@ class BrowserTool:
         if command.action == BrowserAction.EVALUATE:
             if self._sandbox:
                 return BrowserResult(
-                    success=False, action=command.action,
+                    success=False,
+                    action=command.action,
                     error="JavaScript evaluation disabled in sandbox mode",
                 )
             result = await page.evaluate(command.script)

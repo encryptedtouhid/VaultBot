@@ -13,6 +13,7 @@ class TestE2ETTS:
     @pytest.mark.asyncio
     async def test_openai_tts_full_pipeline(self) -> None:
         from vaultbot.media.providers.openai_tts import OpenAITTSProvider
+
         engine = TTSEngine()
 
         provider = OpenAITTSProvider(api_key="test")
@@ -32,6 +33,7 @@ class TestE2ETTS:
     @pytest.mark.asyncio
     async def test_elevenlabs_full_pipeline(self) -> None:
         from vaultbot.media.providers.elevenlabs import ElevenLabsProvider
+
         engine = TTSEngine()
 
         provider = ElevenLabsProvider(api_key="test")
@@ -54,11 +56,19 @@ class TestE2ETTS:
         class FakeTTS:
             def __init__(self, name: str) -> None:
                 self._name = name
+
             @property
             def provider_name(self) -> str:
                 return self._name
+
             async def synthesize(self, request: TTSRequest) -> TTSResult:
-                return TTSResult(audio_data=b"audio", format=AudioFormat.MP3, provider=self._name, voice=request.voice)
+                return TTSResult(
+                    audio_data=b"audio",
+                    format=AudioFormat.MP3,
+                    provider=self._name,
+                    voice=request.voice,
+                )
+
             def list_voices(self) -> list[str]:
                 return ["default"]
 

@@ -6,10 +6,10 @@ on agent startup, or on other lifecycle events.
 
 from __future__ import annotations
 
-import asyncio
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Coroutine
+from typing import Any
 
 from vaultbot.utils.logging import get_logger
 
@@ -18,6 +18,7 @@ logger = get_logger(__name__)
 
 class HookEvent(str, Enum):
     """Events that can trigger hooks."""
+
     BEFORE_TOOL = "before_tool"
     AFTER_TOOL = "after_tool"
     BEFORE_LLM = "before_llm"
@@ -31,6 +32,7 @@ class HookEvent(str, Enum):
 @dataclass(frozen=True, slots=True)
 class HookContext:
     """Context passed to hook functions."""
+
     event: HookEvent
     tool_name: str = ""
     data: dict[str, Any] = field(default_factory=dict)
@@ -39,6 +41,7 @@ class HookContext:
 @dataclass(frozen=True, slots=True)
 class HookResult:
     """Result from a hook execution."""
+
     allow: bool = True  # If False, the action is blocked
     modified_data: dict[str, Any] | None = None
     reason: str = ""
@@ -50,6 +53,7 @@ HookFn = Callable[[HookContext], Coroutine[Any, Any, HookResult]]
 @dataclass
 class RegisteredHook:
     """A registered hook with metadata."""
+
     name: str
     event: HookEvent
     handler: HookFn

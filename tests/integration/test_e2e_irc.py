@@ -8,17 +8,15 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncIterator
-from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from vaultbot.core.message import ChatMessage, InboundMessage, OutboundMessage
+from vaultbot.core.message import ChatMessage, OutboundMessage
 from vaultbot.llm.base import LLMChunk, LLMResponse, ToolDefinition
 from vaultbot.platforms.irc import IrcAdapter
 from vaultbot.security.auth import AuthManager, Role
 from vaultbot.security.rate_limiter import RateLimiter
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -112,9 +110,7 @@ class TestIrcE2EMessagePipeline:
         assert rate_limiter.is_allowed(qualified_id)
 
         # LLM response
-        response = await llm.complete(
-            [ChatMessage(role="user", content=msg.text)]
-        )
+        response = await llm.complete([ChatMessage(role="user", content=msg.text)])
         assert "Echo: What is 2+2?" in response.content
 
         # Send the response back
@@ -141,7 +137,7 @@ class TestIrcE2EMessagePipeline:
     @pytest.mark.asyncio
     async def test_rate_limited_user_is_blocked(self) -> None:
         """A user exceeding rate limits should be blocked."""
-        auth = AuthManager(allowlist={"irc:spammer": Role.USER})
+        AuthManager(allowlist={"irc:spammer": Role.USER})  # Verify no init error
         rate_limiter = RateLimiter(user_capacity=2.0, user_refill_rate=0.0)
 
         adapter = IrcAdapter(server="irc.test", use_tls=False)

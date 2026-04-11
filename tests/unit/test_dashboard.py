@@ -62,15 +62,17 @@ class TestMarketplaceEntry:
     def test_from_dict(self) -> None:
         from vaultbot.plugins.marketplace import MarketplaceEntry, ReviewStatus
 
-        entry = MarketplaceEntry.from_dict({
-            "name": "weather",
-            "version": "1.0",
-            "description": "Weather plugin",
-            "author": "dev",
-            "review_status": "approved",
-            "downloads": 100,
-            "tags": ["weather", "api"],
-        })
+        entry = MarketplaceEntry.from_dict(
+            {
+                "name": "weather",
+                "version": "1.0",
+                "description": "Weather plugin",
+                "author": "dev",
+                "review_status": "approved",
+                "downloads": 100,
+                "tags": ["weather", "api"],
+            }
+        )
         assert entry.name == "weather"
         assert entry.review_status == ReviewStatus.APPROVED
         assert entry.downloads == 100

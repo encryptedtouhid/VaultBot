@@ -59,9 +59,7 @@ class RateLimiter:
         self._user_buckets: dict[str, TokenBucket] = {}
         self._user_capacity = user_capacity
         self._user_refill_rate = user_refill_rate
-        self._global_bucket = TokenBucket(
-            capacity=global_capacity, refill_rate=global_refill_rate
-        )
+        self._global_bucket = TokenBucket(capacity=global_capacity, refill_rate=global_refill_rate)
 
     def _get_user_bucket(self, user_id: str) -> TokenBucket:
         """Get or create a token bucket for a user."""

@@ -21,6 +21,7 @@ class TokenBudget:
 
     All values in estimated tokens (1 token ~ 4 chars).
     """
+
     total: int = 128_000
     system_prompt: int = 2_000
     tools: int = 4_000
@@ -30,7 +31,9 @@ class TokenBudget:
 
     @property
     def available_for_history(self) -> int:
-        return self.total - self.system_prompt - self.tools - self.response - self.compaction_summary
+        return (
+            self.total - self.system_prompt - self.tools - self.response - self.compaction_summary
+        )
 
 
 def estimate_tokens(text: str) -> int:
@@ -120,8 +123,6 @@ class ContextCompactor:
     @staticmethod
     def _summarize_messages(messages: list[ChatMessage]) -> str:
         """Create a text summary of messages, preserving key identifiers."""
-        # Extract unique participants
-        participants: set[str] = set()
         topics: list[str] = []
         key_points: list[str] = []
 

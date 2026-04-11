@@ -3,12 +3,9 @@
 from __future__ import annotations
 
 import os
-import tempfile
 from pathlib import Path
 
-import pytest
-
-from vaultbot.daemon import DaemonManager, DaemonStatus
+from vaultbot.daemon import DaemonManager
 
 
 class TestDaemonManager:

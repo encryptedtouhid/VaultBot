@@ -7,9 +7,9 @@ Supports webhook-based message receiving and reply/push message sending.
 from __future__ import annotations
 
 import asyncio
+import base64
 import hashlib
 import hmac
-import base64
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 
@@ -110,9 +110,7 @@ class LineAdapter:
     def verify_signature(self, body: bytes, signature: str) -> bool:
         if not self._secret:
             return True
-        digest = hmac.new(
-            self._secret.encode("utf-8"), body, hashlib.sha256
-        ).digest()
+        digest = hmac.new(self._secret.encode("utf-8"), body, hashlib.sha256).digest()
         return hmac.compare_digest(base64.b64encode(digest).decode("utf-8"), signature)
 
     def handle_webhook(self, payload: dict) -> None:

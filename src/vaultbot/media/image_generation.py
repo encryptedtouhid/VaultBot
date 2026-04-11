@@ -80,9 +80,7 @@ class ImageGenerationEngine:
         provider_name = provider or self._default_provider
         if not provider_name or provider_name not in self._providers:
             available = ", ".join(self._providers.keys()) or "none"
-            raise ValueError(
-                f"Unknown image provider '{provider_name}'. Available: {available}"
-            )
+            raise ValueError(f"Unknown image provider '{provider_name}'. Available: {available}")
 
         img_provider = self._providers[provider_name]
 

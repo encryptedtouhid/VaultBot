@@ -43,9 +43,7 @@ class WebhookServer:
 
     async def start(self) -> None:
         """Start the webhook server."""
-        self._server = await asyncio.start_server(
-            self._handle_connection, self._host, self._port
-        )
+        self._server = await asyncio.start_server(self._handle_connection, self._host, self._port)
         logger.info("webhook_server_started", host=self._host, port=self._port)
 
     async def stop(self) -> None:
@@ -63,9 +61,7 @@ class WebhookServer:
         """Handle an incoming HTTP connection."""
         try:
             # Read request line
-            request_line = await asyncio.wait_for(
-                reader.readline(), timeout=10.0
-            )
+            request_line = await asyncio.wait_for(reader.readline(), timeout=10.0)
             if not request_line:
                 writer.close()
                 return
@@ -83,9 +79,7 @@ class WebhookServer:
             # Read headers
             headers: dict[str, str] = {}
             while True:
-                header_line = await asyncio.wait_for(
-                    reader.readline(), timeout=10.0
-                )
+                header_line = await asyncio.wait_for(reader.readline(), timeout=10.0)
                 line = header_line.decode(errors="replace").strip()
                 if not line:
                     break
@@ -97,9 +91,7 @@ class WebhookServer:
             body = ""
             content_length = int(headers.get("content-length", "0"))
             if content_length > 0:
-                raw_body = await asyncio.wait_for(
-                    reader.readexactly(content_length), timeout=10.0
-                )
+                raw_body = await asyncio.wait_for(reader.readexactly(content_length), timeout=10.0)
                 body = raw_body.decode(errors="replace")
 
             # Route to handler
@@ -130,9 +122,7 @@ class WebhookServer:
                 pass
 
     @staticmethod
-    async def _send_response(
-        writer: asyncio.StreamWriter, status: int, body: str
-    ) -> None:
+    async def _send_response(writer: asyncio.StreamWriter, status: int, body: str) -> None:
         """Send an HTTP response."""
         status_messages = {
             200: "OK",

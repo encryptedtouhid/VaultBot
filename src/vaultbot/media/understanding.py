@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Protocol, runtime_checkable
 
 import httpx
 
@@ -19,6 +18,7 @@ logger = get_logger(__name__)
 
 class MediaType(str, Enum):
     """Types of media that can be analyzed."""
+
     IMAGE = "image"
     DOCUMENT = "document"
     LINK = "link"
@@ -27,6 +27,7 @@ class MediaType(str, Enum):
 @dataclass(frozen=True, slots=True)
 class MediaAnalysisRequest:
     """Request to analyze a piece of media."""
+
     media_type: MediaType
     url: str = ""
     data: bytes = b""
@@ -37,6 +38,7 @@ class MediaAnalysisRequest:
 @dataclass(frozen=True, slots=True)
 class MediaAnalysisResult:
     """Result from media analysis."""
+
     summary: str
     media_type: MediaType
     metadata: dict[str, str] | None = None
@@ -94,6 +96,7 @@ class LinkExtractor:
     def _extract_title(html: str) -> str:
         """Extract title from HTML."""
         import re
+
         match = re.search(r"<title[^>]*>(.*?)</title>", html, re.IGNORECASE | re.DOTALL)
         return match.group(1).strip() if match else ""
 
@@ -101,6 +104,7 @@ class LinkExtractor:
     def _strip_html(html: str) -> str:
         """Strip HTML tags for plain text extraction."""
         import re
+
         text = re.sub(r"<script[^>]*>.*?</script>", "", html, flags=re.DOTALL | re.IGNORECASE)
         text = re.sub(r"<style[^>]*>.*?</style>", "", text, flags=re.DOTALL | re.IGNORECASE)
         text = re.sub(r"<[^>]+>", " ", text)
@@ -138,7 +142,11 @@ class MediaUnderstandingEngine:
             raise ValueError(f"Unsupported media type: {request.media_type}")
 
         self._analysis_count += 1
-        logger.info("media_analysis_completed", media_type=request.media_type.value, total=self._analysis_count)
+        logger.info(
+            "media_analysis_completed",
+            media_type=request.media_type.value,
+            total=self._analysis_count,
+        )
         return result
 
     @property

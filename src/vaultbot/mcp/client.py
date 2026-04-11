@@ -19,6 +19,7 @@ logger = get_logger(__name__)
 
 class MCPTransport(str, Enum):
     """MCP transport types."""
+
     STDIO = "stdio"
     HTTP = "http"
 
@@ -26,6 +27,7 @@ class MCPTransport(str, Enum):
 @dataclass(frozen=True, slots=True)
 class MCPTool:
     """A tool discovered from an MCP server."""
+
     name: str
     description: str
     input_schema: dict[str, Any] = field(default_factory=dict)
@@ -35,6 +37,7 @@ class MCPTool:
 @dataclass(frozen=True, slots=True)
 class MCPResource:
     """A resource available from an MCP server."""
+
     uri: str
     name: str
     description: str = ""
@@ -44,6 +47,7 @@ class MCPResource:
 @dataclass
 class MCPServerConfig:
     """Configuration for an MCP server connection."""
+
     name: str
     transport: MCPTransport
     command: str = ""  # For stdio: command to run
@@ -109,13 +113,11 @@ class MCPClient:
             proc.terminate()
             try:
                 await asyncio.wait_for(proc.wait(), timeout=5.0)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 proc.kill()
 
         # Remove tools from this server
-        self._tools = {
-            k: v for k, v in self._tools.items() if v.server_name != server_name
-        }
+        self._tools = {k: v for k, v in self._tools.items() if v.server_name != server_name}
         self._connected_servers.discard(server_name)
         logger.info("mcp_server_disconnected", name=server_name)
 
@@ -222,9 +224,7 @@ class MCPClient:
         logger.info("mcp_http_connect", url=config.url)
 
     @staticmethod
-    async def _send_jsonrpc(
-        proc: asyncio.subprocess.Process, request: dict
-    ) -> dict | None:
+    async def _send_jsonrpc(proc: asyncio.subprocess.Process, request: dict) -> dict | None:
         """Send a JSON-RPC request and read the response."""
         if not proc.stdin or not proc.stdout:
             return None
@@ -237,7 +237,7 @@ class MCPClient:
             line = await asyncio.wait_for(proc.stdout.readline(), timeout=10.0)
             if line:
                 return json.loads(line.decode("utf-8"))
-        except (asyncio.TimeoutError, json.JSONDecodeError):
+        except (TimeoutError, json.JSONDecodeError):
             pass
         return None
 

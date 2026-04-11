@@ -69,7 +69,7 @@ class TestDevicePairing:
         mgr = DevicePairingManager()
         c1 = mgr.generate_pairing_code()
         c2 = mgr.generate_pairing_code()
-        d1 = mgr.complete_pairing(c1, "active")
+        mgr.complete_pairing(c1, "active")
         d2 = mgr.complete_pairing(c2, "revoked")
         mgr.revoke_device(d2.id)
         assert len(mgr.list_devices(active_only=True)) == 1
@@ -78,7 +78,7 @@ class TestDevicePairing:
         mgr = DevicePairingManager()
         c1 = mgr.generate_pairing_code()
         c2 = mgr.generate_pairing_code()
-        d1 = mgr.complete_pairing(c1, "a")
+        mgr.complete_pairing(c1, "a")
         d2 = mgr.complete_pairing(c2, "b")
         mgr.revoke_device(d2.id)
         assert mgr.active_device_count == 1
@@ -107,5 +107,6 @@ class TestDevicePairing:
 
     def test_pairing_code_not_expired(self) -> None:
         import time
+
         pc = PairingCode(code="123456", created_at=time.monotonic(), expiry_seconds=300)
         assert pc.is_expired is False

@@ -81,9 +81,7 @@ def key_value(key: str, value: str) -> None:
     )
 
 
-def plugin_entry(
-    name: str, version: str, status: str, description: str
-) -> None:
+def plugin_entry(name: str, version: str, status: str, description: str) -> None:
     """Display a plugin entry with colored status."""
     status_color = typer.colors.GREEN if status == "enabled" else typer.colors.RED
     typer.echo(

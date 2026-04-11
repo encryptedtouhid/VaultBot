@@ -34,7 +34,9 @@ class MockLLMProvider:
             if msg.role == "user":
                 user_msg = msg.content
                 break
-        return LLMResponse(content=f"Echo: {user_msg}", model="mock-1.0", input_tokens=10, output_tokens=5)
+        return LLMResponse(
+            content=f"Echo: {user_msg}", model="mock-1.0", input_tokens=10, output_tokens=5
+        )
 
     async def stream(self, messages: list[ChatMessage], **kw: object) -> AsyncIterator[LLMChunk]:
         yield LLMChunk(content="Echo: streamed", is_final=True)
@@ -65,8 +67,11 @@ class TestMattermostE2EMessagePipeline:
         adapter._connected = True
 
         post = {
-            "id": "p1", "user_id": "alice_id", "channel_id": "ch1",
-            "message": "What is Rust?", "create_at": 1700000000000,
+            "id": "p1",
+            "user_id": "alice_id",
+            "channel_id": "ch1",
+            "message": "What is Rust?",
+            "create_at": 1700000000000,
         }
         adapter._process_post(post)
 
@@ -87,7 +92,13 @@ class TestMattermostE2EMessagePipeline:
         adapter = MattermostAdapter(url="https://chat.example.com", token="tok")
         adapter._user_id = "bot_id"
 
-        post = {"id": "p2", "user_id": "hacker_id", "channel_id": "ch1", "message": "gimme", "create_at": 0}
+        post = {
+            "id": "p2",
+            "user_id": "hacker_id",
+            "channel_id": "ch1",
+            "message": "gimme",
+            "create_at": 0,
+        }
         adapter._process_post(post)
 
         msg = adapter._message_queue.get_nowait()
@@ -107,8 +118,12 @@ class TestMattermostE2EMessagePipeline:
         adapter._client = _make_mock_client()
 
         post = {
-            "id": "p3", "user_id": "bob_id", "channel_id": "ch1",
-            "message": "thread reply", "create_at": 1700000000000, "root_id": "p1",
+            "id": "p3",
+            "user_id": "bob_id",
+            "channel_id": "ch1",
+            "message": "thread reply",
+            "create_at": 1700000000000,
+            "root_id": "p1",
         }
         adapter._process_post(post)
 
@@ -133,7 +148,13 @@ class TestMattermostE2EWebSocketEvents:
         adapter._client = _make_mock_client()
         llm = MockLLMProvider()
 
-        post = {"id": "wp1", "user_id": "carol_id", "channel_id": "ch2", "message": "via ws", "create_at": 1700000000000}
+        post = {
+            "id": "wp1",
+            "user_id": "carol_id",
+            "channel_id": "ch2",
+            "message": "via ws",
+            "create_at": 1700000000000,
+        }
         ws_event = {"event": "posted", "data": {"post": json.dumps(post)}}
         adapter._handle_ws_event(ws_event)
 
@@ -152,7 +173,13 @@ class TestMattermostE2EWebSocketEvents:
         adapter._user_id = "bot_id"
 
         for i in range(3):
-            post = {"id": f"wp{i}", "user_id": f"user{i}", "channel_id": "ch1", "message": f"msg{i}", "create_at": 1700000000000}
+            post = {
+                "id": f"wp{i}",
+                "user_id": f"user{i}",
+                "channel_id": "ch1",
+                "message": f"msg{i}",
+                "create_at": 1700000000000,
+            }
             adapter._handle_ws_event({"event": "posted", "data": {"post": json.dumps(post)}})
 
         messages = []

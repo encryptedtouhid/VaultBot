@@ -10,10 +10,11 @@ from __future__ import annotations
 import asyncio
 import re
 import time
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
-from typing import Any, Callable, Coroutine
+from typing import Any
 
 from vaultbot.utils.logging import get_logger
 
@@ -22,6 +23,7 @@ logger = get_logger(__name__)
 
 class JobStatus(str, Enum):
     """Status of a scheduled job."""
+
     ACTIVE = "active"
     PAUSED = "paused"
     DISABLED = "disabled"
@@ -29,6 +31,7 @@ class JobStatus(str, Enum):
 
 class RunStatus(str, Enum):
     """Status of a job run."""
+
     SUCCESS = "success"
     FAILURE = "failure"
     RUNNING = "running"
@@ -38,6 +41,7 @@ class RunStatus(str, Enum):
 @dataclass
 class CronJob:
     """A scheduled job definition."""
+
     id: str
     name: str
     schedule: str  # Cron expression or "every Nm/Nh"
@@ -53,6 +57,7 @@ class CronJob:
 @dataclass(frozen=True, slots=True)
 class RunLogEntry:
     """A record of a job execution."""
+
     job_id: str
     status: RunStatus
     started_at: datetime
@@ -223,13 +228,15 @@ class CronScheduler:
             job.last_run = datetime.now(UTC)
             job.run_count += 1
 
-            self._run_log.append(RunLogEntry(
-                job_id=job.id,
-                status=RunStatus.SUCCESS,
-                started_at=start_time,
-                finished_at=datetime.now(UTC),
-                duration_ms=elapsed_ms,
-            ))
+            self._run_log.append(
+                RunLogEntry(
+                    job_id=job.id,
+                    status=RunStatus.SUCCESS,
+                    started_at=start_time,
+                    finished_at=datetime.now(UTC),
+                    duration_ms=elapsed_ms,
+                )
+            )
             logger.info("cron_job_success", job_id=job.id, name=job.name, duration_ms=elapsed_ms)
 
         except Exception as exc:
@@ -238,14 +245,16 @@ class CronScheduler:
             job.run_count += 1
             job.failure_count += 1
 
-            self._run_log.append(RunLogEntry(
-                job_id=job.id,
-                status=RunStatus.FAILURE,
-                started_at=start_time,
-                finished_at=datetime.now(UTC),
-                error=str(exc),
-                duration_ms=elapsed_ms,
-            ))
+            self._run_log.append(
+                RunLogEntry(
+                    job_id=job.id,
+                    status=RunStatus.FAILURE,
+                    started_at=start_time,
+                    finished_at=datetime.now(UTC),
+                    error=str(exc),
+                    duration_ms=elapsed_ms,
+                )
+            )
             logger.error("cron_job_failed", job_id=job.id, name=job.name, error=str(exc))
 
     @staticmethod

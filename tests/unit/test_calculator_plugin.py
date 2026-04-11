@@ -20,15 +20,11 @@ def calc() -> CalculatorPlugin:
 
 @pytest.fixture
 def ctx() -> PluginContext:
-    return PluginContext(
-        user_input="", chat_id="test", user_id="test", platform="test"
-    )
+    return PluginContext(user_input="", chat_id="test", user_id="test", platform="test")
 
 
 def _ctx_with_input(expr: str) -> PluginContext:
-    return PluginContext(
-        user_input=expr, chat_id="test", user_id="test", platform="test"
-    )
+    return PluginContext(user_input=expr, chat_id="test", user_id="test", platform="test")
 
 
 @pytest.mark.asyncio

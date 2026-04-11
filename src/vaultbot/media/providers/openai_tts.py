@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import httpx
 
-from vaultbot.media.tts import AudioFormat, TTSRequest, TTSResult
+from vaultbot.media.tts import TTSRequest, TTSResult
 from vaultbot.utils.logging import get_logger
 
 logger = get_logger(__name__)

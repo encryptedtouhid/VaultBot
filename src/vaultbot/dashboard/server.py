@@ -13,7 +13,6 @@ import json
 import mimetypes
 import secrets
 import time
-from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
 from typing import Any
 

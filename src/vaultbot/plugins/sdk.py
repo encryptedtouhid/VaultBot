@@ -91,9 +91,7 @@ def scaffold_plugin(
     plugin_dir.mkdir(parents=True, exist_ok=True)
 
     # Generate class name from plugin name
-    class_name = "".join(
-        word.capitalize() for word in name.replace("-", "_").split("_")
-    ) + "Plugin"
+    class_name = "".join(word.capitalize() for word in name.replace("-", "_").split("_")) + "Plugin"
 
     # Write plugin.py
     plugin_code = _PLUGIN_TEMPLATE.replace("{{name}}", name)
@@ -107,9 +105,7 @@ def scaffold_plugin(
     manifest["name"] = name
     manifest["description"] = description
     manifest["author"] = author
-    (plugin_dir / "vaultbot_plugin.json").write_text(
-        json.dumps(manifest, indent=2)
-    )
+    (plugin_dir / "vaultbot_plugin.json").write_text(json.dumps(manifest, indent=2))
 
     logger.info("plugin_scaffolded", name=name, path=str(plugin_dir))
     return plugin_dir

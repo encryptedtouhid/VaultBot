@@ -32,9 +32,7 @@ class StabilityProvider:
         Engine to use (e.g. ``stable-diffusion-xl-1024-v1-0``).
     """
 
-    def __init__(
-        self, api_key: str, engine_id: str = "stable-diffusion-xl-1024-v1-0"
-    ) -> None:
+    def __init__(self, api_key: str, engine_id: str = "stable-diffusion-xl-1024-v1-0") -> None:
         self._api_key = api_key
         self._engine_id = engine_id
         self._client = httpx.AsyncClient(timeout=120.0)

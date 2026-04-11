@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from vaultbot.tools.web_fetch import FetchResult, WebFetcher, is_url_safe
+from vaultbot.tools.web_fetch import WebFetcher, is_url_safe
 from vaultbot.tools.web_search import (
     BraveSearchProvider,
     SearchResponse,
@@ -14,7 +14,6 @@ from vaultbot.tools.web_search import (
     TavilySearchProvider,
     WebSearchEngine,
 )
-
 
 # ==========================================================================
 # Web Search
@@ -40,6 +39,7 @@ class TestWebSearchEngine:
             @property
             def provider_name(self) -> str:
                 return "fake"
+
             async def search(self, query: str, *, max_results: int = 5) -> SearchResponse:
                 return SearchResponse(query=query, results=[], provider="fake")
 
@@ -54,10 +54,13 @@ class TestWebSearchEngine:
             @property
             def provider_name(self) -> str:
                 return "fake"
+
             async def search(self, query: str, *, max_results: int = 5) -> SearchResponse:
                 return SearchResponse(
                     query=query,
-                    results=[SearchResult(title="Result 1", url="https://example.com", snippet="Snippet")],
+                    results=[
+                        SearchResult(title="Result 1", url="https://example.com", snippet="Snippet")
+                    ],
                     provider="fake",
                 )
 
@@ -85,9 +88,15 @@ class TestBraveSearchProvider:
         mock_resp = MagicMock()
         mock_resp.raise_for_status = MagicMock()
         mock_resp.json.return_value = {
-            "web": {"results": [
-                {"title": "Brave Result", "url": "https://brave.com", "description": "A result"},
-            ]}
+            "web": {
+                "results": [
+                    {
+                        "title": "Brave Result",
+                        "url": "https://brave.com",
+                        "description": "A result",
+                    },
+                ]
+            }
         }
         p._client = AsyncMock()
         p._client.get = AsyncMock(return_value=mock_resp)

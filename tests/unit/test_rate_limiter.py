@@ -24,8 +24,10 @@ def test_rate_limiter_allows_normal_usage() -> None:
 
 def test_rate_limiter_blocks_excessive_usage() -> None:
     limiter = RateLimiter(
-        user_capacity=2.0, user_refill_rate=0.0,
-        global_capacity=100.0, global_refill_rate=100.0,
+        user_capacity=2.0,
+        user_refill_rate=0.0,
+        global_capacity=100.0,
+        global_refill_rate=100.0,
     )
     assert limiter.is_allowed("user1") is True
     assert limiter.is_allowed("user1") is True
@@ -34,8 +36,10 @@ def test_rate_limiter_blocks_excessive_usage() -> None:
 
 def test_rate_limiter_per_user_isolation() -> None:
     limiter = RateLimiter(
-        user_capacity=1.0, user_refill_rate=0.0,
-        global_capacity=100.0, global_refill_rate=100.0,
+        user_capacity=1.0,
+        user_refill_rate=0.0,
+        global_capacity=100.0,
+        global_refill_rate=100.0,
     )
     assert limiter.is_allowed("user1") is True
     assert limiter.is_allowed("user1") is False

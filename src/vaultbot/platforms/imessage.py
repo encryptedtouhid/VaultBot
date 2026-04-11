@@ -59,9 +59,7 @@ class IMessageAdapter:
         import sys
 
         if sys.platform != "darwin":
-            raise RuntimeError(
-                "iMessage adapter is only available on macOS."
-            )
+            raise RuntimeError("iMessage adapter is only available on macOS.")
         self._message_queue: asyncio.Queue[InboundMessage] = asyncio.Queue()
         self._polling = False
         self._poll_task: asyncio.Task[None] | None = None
@@ -111,9 +109,7 @@ class IMessageAdapter:
         """Poll the Messages database for new messages."""
         while self._polling:
             try:
-                script = _CHECK_MESSAGES_SCRIPT.replace(
-                    "{last_rowid}", str(self._last_rowid)
-                )
+                script = _CHECK_MESSAGES_SCRIPT.replace("{last_rowid}", str(self._last_rowid))
                 result = await asyncio.to_thread(
                     subprocess.run,
                     ["osascript", "-e", script],
@@ -140,9 +136,7 @@ class IMessageAdapter:
                             continue
 
                         try:
-                            timestamp = datetime.fromtimestamp(
-                                float(timestamp_unix), tz=UTC
-                            )
+                            timestamp = datetime.fromtimestamp(float(timestamp_unix), tz=UTC)
                         except (ValueError, OSError):
                             timestamp = datetime.now(UTC)
 

@@ -19,6 +19,7 @@ logger = get_logger(__name__)
 @dataclass
 class Span:
     """A trace span representing a unit of work."""
+
     name: str
     trace_id: str
     span_id: str
@@ -61,7 +62,9 @@ class MetricsExporter:
         key = self._make_key(name, labels)
         self._histograms[key].append(value)
 
-    def start_span(self, name: str, trace_id: str = "", parent_span_id: str = "", **attrs: Any) -> Span:
+    def start_span(
+        self, name: str, trace_id: str = "", parent_span_id: str = "", **attrs: Any
+    ) -> Span:
         self._span_counter += 1
         span = Span(
             name=name,
@@ -87,12 +90,21 @@ class MetricsExporter:
         return {
             "counters": dict(self._counters),
             "gauges": dict(self._gauges),
-            "histograms": {k: {"count": len(v), "avg": sum(v) / len(v) if v else 0} for k, v in self._histograms.items()},
+            "histograms": {
+                k: {"count": len(v), "avg": sum(v) / len(v) if v else 0}
+                for k, v in self._histograms.items()
+            },
         }
 
     def export_spans(self, limit: int = 100) -> list[dict[str, Any]]:
         return [
-            {"name": s.name, "trace_id": s.trace_id, "span_id": s.span_id, "duration_ms": s.duration_ms, "status": s.status}
+            {
+                "name": s.name,
+                "trace_id": s.trace_id,
+                "span_id": s.span_id,
+                "duration_ms": s.duration_ms,
+                "status": s.status,
+            }
             for s in self._spans[-limit:]
         ]
 

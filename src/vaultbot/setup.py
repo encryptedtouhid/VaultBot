@@ -9,7 +9,6 @@ from __future__ import annotations
 import sys
 from dataclasses import dataclass, field
 from enum import Enum
-from pathlib import Path
 
 from vaultbot.config import CONFIG_DIR, CONFIG_FILE
 from vaultbot.utils.logging import get_logger
@@ -19,6 +18,7 @@ logger = get_logger(__name__)
 
 class CheckStatus(str, Enum):
     """Status of a diagnostic check."""
+
     PASS = "pass"
     WARN = "warn"
     FAIL = "fail"
@@ -28,6 +28,7 @@ class CheckStatus(str, Enum):
 @dataclass(frozen=True, slots=True)
 class DiagnosticCheck:
     """Result of a single diagnostic check."""
+
     name: str
     status: CheckStatus
     message: str
@@ -37,6 +38,7 @@ class DiagnosticCheck:
 @dataclass
 class DiagnosticReport:
     """Complete diagnostic report."""
+
     checks: list[DiagnosticCheck] = field(default_factory=list)
 
     @property
@@ -112,6 +114,7 @@ class Doctor:
 
         try:
             import yaml
+
             with open(CONFIG_FILE) as f:
                 yaml.safe_load(f)
             return DiagnosticCheck(
@@ -196,6 +199,7 @@ class SetupWizard:
         """Create a default config file."""
         try:
             from vaultbot.config import VaultBotConfig
+
             config = VaultBotConfig()
             config.save()
             self._steps_completed.append("config_file")

@@ -8,7 +8,6 @@ TUI library required — works with any terminal.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, datetime
 from enum import Enum
 
 from vaultbot.utils.logging import get_logger
@@ -18,6 +17,7 @@ logger = get_logger(__name__)
 
 class Color(str, Enum):
     """ANSI color codes."""
+
     RESET = "\033[0m"
     BOLD = "\033[1m"
     DIM = "\033[2m"
@@ -34,6 +34,7 @@ class Color(str, Enum):
 @dataclass
 class PlatformStatus:
     """Status of a connected platform."""
+
     name: str
     connected: bool
     sessions: int = 0
@@ -56,8 +57,12 @@ class TerminalUI:
         """Return the VaultBot startup banner."""
         lines = [
             self._c(Color.CYAN, "╔══════════════════════════════════╗"),
-            self._c(Color.CYAN, "║") + self._c(Color.BOLD, "  V.A.U.L.T. BOT  ") + self._c(Color.CYAN, "              ║"),
-            self._c(Color.CYAN, "║") + self._c(Color.DIM, "  Security-first AI agent") + self._c(Color.CYAN, "        ║"),
+            self._c(Color.CYAN, "║")
+            + self._c(Color.BOLD, "  V.A.U.L.T. BOT  ")
+            + self._c(Color.CYAN, "              ║"),
+            self._c(Color.CYAN, "║")
+            + self._c(Color.DIM, "  Security-first AI agent")
+            + self._c(Color.CYAN, "        ║"),
             self._c(Color.CYAN, "╚══════════════════════════════════╝"),
         ]
         return "\n".join(lines)

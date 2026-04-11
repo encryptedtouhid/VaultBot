@@ -94,9 +94,7 @@ class PluginSigner:
     @property
     def private_key_pem(self) -> bytes:
         """Get the private key in PEM format for storage."""
-        return self._private_key.private_bytes(
-            Encoding.PEM, PrivateFormat.PKCS8, NoEncryption()
-        )
+        return self._private_key.private_bytes(Encoding.PEM, PrivateFormat.PKCS8, NoEncryption())
 
     def sign_plugin(
         self,
@@ -209,9 +207,7 @@ class PluginVerifier:
         # Verify the cryptographic signature
         try:
             public_key = Ed25519PublicKey.from_public_bytes(sig.signer_public_key)
-            sign_data = _build_sign_data(
-                sig.plugin_name, sig.plugin_version, sig.content_hash
-            )
+            sign_data = _build_sign_data(sig.plugin_name, sig.plugin_version, sig.content_hash)
             public_key.verify(sig.signature, sign_data)
         except InvalidSignature:
             logger.warning("invalid_signature", plugin=sig.plugin_name)

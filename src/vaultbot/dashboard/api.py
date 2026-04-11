@@ -11,7 +11,7 @@ from typing import Any
 
 from vaultbot.config import AllowlistEntry, VaultBotConfig
 from vaultbot.core.healthcheck import HealthStatus
-from vaultbot.security.audit import AuditLogger, EventType, AuditEvent
+from vaultbot.security.audit import AuditEvent, AuditLogger, EventType
 from vaultbot.security.auth import AuthManager, Role
 from vaultbot.security.credentials import CredentialStore
 from vaultbot.security.rate_limiter import RateLimiter
@@ -97,10 +97,12 @@ class DashboardAPI:
 
         if changes:
             config.save()
-            self._ctx.audit.log(AuditEvent(
-                event_type=EventType.CONFIG_CHANGED,
-                details={"fields": changes, "source": "dashboard"},
-            ))
+            self._ctx.audit.log(
+                AuditEvent(
+                    event_type=EventType.CONFIG_CHANGED,
+                    details={"fields": changes, "source": "dashboard"},
+                )
+            )
 
         return 200, {"ok": True, "changes": changes, "requires_restart": requires_restart}
 
@@ -128,10 +130,16 @@ class DashboardAPI:
         if "enabled" in body:
             pc.enabled = bool(body["enabled"])
             config.save()
-            self._ctx.audit.log(AuditEvent(
-                event_type=EventType.CONFIG_CHANGED,
-                details={"field": f"{name}.enabled", "value": pc.enabled, "source": "dashboard"},
-            ))
+            self._ctx.audit.log(
+                AuditEvent(
+                    event_type=EventType.CONFIG_CHANGED,
+                    details={
+                        "field": f"{name}.enabled",
+                        "value": pc.enabled,
+                        "source": "dashboard",
+                    },
+                )
+            )
 
         return 200, {"ok": True, "requires_restart": True}
 
@@ -173,10 +181,12 @@ class DashboardAPI:
 
         if changes:
             self._ctx.config.save()
-            self._ctx.audit.log(AuditEvent(
-                event_type=EventType.CONFIG_CHANGED,
-                details={"fields": changes, "source": "dashboard"},
-            ))
+            self._ctx.audit.log(
+                AuditEvent(
+                    event_type=EventType.CONFIG_CHANGED,
+                    details={"fields": changes, "source": "dashboard"},
+                )
+            )
 
         return 200, {"ok": True, "changes": changes, "requires_restart": requires_restart}
 
@@ -209,10 +219,16 @@ class DashboardAPI:
         )
         self._ctx.config.save()
 
-        self._ctx.audit.log(AuditEvent(
-            event_type=EventType.CONFIG_CHANGED,
-            details={"action": "allowlist_add", "user": f"{platform}:{user_id}", "source": "dashboard"},
-        ))
+        self._ctx.audit.log(
+            AuditEvent(
+                event_type=EventType.CONFIG_CHANGED,
+                details={
+                    "action": "allowlist_add",
+                    "user": f"{platform}:{user_id}",
+                    "source": "dashboard",
+                },
+            )
+        )
         return 200, {"ok": True}
 
     async def remove_allowlist_entry(self, body: dict[str, Any]) -> tuple[int, dict[str, Any]]:
@@ -227,15 +243,22 @@ class DashboardAPI:
 
         # Sync to config
         self._ctx.config.allowlist = [
-            e for e in self._ctx.config.allowlist
+            e
+            for e in self._ctx.config.allowlist
             if not (e.platform == platform and e.user_id == user_id)
         ]
         self._ctx.config.save()
 
-        self._ctx.audit.log(AuditEvent(
-            event_type=EventType.CONFIG_CHANGED,
-            details={"action": "allowlist_remove", "user": f"{platform}:{user_id}", "source": "dashboard"},
-        ))
+        self._ctx.audit.log(
+            AuditEvent(
+                event_type=EventType.CONFIG_CHANGED,
+                details={
+                    "action": "allowlist_remove",
+                    "user": f"{platform}:{user_id}",
+                    "source": "dashboard",
+                },
+            )
+        )
         return 200, {"ok": True}
 
     # --- Plugins ---
@@ -310,7 +333,9 @@ class DashboardAPI:
             return 200, {"ok": True}
         return 404, {"error": f"Team '{name}' not found"}
 
-    async def add_team_member(self, team_name: str, body: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+    async def add_team_member(
+        self, team_name: str, body: dict[str, Any]
+    ) -> tuple[int, dict[str, Any]]:
         """Add a member to a team."""
         team = self._ctx.teams.get_team(team_name)
         if not team:
@@ -325,7 +350,9 @@ class DashboardAPI:
         team.add_member(platform, user_id, Role(role_str))
         return 200, {"ok": True}
 
-    async def remove_team_member(self, team_name: str, body: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+    async def remove_team_member(
+        self, team_name: str, body: dict[str, Any]
+    ) -> tuple[int, dict[str, Any]]:
         """Remove a member from a team."""
         team = self._ctx.teams.get_team(team_name)
         if not team:
@@ -356,24 +383,30 @@ class DashboardAPI:
             return 400, {"error": "value is required"}
 
         self._ctx.credentials.set(key, value)
-        self._ctx.audit.log(AuditEvent(
-            event_type=EventType.CREDENTIAL_ACCESSED,
-            details={"action": "set", "key": key, "source": "dashboard"},
-        ))
+        self._ctx.audit.log(
+            AuditEvent(
+                event_type=EventType.CREDENTIAL_ACCESSED,
+                details={"action": "set", "key": key, "source": "dashboard"},
+            )
+        )
         return 200, {"ok": True}
 
     async def delete_credential(self, key: str) -> tuple[int, dict[str, Any]]:
         """Delete a credential."""
         self._ctx.credentials.delete(key)
-        self._ctx.audit.log(AuditEvent(
-            event_type=EventType.CREDENTIAL_ACCESSED,
-            details={"action": "delete", "key": key, "source": "dashboard"},
-        ))
+        self._ctx.audit.log(
+            AuditEvent(
+                event_type=EventType.CREDENTIAL_ACCESSED,
+                details={"action": "delete", "key": key, "source": "dashboard"},
+            )
+        )
         return 200, {"ok": True}
 
     # --- Audit ---
 
-    async def get_audit(self, limit: int = 50, event_type: str | None = None) -> tuple[int, dict[str, Any]]:
+    async def get_audit(
+        self, limit: int = 50, event_type: str | None = None
+    ) -> tuple[int, dict[str, Any]]:
         """Return recent audit events from the in-memory buffer."""
         events = self._ctx.audit.recent(limit=limit, event_type=event_type)
         return 200, {"events": events}
@@ -422,9 +455,11 @@ class DashboardAPI:
 
         if changes:
             self._ctx.config.save()
-            self._ctx.audit.log(AuditEvent(
-                event_type=EventType.CONFIG_CHANGED,
-                details={"fields": changes, "source": "dashboard"},
-            ))
+            self._ctx.audit.log(
+                AuditEvent(
+                    event_type=EventType.CONFIG_CHANGED,
+                    details={"fields": changes, "source": "dashboard"},
+                )
+            )
 
         return 200, {"ok": True, "changes": changes}

@@ -9,10 +9,11 @@ from __future__ import annotations
 
 import asyncio
 import time
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
-from typing import Any, Callable, Coroutine
+from typing import Any
 
 from vaultbot.utils.logging import get_logger
 
@@ -25,6 +26,7 @@ _DEFAULT_TIMEOUT = 300.0  # 5 minutes
 
 class AgentStatus(str, Enum):
     """Status of a sub-agent."""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -36,6 +38,7 @@ class AgentStatus(str, Enum):
 @dataclass
 class AgentResult:
     """Result from a sub-agent execution."""
+
     agent_id: str
     status: AgentStatus
     result: str = ""
@@ -47,6 +50,7 @@ class AgentResult:
 @dataclass
 class SubAgent:
     """A spawned sub-agent with its own context."""
+
     id: str
     name: str
     task: str
@@ -85,9 +89,7 @@ class SubAgentRegistry:
         self._executor: Callable[..., Coroutine[Any, Any, str]] | None = None
         self._tasks: dict[str, asyncio.Task[AgentResult]] = {}
 
-    def set_executor(
-        self, executor: Callable[..., Coroutine[Any, Any, str]]
-    ) -> None:
+    def set_executor(self, executor: Callable[..., Coroutine[Any, Any, str]]) -> None:
         """Set the async function that executes agent tasks."""
         self._executor = executor
 
@@ -127,8 +129,7 @@ class SubAgentRegistry:
 
         if depth >= self._max_depth:
             raise ValueError(
-                f"Max agent depth ({self._max_depth}) exceeded. "
-                f"Cannot spawn at depth {depth}."
+                f"Max agent depth ({self._max_depth}) exceeded. Cannot spawn at depth {depth}."
             )
 
         self._agent_counter += 1
@@ -185,7 +186,7 @@ class SubAgentRegistry:
                 duration_ms=elapsed,
             )
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             elapsed = int((time.monotonic() - start_mono) * 1000)
             agent.status = AgentStatus.TIMED_OUT
             agent.error = f"Timed out after {agent.timeout}s"
@@ -241,7 +242,12 @@ class SubAgentRegistry:
 
     def cleanup_completed(self) -> int:
         """Remove completed/failed/cancelled agents. Returns count removed."""
-        terminal = {AgentStatus.COMPLETED, AgentStatus.FAILED, AgentStatus.CANCELLED, AgentStatus.TIMED_OUT}
+        terminal = {
+            AgentStatus.COMPLETED,
+            AgentStatus.FAILED,
+            AgentStatus.CANCELLED,
+            AgentStatus.TIMED_OUT,
+        }
         to_remove = [aid for aid, a in self._agents.items() if a.status in terminal]
         for aid in to_remove:
             del self._agents[aid]
@@ -249,7 +255,11 @@ class SubAgentRegistry:
 
     @property
     def active_count(self) -> int:
-        return sum(1 for a in self._agents.values() if a.status in (AgentStatus.PENDING, AgentStatus.RUNNING))
+        return sum(
+            1
+            for a in self._agents.values()
+            if a.status in (AgentStatus.PENDING, AgentStatus.RUNNING)
+        )
 
     @property
     def total_count(self) -> int:

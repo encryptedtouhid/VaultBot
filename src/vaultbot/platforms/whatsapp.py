@@ -87,9 +87,7 @@ class WhatsAppAdapter:
                     if msg.get("type") != "text":
                         continue
 
-                    timestamp = datetime.fromtimestamp(
-                        int(msg.get("timestamp", 0)), tz=UTC
-                    )
+                    timestamp = datetime.fromtimestamp(int(msg.get("timestamp", 0)), tz=UTC)
 
                     inbound = InboundMessage(
                         id=msg["id"],

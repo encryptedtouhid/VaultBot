@@ -7,7 +7,7 @@ from collections.abc import AsyncIterator
 import pytest
 
 from vaultbot.core.message import ChatMessage
-from vaultbot.llm.base import LLMChunk, LLMResponse, ToolDefinition
+from vaultbot.llm.base import LLMChunk, LLMResponse
 from vaultbot.llm.fallback import FallbackProvider
 
 
@@ -48,17 +48,19 @@ class BackupProvider:
 
 
 class TestE2EFallbackScenarios:
-
     @pytest.mark.asyncio
     async def test_graceful_degradation_and_recovery(self) -> None:
         """Primary fails, backup handles it, primary recovers later."""
         primary = PrimaryProvider(fail_count=1)
         backup = BackupProvider()
 
-        fb = FallbackProvider([
-            (primary, None),
-            (backup, None),
-        ], cooldown_seconds=0.01)  # Very short cooldown for test
+        fb = FallbackProvider(
+            [
+                (primary, None),
+                (backup, None),
+            ],
+            cooldown_seconds=0.01,
+        )  # Very short cooldown for test
 
         # First call: primary fails, backup responds
         result = await fb.complete([ChatMessage(role="user", content="hi")])
@@ -66,6 +68,7 @@ class TestE2EFallbackScenarios:
 
         # Wait for cooldown
         import time
+
         time.sleep(0.02)
 
         # Second call: primary should recover
@@ -89,11 +92,13 @@ class TestE2EFallbackScenarios:
     @pytest.mark.asyncio
     async def test_three_provider_chain(self) -> None:
         """Three providers: first two fail, third succeeds."""
-        fb = FallbackProvider([
-            (PrimaryProvider(fail_count=99), None),
-            (PrimaryProvider(fail_count=99), None),
-            (BackupProvider(), None),
-        ])
+        fb = FallbackProvider(
+            [
+                (PrimaryProvider(fail_count=99), None),
+                (PrimaryProvider(fail_count=99), None),
+                (BackupProvider(), None),
+            ]
+        )
 
         result = await fb.complete([ChatMessage(role="user", content="hi")])
         assert result.content == "backup response"
@@ -106,10 +111,12 @@ class TestE2EFallbackScenarios:
     @pytest.mark.asyncio
     async def test_stream_fallback_e2e(self) -> None:
         """Stream: primary fails, backup streams."""
-        fb = FallbackProvider([
-            (PrimaryProvider(fail_count=99), None),
-            (BackupProvider(), None),
-        ])
+        fb = FallbackProvider(
+            [
+                (PrimaryProvider(fail_count=99), None),
+                (BackupProvider(), None),
+            ]
+        )
 
         chunks = []
         async for chunk in fb.stream([ChatMessage(role="user", content="hi")]):

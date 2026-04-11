@@ -15,7 +15,6 @@ from vaultbot.media.tts import (
     TTSVoice,
 )
 
-
 # ---------------------------------------------------------------------------
 # Mock provider
 # ---------------------------------------------------------------------------
@@ -63,7 +62,9 @@ class TestTTSBaseTypes:
         assert req.speed == 1.0
 
     def test_result_dataclass(self) -> None:
-        result = TTSResult(audio_data=b"data", format=AudioFormat.MP3, provider="test", voice="alloy")
+        result = TTSResult(
+            audio_data=b"data", format=AudioFormat.MP3, provider="test", voice="alloy"
+        )
         assert result.audio_data == b"data"
         assert result.duration_seconds == 0.0
 
@@ -128,7 +129,7 @@ class TestTTSEngine:
     @pytest.mark.asyncio
     async def test_synthesize_no_providers_raises(self) -> None:
         engine = TTSEngine()
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Unknown TTS provider"):
             await engine.synthesize("test")
 
     @pytest.mark.asyncio
@@ -137,7 +138,7 @@ class TestTTSEngine:
         engine.register_provider(MockTTSProvider("test"))
 
         result = await engine.synthesize(
-            "hello", voice="nova", format=AudioFormat.OPUS, speed=1.5
+            "hello", voice="nova", audio_format=AudioFormat.OPUS, speed=1.5
         )
         assert result.voice == "nova"
         assert result.format == AudioFormat.OPUS
@@ -159,11 +160,13 @@ class TestTTSEngine:
 class TestOpenAITTSProvider:
     def test_provider_name(self) -> None:
         from vaultbot.media.providers.openai_tts import OpenAITTSProvider
+
         provider = OpenAITTSProvider(api_key="test")
         assert provider.provider_name == "openai_tts"
 
     def test_list_voices(self) -> None:
         from vaultbot.media.providers.openai_tts import OpenAITTSProvider
+
         provider = OpenAITTSProvider(api_key="test")
         voices = provider.list_voices()
         assert "alloy" in voices
@@ -172,6 +175,7 @@ class TestOpenAITTSProvider:
     @pytest.mark.asyncio
     async def test_synthesize_calls_api(self) -> None:
         from vaultbot.media.providers.openai_tts import OpenAITTSProvider
+
         provider = OpenAITTSProvider(api_key="test")
 
         mock_resp = MagicMock()
@@ -196,11 +200,13 @@ class TestOpenAITTSProvider:
 class TestElevenLabsProvider:
     def test_provider_name(self) -> None:
         from vaultbot.media.providers.elevenlabs import ElevenLabsProvider
+
         provider = ElevenLabsProvider(api_key="test")
         assert provider.provider_name == "elevenlabs"
 
     def test_list_voices(self) -> None:
         from vaultbot.media.providers.elevenlabs import ElevenLabsProvider
+
         provider = ElevenLabsProvider(api_key="test")
         voices = provider.list_voices()
         assert "rachel" in voices
@@ -209,6 +215,7 @@ class TestElevenLabsProvider:
     @pytest.mark.asyncio
     async def test_synthesize_calls_api(self) -> None:
         from vaultbot.media.providers.elevenlabs import ElevenLabsProvider
+
         provider = ElevenLabsProvider(api_key="test")
 
         mock_resp = MagicMock()

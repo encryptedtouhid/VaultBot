@@ -16,7 +16,6 @@ from vaultbot.media.base import (
 )
 from vaultbot.media.image_generation import ImageGenerationEngine
 
-
 # ---------------------------------------------------------------------------
 # Mock provider
 # ---------------------------------------------------------------------------
@@ -168,26 +167,31 @@ class TestImageGenerationEngine:
 class TestDalleProvider:
     def test_provider_name(self) -> None:
         from vaultbot.media.providers.dalle import DalleProvider
+
         provider = DalleProvider(api_key="test")
         assert provider.provider_name == "dalle"
 
     def test_default_model(self) -> None:
         from vaultbot.media.providers.dalle import DalleProvider
+
         provider = DalleProvider(api_key="test")
         assert provider._model == "dall-e-3"
 
     @pytest.mark.asyncio
     async def test_generate_calls_api(self) -> None:
         from vaultbot.media.providers.dalle import DalleProvider
+
         provider = DalleProvider(api_key="test")
 
         mock_resp = MagicMock()
         mock_resp.raise_for_status = MagicMock()
         mock_resp.json.return_value = {
-            "data": [{
-                "url": "https://oai.example.com/img.png",
-                "revised_prompt": "a beautiful sunset",
-            }]
+            "data": [
+                {
+                    "url": "https://oai.example.com/img.png",
+                    "revised_prompt": "a beautiful sunset",
+                }
+            ]
         }
         provider._client = AsyncMock()
         provider._client.post = AsyncMock(return_value=mock_resp)
@@ -203,6 +207,7 @@ class TestDalleProvider:
     @pytest.mark.asyncio
     async def test_close(self) -> None:
         from vaultbot.media.providers.dalle import DalleProvider
+
         provider = DalleProvider(api_key="test")
         provider._client = AsyncMock()
         await provider.close()
@@ -217,12 +222,14 @@ class TestDalleProvider:
 class TestStabilityProvider:
     def test_provider_name(self) -> None:
         from vaultbot.media.providers.stability import StabilityProvider
+
         provider = StabilityProvider(api_key="test")
         assert provider.provider_name == "stability"
 
     @pytest.mark.asyncio
     async def test_generate_calls_api(self) -> None:
         from vaultbot.media.providers.stability import StabilityProvider
+
         provider = StabilityProvider(api_key="test")
 
         mock_resp = MagicMock()

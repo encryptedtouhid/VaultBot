@@ -9,7 +9,6 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import Any
 
 from vaultbot.utils.logging import get_logger
 
@@ -19,6 +18,7 @@ logger = get_logger(__name__)
 @dataclass
 class InstalledPlugin:
     """Tracks an installed plugin and its version."""
+
     name: str
     version: str
     installed_at: datetime = field(default_factory=lambda: datetime.now(UTC))
@@ -30,6 +30,7 @@ class InstalledPlugin:
 @dataclass(frozen=True, slots=True)
 class UpdateInfo:
     """Information about an available update."""
+
     name: str
     current_version: str
     latest_version: str
@@ -104,9 +105,7 @@ class PluginVersionManager:
             return True
         return False
 
-    def check_updates(
-        self, available_versions: dict[str, str]
-    ) -> list[UpdateInfo]:
+    def check_updates(self, available_versions: dict[str, str]) -> list[UpdateInfo]:
         """Check which installed plugins have available updates.
 
         Parameters
@@ -122,19 +121,18 @@ class PluginVersionManager:
                 continue
             latest = available_versions.get(name)
             if latest and is_newer(plugin.version, latest):
-                updates.append(UpdateInfo(
-                    name=name,
-                    current_version=plugin.version,
-                    latest_version=latest,
-                ))
+                updates.append(
+                    UpdateInfo(
+                        name=name,
+                        current_version=plugin.version,
+                        latest_version=latest,
+                    )
+                )
         return updates
 
     def get_auto_update_plugins(self) -> list[InstalledPlugin]:
         """Get plugins with auto-update enabled (and not pinned)."""
-        return [
-            p for p in self._installed.values()
-            if p.auto_update and not p.pinned
-        ]
+        return [p for p in self._installed.values() if p.auto_update and not p.pinned]
 
     @property
     def count(self) -> int:

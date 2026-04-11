@@ -44,9 +44,7 @@ class Team:
     max_messages_per_day: int = 1000
     daily_message_count: int = 0
 
-    def add_member(
-        self, platform: str, user_id: str, role: Role = Role.USER
-    ) -> None:
+    def add_member(self, platform: str, user_id: str, role: Role = Role.USER) -> None:
         """Add a member to the team."""
         # Check for duplicates
         qualified = f"{platform}:{user_id}"
@@ -166,10 +164,7 @@ class TeamManager:
 
     def get_user_teams(self, platform: str, user_id: str) -> list[Team]:
         """Get all teams a user belongs to."""
-        return [
-            team for team in self._teams.values()
-            if team.is_member(platform, user_id)
-        ]
+        return [team for team in self._teams.values() if team.is_member(platform, user_id)]
 
     def is_team_member(self, team_name: str, platform: str, user_id: str) -> bool:
         """Check if a user is a member of a specific team."""
