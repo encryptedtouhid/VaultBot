@@ -91,7 +91,7 @@ class VaultBot:
 
         self._running = True
         logger.info(
-            "zenbot_starting",
+            "vaultbot_starting",
             platforms=list(self._platforms.keys()),
             llm=self._llm.provider_name,
         )
@@ -125,14 +125,14 @@ class VaultBot:
         try:
             await asyncio.gather(*tasks)
         except asyncio.CancelledError:
-            logger.info("zenbot_shutting_down")
+            logger.info("vaultbot_shutting_down")
 
     async def stop(self) -> None:
         """Gracefully stop the bot."""
         if not self._running:
             return
         self._running = False
-        logger.info("zenbot_stopping")
+        logger.info("vaultbot_stopping")
 
         for adapter in self._platforms.values():
             try:
