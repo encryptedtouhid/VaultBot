@@ -33,128 +33,190 @@ logger = get_logger(__name__)
 
 
 @app.command()
-def init() -> None:
-    """Initialize VaultBot with a guided setup wizard."""
+def init(
+    # Platform flags — pass token directly, no prompts
+    telegram: str = typer.Option("", help="Telegram bot token"),
+    discord: str = typer.Option("", help="Discord bot token"),
+    whatsapp: str = typer.Option("", help="WhatsApp access token"),
+    whatsapp_phone_id: str = typer.Option("", help="WhatsApp phone number ID"),
+    signal: str = typer.Option("", help="Signal phone number"),
+    slack: str = typer.Option("", help="Slack bot token (xoxb-...)"),
+    slack_app: str = typer.Option("", help="Slack app token (xapp-...)"),
+    teams_id: str = typer.Option("", help="Teams App ID"),
+    teams_password: str = typer.Option("", help="Teams App Password"),
+    imessage: bool = typer.Option(False, help="Enable iMessage (macOS only)"),
+    # LLM flags
+    llm: str = typer.Option("", help="LLM provider (claude, openai, openrouter, groq, etc.)"),
+    llm_key: str = typer.Option("", help="LLM API key"),
+    llm_model: str = typer.Option("", help="Model name override"),
+    # Admin flag
+    admin: str = typer.Option("", help="Admin user as platform:user_id (e.g., discord:123456)"),
+    # Control flags
+    force: bool = typer.Option(False, "--force", "-f", help="Overwrite existing config"),
+    auto: bool = typer.Option(False, "--auto", help="Auto-detect from env vars, skip prompts"),
+) -> None:
+    """Initialize VaultBot. Pass flags for zero-interaction setup.
+
+    Examples:
+      vaultbot init --discord TOKEN --llm openrouter --llm-key KEY --admin discord:123
+      vaultbot init --auto                     (reads from VAULTBOT_* env vars)
+      vaultbot init                            (interactive wizard)
+    """
+    import os
+    import sys
+
     setup_logging(enable_file_logging=False)
     style.banner()
 
-    style.section("🔒", "Security Check")
-
-    # Check for plaintext credential leaks
     store = CredentialStore()
+
+    # Security check
     leaks = store.check_for_plaintext_leaks()
     if leaks:
         style.warning("Found plaintext credential files:")
         for path in leaks:
             style.hint(path)
-        style.info(
-            "These should be removed. VaultBot never stores credentials in plain text."
-        )
     else:
         style.success("No plaintext credential files found.")
 
-    # Create default config
-    if CONFIG_FILE.exists():
-        overwrite = typer.confirm(
-            typer.style(
-                "  Config already exists. Overwrite?",
-                fg=typer.colors.YELLOW,
-            ),
-            default=False,
-        )
-        if not overwrite:
-            style.info("Keeping existing config.")
-            return
+    # Check existing config
+    if CONFIG_FILE.exists() and not force:
+        if auto or _has_any_flag(telegram, discord, whatsapp, slack, llm, admin):
+            pass  # flags override silently
+        else:
+            overwrite = typer.confirm(
+                typer.style("  Config exists. Overwrite?", fg=typer.colors.YELLOW),
+                default=False,
+            )
+            if not overwrite:
+                style.info("Keeping existing config.")
+                return
 
     config = VaultBotConfig()
 
-    # Platform setup
+    # --- Auto mode: read everything from env vars ---
+    if auto:
+        style.section("⚡", "Auto-detecting from environment")
+        _auto_setup_platform(config, store, "telegram", "VAULTBOT_TELEGRAM_BOT_TOKEN")
+        _auto_setup_platform(config, store, "discord", "VAULTBOT_DISCORD_BOT_TOKEN")
+        _auto_setup_platform(config, store, "slack", "VAULTBOT_SLACK_BOT_TOKEN")
+
+        env_llm = os.environ.get("VAULTBOT_LLM__PROVIDER", "")
+        env_key = os.environ.get("VAULTBOT_LLM_API_KEY", "")
+        if env_llm:
+            config.llm.provider = env_llm
+            if env_key:
+                store.set("llm_api_key", env_key)
+            style.success(f"LLM: {env_llm}")
+
+        env_admin = os.environ.get("VAULTBOT_ADMIN", "")
+        if env_admin:
+            _add_admin(config, env_admin)
+
+        config.save()
+        style.section("🎉", "Setup Complete")
+        style.success(f"Config saved to {CONFIG_FILE}")
+        style.command_hint("vaultbot run")
+        return
+
+    # --- Flag mode: configure from CLI flags ---
+    has_flags = _has_any_flag(telegram, discord, whatsapp, slack, llm, admin)
+
+    if has_flags:
+        style.section("⚡", "Configuring from flags")
+
+        # Platforms
+        if telegram:
+            config.telegram.enabled = True
+            store.set("telegram_bot_token", telegram)
+            style.success("Telegram configured.")
+
+        if discord:
+            config.discord.enabled = True
+            store.set("discord_bot_token", discord)
+            style.success("Discord configured.")
+
+        if whatsapp:
+            config.whatsapp.enabled = True
+            store.set("whatsapp_access_token", whatsapp)
+            if whatsapp_phone_id:
+                store.set("whatsapp_phone_number_id", whatsapp_phone_id)
+            style.success("WhatsApp configured.")
+
+        if signal:
+            config.signal.enabled = True
+            store.set("signal_account", signal)
+            style.success("Signal configured.")
+
+        if slack:
+            config.slack.enabled = True
+            store.set("slack_bot_token", slack)
+            if slack_app:
+                store.set("slack_app_token", slack_app)
+            style.success("Slack configured.")
+
+        if teams_id:
+            config.teams.enabled = True
+            store.set("teams_app_id", teams_id)
+            if teams_password:
+                store.set("teams_app_password", teams_password)
+            style.success("Teams configured.")
+
+        if imessage:
+            if sys.platform == "darwin":
+                config.imessage.enabled = True
+                style.success("iMessage enabled.")
+            else:
+                style.warning("iMessage is macOS only. Skipping.")
+
+        # LLM
+        if llm:
+            config.llm.provider = llm
+            if llm_key:
+                store.set("llm_api_key", llm_key)
+            if llm_model:
+                config.llm.model = llm_model
+            style.success(f"LLM: {llm}")
+        elif not config.telegram.enabled and not config.discord.enabled:
+            # No platform set via flags, need at least LLM
+            pass
+
+        # Admin
+        if admin:
+            _add_admin(config, admin)
+
+        config.save()
+        style.section("🎉", "Setup Complete")
+        style.success(f"Config saved to {CONFIG_FILE}")
+        style.command_hint("vaultbot run")
+        return
+
+    # --- Interactive mode (fallback) ---
     style.section("📱", "Platform Setup")
-    if typer.confirm("  Enable Telegram?", default=True):
-        config.telegram.enabled = True
-        token = typer.prompt(
-            typer.style("  Telegram bot token", fg=typer.colors.CYAN),
-            hide_input=True,
-        )
-        store.set("telegram_bot_token", token)
-        style.success("Telegram token stored securely.")
+    style.hint("Press Enter to skip any platform you don't need.")
 
-    if typer.confirm("  Enable Discord?", default=False):
-        config.discord.enabled = True
-        token = typer.prompt(
-            typer.style("  Discord bot token", fg=typer.colors.CYAN),
-            hide_input=True,
-        )
-        store.set("discord_bot_token", token)
-        style.success("Discord token stored securely.")
+    _interactive_platform(config, store, "Telegram", "telegram", "telegram_bot_token")
+    _interactive_platform(config, store, "Discord", "discord", "discord_bot_token")
+    _interactive_platform(config, store, "Slack", "slack", "slack_bot_token")
 
-    if typer.confirm("  Enable WhatsApp?", default=False):
-        config.whatsapp.enabled = True
-        token = typer.prompt(
-            typer.style("  WhatsApp access token", fg=typer.colors.CYAN),
-            hide_input=True,
-        )
-        store.set("whatsapp_access_token", token)
-        phone_id = typer.prompt(
-            typer.style("  WhatsApp phone number ID", fg=typer.colors.CYAN),
-        )
-        store.set("whatsapp_phone_number_id", phone_id)
-        style.success("WhatsApp credentials stored securely.")
-
-    if typer.confirm("  Enable Signal?", default=False):
-        config.signal.enabled = True
-        account = typer.prompt(
-            typer.style(
-                "  Signal account phone number (e.g., +1234567890)",
-                fg=typer.colors.CYAN,
-            ),
-        )
-        store.set("signal_account", account)
-        style.success("Signal account stored securely.")
-
-    if typer.confirm("  Enable Slack?", default=False):
-        config.slack.enabled = True
-        token = typer.prompt(
-            typer.style("  Slack bot token (xoxb-...)", fg=typer.colors.CYAN),
-            hide_input=True,
-        )
-        store.set("slack_bot_token", token)
-        app_token = typer.prompt(
-            typer.style("  Slack app token (xapp-...)", fg=typer.colors.CYAN),
-            hide_input=True,
-        )
-        store.set("slack_app_token", app_token)
-        style.success("Slack tokens stored securely.")
-
-    if typer.confirm("  Enable Microsoft Teams?", default=False):
-        config.teams.enabled = True
-        app_id = typer.prompt(
-            typer.style("  Teams App ID", fg=typer.colors.CYAN),
-        )
-        store.set("teams_app_id", app_id)
-        app_password = typer.prompt(
-            typer.style("  Teams App Password", fg=typer.colors.CYAN),
-            hide_input=True,
-        )
-        store.set("teams_app_password", app_password)
-        style.success("Teams credentials stored securely.")
-
-    if typer.confirm("  Enable iMessage? (macOS only)", default=False):
-        import sys
-
-        if sys.platform != "darwin":
-            style.warning("iMessage is only available on macOS. Skipping.")
-        else:
+    if typer.confirm("  Enable more platforms? (WhatsApp/Signal/Teams/iMessage)", default=False):
+        _interactive_platform(config, store, "WhatsApp", "whatsapp", "whatsapp_access_token")
+        if config.whatsapp.enabled:
+            phone_id = typer.prompt(
+                typer.style("  WhatsApp phone number ID", fg=typer.colors.CYAN),
+            )
+            store.set("whatsapp_phone_number_id", phone_id)
+        _interactive_platform(config, store, "Signal", "signal", "signal_account", hide=False)
+        _interactive_platform(config, store, "Teams", "teams", "teams_app_id", hide=False)
+        if sys.platform == "darwin" and typer.confirm("  Enable iMessage?", default=False):
             config.imessage.enabled = True
-            style.success("iMessage enabled (uses local Messages.app).")
+            style.success("iMessage enabled.")
 
-    # LLM setup
+    # LLM
     style.section("🤖", "LLM Setup")
     all_providers = [
-        "claude", "openai",
-        "openrouter", "together", "groq", "mistral",
-        "perplexity", "deepseek", "fireworks",
-        "ollama", "vllm", "lmstudio", "custom",
+        "claude", "openai", "openrouter", "together", "groq", "mistral",
+        "perplexity", "deepseek", "fireworks", "ollama", "vllm", "lmstudio", "custom",
     ]
     provider = typer.prompt(
         typer.style("  LLM provider", fg=typer.colors.CYAN),
@@ -163,71 +225,98 @@ def init() -> None:
     )
     config.llm.provider = provider
 
-    # Providers that need an API key
     needs_key = {
         "claude", "openai", "openrouter", "together", "groq",
         "mistral", "perplexity", "deepseek", "fireworks",
     }
-    # Local providers (no key needed)
-    local_providers = {"ollama", "vllm", "lmstudio"}
-
     if provider in needs_key:
         api_key = typer.prompt(
             typer.style(f"  {provider} API key", fg=typer.colors.CYAN),
             hide_input=True,
         )
         store.set("llm_api_key", api_key)
-        style.success(f"{provider} API key stored securely.")
-
-    if provider in local_providers:
-        style.info(f"{provider} — no API key needed.")
-        style.hint("Make sure the local server is running.")
-
-    if provider == "custom":
+        style.success(f"{provider} API key stored.")
+    elif provider == "custom":
         base_url = typer.prompt(
-            typer.style(
-                "  Custom API base URL (e.g., https://my-server.com/v1)",
-                fg=typer.colors.CYAN,
-            ),
+            typer.style("  API base URL", fg=typer.colors.CYAN),
         )
         store.set("custom_llm_base_url", base_url)
-        model = typer.prompt(
-            typer.style("  Model name", fg=typer.colors.CYAN),
-            default="default",
-        )
-        config.llm.model = model
-        use_key = typer.confirm("  Does it require an API key?", default=False)
-        if use_key:
-            api_key = typer.prompt(
-                typer.style("  API key", fg=typer.colors.CYAN),
-                hide_input=True,
-            )
-            store.set("llm_api_key", api_key)
-        style.success("Custom LLM endpoint configured.")
+    else:
+        style.info(f"{provider} — no API key needed.")
 
-    # Allowlist setup
-    style.section("👤", "Allowlist Setup")
-    style.info("Add at least one admin user (you can add more later).")
-    platform = typer.prompt(
-        typer.style("  Your platform", fg=typer.colors.CYAN),
-        default="telegram",
-    )
+    # Admin
+    style.section("👤", "Admin Setup")
+    # Auto-detect platform from what was enabled
+    enabled_platforms = [
+        p for p in ["telegram", "discord", "slack", "whatsapp", "signal", "teams"]
+        if getattr(config, p).enabled
+    ]
+    default_platform = enabled_platforms[0] if enabled_platforms else "telegram"
+
     user_id = typer.prompt(
-        typer.style("  Your user ID on that platform", fg=typer.colors.CYAN),
+        typer.style(f"  Your {default_platform} user ID", fg=typer.colors.CYAN),
     )
-    from vaultbot.config import AllowlistEntry
+    _add_admin(config, f"{default_platform}:{user_id}")
 
-    config.allowlist.append(
-        AllowlistEntry(platform=platform, user_id=user_id, role="admin")
-    )
-    style.success(f"Added {platform}:{user_id} as admin.")
-
-    # Save config
     config.save()
-
     style.section("🎉", "Setup Complete")
     style.success(f"Config saved to {CONFIG_FILE}")
     style.command_hint("vaultbot run")
+
+
+def _has_any_flag(*args: str | bool) -> bool:
+    """Check if any CLI flag was provided."""
+    return any(bool(a) for a in args)
+
+
+def _auto_setup_platform(
+    config: VaultBotConfig, store: CredentialStore, name: str, env_var: str
+) -> None:
+    """Auto-configure a platform from an env var if set."""
+    import os
+
+    val = os.environ.get(env_var, "")
+    if val:
+        platform_config = getattr(config, name)
+        platform_config.enabled = True
+        store.set(platform_config.credential_key, val)
+        style.success(f"{name.capitalize()} auto-configured from {env_var}")
+
+
+def _interactive_platform(
+    config: VaultBotConfig,
+    store: CredentialStore,
+    display_name: str,
+    config_name: str,
+    credential_key: str,
+    hide: bool = True,
+) -> None:
+    """Prompt for a platform token. Empty input = skip."""
+    token = typer.prompt(
+        typer.style(f"  {display_name} token", fg=typer.colors.CYAN),
+        default="",
+        show_default=False,
+        hide_input=hide,
+    )
+    if token:
+        platform_config = getattr(config, config_name)
+        platform_config.enabled = True
+        store.set(credential_key, token)
+        style.success(f"{display_name} configured.")
+
+
+def _add_admin(config: VaultBotConfig, admin_str: str) -> None:
+    """Add an admin from 'platform:user_id' format."""
+    from vaultbot.config import AllowlistEntry
+
+    if ":" not in admin_str:
+        style.error(f"Invalid format '{admin_str}'. Use platform:user_id")
+        return
+    platform, user_id = admin_str.split(":", 1)
+    config.allowlist.append(
+        AllowlistEntry(platform=platform, user_id=user_id, role="admin")
+    )
+    style.success(f"Admin: {platform}:{user_id}")
 
 
 _config_option: Path | None = typer.Option(
@@ -262,6 +351,7 @@ def run(
     from vaultbot.core.bot import VaultBot
 
     bot = VaultBot(config)
+    registered_platforms: list[str] = []
 
     # Register enabled platforms
     if config.telegram.enabled:
@@ -273,7 +363,7 @@ def run(
         from vaultbot.platforms.telegram import TelegramAdapter
 
         bot.register_platform(TelegramAdapter(token))
-        style.success("Telegram adapter registered.")
+        registered_platforms.append("Telegram")
 
     if config.discord.enabled:
         token = store.get(config.discord.credential_key)
@@ -424,18 +514,28 @@ def run(
 
     # Wrap with prompt injection guard
     bot.set_llm(GuardedLLMProvider(llm_provider))
-    style.success(f"LLM provider '{config.llm.provider}' ready (with prompt guard).")
 
-    style.divider()
-    style.header("🚀 Starting V.A.U.L.T. BOT...")
-    style.divider()
+    # Show startup summary
+    style.startup_summary(
+        platforms=registered_platforms,
+        llm_provider=f"{config.llm.provider} (guarded)",
+        security=[
+            "Zero-trust auth (allowlist enforced)",
+            "Prompt injection guard (13 patterns)",
+            "Rate limiting (per-user + global)",
+            "Audit logging (append-only)",
+            "Encrypted credential storage",
+        ],
+    )
+
     try:
         asyncio.run(bot.start())
     except RuntimeError as e:
         style.error(str(e))
         raise typer.Exit(1) from e
     except KeyboardInterrupt:
-        style.info("Shutting down...")
+        typer.echo()
+        style.info("V.A.U.L.T. BOT stopped.")
 
 
 # --- Credentials commands ---

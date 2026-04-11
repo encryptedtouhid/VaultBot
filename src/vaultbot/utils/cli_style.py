@@ -105,3 +105,68 @@ def command_hint(cmd: str) -> None:
 def divider() -> None:
     """Thin divider line."""
     typer.echo(typer.style("  " + "─" * 40, fg=typer.colors.BRIGHT_BLACK))
+
+
+def box(lines: list[str], title: str = "", width: int = 50) -> None:
+    """Display content inside a styled box."""
+    top = f"  ╭{'─' * (width - 2)}╮"
+    bot = f"  ╰{'─' * (width - 2)}╯"
+
+    if title:
+        padded_title = f" {title} "
+        top = f"  ╭─{padded_title}{'─' * (width - len(padded_title) - 3)}╮"
+
+    typer.echo(typer.style(top, fg=typer.colors.BRIGHT_BLACK))
+    for line in lines:
+        padding = width - 4 - len(_strip_ansi(line))
+        if padding < 0:
+            padding = 0
+        typer.echo(
+            typer.style("  │ ", fg=typer.colors.BRIGHT_BLACK)
+            + line
+            + " " * padding
+            + typer.style(" │", fg=typer.colors.BRIGHT_BLACK)
+        )
+    typer.echo(typer.style(bot, fg=typer.colors.BRIGHT_BLACK))
+
+
+def status_line(label: str, value: str, ok: bool = True) -> str:
+    """Build a colored status line for use inside a box."""
+    icon = typer.style("●", fg=typer.colors.GREEN if ok else typer.colors.RED)
+    lbl = typer.style(f"{label}: ", fg=typer.colors.BRIGHT_BLACK)
+    val = typer.style(value, fg=typer.colors.WHITE, bold=True)
+    return f"{icon} {lbl}{val}"
+
+
+def startup_summary(
+    platforms: list[str],
+    llm_provider: str,
+    security: list[str],
+    version: str = "",
+) -> None:
+    """Display a clean startup summary panel."""
+    ver = version or _get_version()
+
+    banner()
+
+    lines = [
+        status_line("Version", f"v{ver}"),
+        status_line("Platforms", ", ".join(platforms) if platforms else "none", bool(platforms)),
+        status_line("LLM", llm_provider),
+        "",
+    ]
+    for sec in security:
+        lines.append(
+            typer.style("  ✓ ", fg=typer.colors.GREEN)
+            + typer.style(sec, fg=typer.colors.BRIGHT_BLACK)
+        )
+
+    box(lines, title="V.A.U.L.T. BOT", width=56)
+    typer.echo()
+
+
+def _strip_ansi(text: str) -> str:
+    """Remove ANSI escape codes for length calculation."""
+    import re
+
+    return re.sub(r"\x1b\[[0-9;]*m", "", text)
