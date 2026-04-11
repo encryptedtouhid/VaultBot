@@ -10,26 +10,38 @@
 </p>
 
 <p align="center">
-  <strong>Security-first, open-source AI agent bot for messaging platforms</strong>
+  <strong>Security-first, open-source autonomous AI agent</strong>
+  <br>
+  <em>7 platforms &bull; 3 LLM backends &bull; 10 security layers &bull; 235 tests</em>
 </p>
 
 <p align="center">
   <a href="#quick-start">Quick Start</a> &bull;
   <a href="#features">Features</a> &bull;
   <a href="#supported-platforms">Platforms</a> &bull;
-  <a href="#security">Security</a> &bull;
-  <a href="#docker">Docker</a> &bull;
+  <a href="#security-architecture">Security</a> &bull;
+  <a href="#docker-deployment">Docker</a> &bull;
   <a href="#plugin-development">Plugins</a> &bull;
-  <a href="#contributing">Contributing</a>
+  <a href="#cli-reference">CLI</a> &bull;
+  <a href="#testing">Testing</a>
 </p>
 
 ---
 
 ## Why ZenBot?
 
-Existing AI agent bots like OpenClaw ship with authentication disabled, store credentials in plain text, and run unvetted plugins with full host access — resulting in [138+ CVEs](https://blink.new/blog/openclaw-security-best-practices-2026), 42,000+ exposed instances, and 824+ malicious plugins in the wild.
+AI agent bots like OpenClaw ship with authentication disabled by default, store credentials in plain text, and let anyone upload executable plugins with zero code review. The result: [138+ CVEs](https://blink.new/blog/openclaw-security-best-practices-2026), [42,000+ exposed instances](https://www.sangfor.com/blog/cybersecurity/openclaw-ai-agent-security-risks-2026), and [824+ malicious plugins](https://www.immersivelabs.com/resources/c7-blog/openclaw-what-you-need-to-know-before-it-claws-its-way-into-your-organization) in the wild.
 
-ZenBot is built differently. Every security mechanism is **on by default and cannot be turned off**. Credentials are encrypted, plugins are signed and sandboxed, and every action is audited.
+ZenBot takes the opposite approach. Every security mechanism is **on by default and cannot be turned off**. Credentials are never stored in plain text. Plugins are cryptographically signed and run in sandboxed subprocesses. Every action is audited.
+
+| | OpenClaw | ZenBot |
+|---|---|---|
+| **CVEs** | 138+ (41% High/Critical) | 0 (secure by design) |
+| **Auth default** | Disabled | Always on, immutable |
+| **Credentials** | Plain text in `~/.clawdbot` | OS keychain + encrypted fallback |
+| **Plugin vetting** | Zero review | Ed25519 signed + subprocess sandboxed |
+| **Prompt injection** | No protection | 13 input patterns + 3 output leak patterns |
+| **Autonomy control** | Over-autonomous ($400+ token burns) | 5-level approval engine with user confirmation |
 
 ## Quick Start
 
@@ -37,7 +49,7 @@ ZenBot is built differently. Every security mechanism is **on by default and can
 # Install from source
 pip install -e .
 
-# Interactive setup wizard (credentials stored in OS keychain)
+# Interactive setup wizard — credentials stored in OS keychain
 zenbot init
 
 # Start the bot
@@ -47,226 +59,237 @@ zenbot run
 Or with Docker:
 
 ```bash
-cp .env.example .env    # Edit with your tokens/keys
+cp .env.example .env    # Fill in your tokens and API keys
 docker compose up -d
 ```
 
 ## Features
 
-### 7 Messaging Platforms
+### Supported Platforms
 
-| Platform | Library | Mode |
+| Platform | Library | Connection Mode |
 |---|---|---|
-| **Telegram** | python-telegram-bot | Polling + Webhook |
-| **Discord** | nextcord | Message events |
-| **WhatsApp** | httpx (Cloud API) | Webhook |
-| **Signal** | signal-cli JSON-RPC | Polling |
-| **Slack** | slack-bolt | Socket Mode + Events API |
-| **Microsoft Teams** | botbuilder-core | Bot Framework webhook |
-| **iMessage** | AppleScript bridge | Local polling (macOS only) |
+| **Telegram** | `python-telegram-bot` | Polling + Webhook |
+| **Discord** | `nextcord` | Message events + intents |
+| **WhatsApp** | `httpx` (Cloud API) | Webhook |
+| **Signal** | `signal-cli` JSON-RPC | TCP polling |
+| **Slack** | `slack-bolt` | Socket Mode + Events API |
+| **Microsoft Teams** | `botbuilder-core` | Bot Framework webhook |
+| **iMessage** | AppleScript + SQLite | Local polling (macOS only) |
 
-### 3 LLM Backends
+### LLM Backends
 
-| Provider | Library | Notes |
+| Provider | Library | Default Model |
 |---|---|---|
-| **Claude** (default) | anthropic SDK | Best reasoning, safety-focused |
-| **OpenAI GPT** | openai SDK | GPT-4o and newer |
-| **Local Models** | httpx | Ollama, vLLM, llama.cpp (OpenAI-compatible) |
+| **Claude** (recommended) | `anthropic` | claude-sonnet-4-20250514 |
+| **OpenAI GPT** | `openai` | gpt-4o |
+| **Local Models** | `httpx` | llama3.2 (via Ollama/vLLM/llama.cpp) |
 
-All LLM calls are wrapped with a **prompt injection guard** (17 attack patterns detected) and output leak scanning.
+All LLM calls pass through a **prompt injection guard** that scans for 13 known attack patterns and 3 output leak indicators before responses reach users.
 
 ### Plugin System
 
-Extend ZenBot with signed, sandboxed plugins:
-
-- **Ed25519 signing** — unsigned or untrusted plugins refuse to load
-- **Subprocess sandbox** — plugins run in isolated processes via JSON-RPC, never in the main bot process
-- **Manifest permissions** — plugins declare what they need (network domains, filesystem, secrets)
-- **Approval engine** — 5-level severity system; destructive actions require user confirmation
-- **Marketplace** — browse, download, and submit plugins with mandatory review
+| Feature | Description |
+|---|---|
+| **Ed25519 signing** | Unsigned or untrusted plugins refuse to load |
+| **Subprocess sandbox** | Plugins run in isolated processes via JSON-RPC with restricted env |
+| **Manifest permissions** | Plugins declare network domains, filesystem access, and required secrets |
+| **Time & memory limits** | Configurable timeout (default 30s) and memory cap (default 256MB) |
+| **Approval engine** | 5 severity levels: INFO (auto) / LOW (audit) / MEDIUM (confirm) / HIGH (confirm + cooldown) / CRITICAL (confirm + 2FA) |
+| **SDK** | Scaffold, test, validate, sign, and install plugins from the CLI |
+| **Marketplace** | Client for browsing and installing reviewed plugins |
 
 ### Production Hardening
 
-- **Docker** — multi-stage build, non-root user, read-only filesystem, dropped capabilities
-- **Healthcheck** — `/health` and `/ready` endpoints for Kubernetes / Docker orchestration
-- **Redis** — optional backend for multi-instance deployments with shared state
-- **Conversation summarization** — LLM-powered compression keeps token costs manageable
-- **File logging** — rotating JSON logs: `zenbot.log`, `zenbot.error.log`, `audit.log` with caller info
-- **Web dashboard** — SSE-based real-time monitoring (no websockets), token-authenticated
-
-### Teams & Multi-User
-
-- Role-based access control (Admin / User)
-- Team-based grouping with shared plugin configs
-- Per-team daily message budgets
-- Cross-platform user isolation
-
-## Security
-
-> See [SECURITY.md](SECURITY.md) for the full security policy and responsible disclosure process.
-
-### Security Architecture
-
-| Layer | What It Does |
+| Feature | Details |
 |---|---|
-| **Encrypted credentials** | OS keychain via `keyring`, Fernet+Argon2 fallback, env var support for Docker |
-| **Zero-trust auth** | Every user must be allowlisted. Unknown senders get rejected and logged |
-| **Immutable defaults** | `auth`, `plugin signing`, `approval flows`, and `audit logging` cannot be disabled |
-| **Prompt injection guard** | 17 input patterns + 3 output leak patterns block jailbreaks and prompt extraction |
-| **Input sanitization** | Strips zero-width chars, control chars, bidi overrides; enforces length limits |
-| **Rate limiting** | Per-user and global token bucket rate limiting, always enabled |
-| **Plugin sandbox** | Subprocess isolation, restricted env, network allowlist, memory/time limits |
-| **Plugin signing** | Ed25519 signatures verified against a local trust store |
-| **Action approval** | INFO/LOW auto-approved; MEDIUM needs confirmation; HIGH adds cooldown; CRITICAL needs 2FA |
-| **Audit logging** | Structured JSON, append-only, every auth/action/plugin/error event |
+| **Docker** | Multi-stage build, non-root user, read-only FS, all capabilities dropped |
+| **Healthcheck** | `/health` and `/ready` endpoints for Kubernetes/Docker orchestration |
+| **Redis** | Optional shared memory backend for multi-instance deployments |
+| **Summarization** | LLM-powered conversation compression to manage token costs |
+| **File logging** | Rotating JSON logs: `zenbot.log`, `zenbot.error.log`, `audit.log` (10MB, 5 backups) |
+| **Dashboard** | SSE-based real-time monitoring, token-authenticated, localhost by default |
+| **Teams** | Multi-user roles (Admin/User), per-team daily budgets, shared plugin configs |
 
-### vs OpenClaw
+## Security Architecture
 
-| Issue | OpenClaw | ZenBot |
-|---|---|---|
-| CVEs tracked | 138+ | 0 (secure by design) |
-| Auth default | Disabled | Always on, immutable |
-| Credentials | Plain text files | OS keychain + encrypted fallback |
-| Plugin vetting | Zero review | Ed25519 signed + sandboxed |
-| Prompt injection | No protection | 17-pattern guard + output scanning |
-| Autonomy control | Over-autonomous | 5-level approval engine |
+> Full policy and responsible disclosure: [SECURITY.md](SECURITY.md)
+
+| Layer | Implementation |
+|---|---|
+| **Credential storage** | OS keychain via `keyring`, Fernet + Argon2id fallback, `ZENBOT_*` env vars for Docker |
+| **Zero-trust auth** | Every user must be explicitly allowlisted; unknown senders are rejected and logged |
+| **Immutable defaults** | `auth.require_allowlist`, `plugins.require_signature`, `actions.require_approval`, `audit.enabled` cannot be set to false |
+| **Prompt guard** | 13 injection patterns (ignore instructions, jailbreak, DAN mode, role override, etc.) + 3 output leak patterns |
+| **Input sanitizer** | Strips zero-width chars, control chars, bidi overrides; normalizes Unicode (NFC); 4096-char limit |
+| **Rate limiting** | Token bucket per user and globally, always enabled, configurable burst/sustain rates |
+| **Plugin signing** | Ed25519 signatures verified against a local trust store of approved public keys |
+| **Plugin sandbox** | Subprocess isolation, restricted PATH/env, network allowlists from manifest, hard timeout + kill |
+| **Action approval** | Severity-based gates — MEDIUM+ actions require explicit user confirmation via messaging platform |
+| **Audit logging** | Structured JSON, append-only, covers auth, messages, actions, plugins, config changes, errors |
 
 ## Architecture
 
 ```
-src/zenbot/
-├── core/           Bot orchestrator, message routing, context, summarizer, healthcheck
-├── platforms/      Telegram, Discord, WhatsApp, Signal, Slack, Teams, iMessage
-├── llm/            Claude, OpenAI, local adapters + prompt injection guard
-├── plugins/        Base, loader, sandbox, signer, registry, SDK, marketplace
-├── security/       Credentials, auth, rate limiter, audit, policy, sanitizer, teams
-├── memory/         SQLite (encrypted) and Redis persistent storage
-├── dashboard/      Web dashboard with SSE real-time events
-└── utils/          Structured logging, crypto, CLI styling
+src/zenbot/                          54 source files across 8 modules
+├── core/                            Bot orchestrator, router, context, summarizer,
+│                                    task engine, healthcheck
+├── platforms/                       Telegram, Discord, WhatsApp, Signal, Slack,
+│                                    Teams, iMessage, webhook server
+├── llm/                             Claude, OpenAI, local adapters, prompt guard
+├── plugins/                         Base, loader, sandbox, signer, registry,
+│                                    SDK, marketplace
+├── security/                        Credentials, auth, rate limiter, audit,
+│                                    policy, sanitizer, teams
+├── memory/                          SQLite and Redis persistent storage
+├── dashboard/                       SSE web dashboard with token auth
+├── utils/                           Structured logging, crypto, CLI styling
+├── config.py                        Pydantic config with .env + YAML + env vars
+└── cli.py                           7 command groups, 20+ subcommands
 ```
 
 ## Configuration
 
-ZenBot supports three configuration methods (in priority order):
+ZenBot reads configuration from three sources (highest priority first):
 
-1. **Environment variables** — `ZENBOT_*` prefix (best for Docker)
-2. **`.env` file** — loaded automatically by pydantic-settings
-3. **YAML config** — `~/.zenbot/config.yaml` (created by `zenbot init`)
+1. **Environment variables** — `ZENBOT_*` prefix, best for Docker
+2. **`.env` file** — auto-loaded by pydantic-settings
+3. **YAML config** — `~/.zenbot/config.yaml`, created by `zenbot init`
 
 ### Environment Variables
 
 ```bash
 cp .env.example .env
-# Edit .env with your values
+# Edit .env with your tokens, API keys, and preferences
 ```
 
-See [`.env.example`](.env.example) for all available variables.
+All 30+ variables are documented in [`.env.example`](.env.example), organized by section: general, LLM, platforms, rate limiting, infrastructure.
 
-### Credential Storage
+### Credential Lookup Order
 
-| Environment | Storage Method |
-|---|---|
-| **Desktop (macOS)** | macOS Keychain via `keyring` |
-| **Desktop (Windows)** | Windows Credential Locker |
-| **Desktop (Linux)** | GNOME Keyring / KDE Wallet |
-| **Headless / Server** | Fernet-encrypted file with Argon2 key derivation |
-| **Docker** | `ZENBOT_*` environment variables |
+| Priority | Source | Best for |
+|---|---|---|
+| 1 | `ZENBOT_*` env var | Docker, CI/CD |
+| 2 | OS keychain (`keyring`) | Desktop (macOS, Windows, Linux) |
+| 3 | Encrypted file store | Headless servers |
 
-### Platform Setup
+### Platform Credentials
 
-| Platform | Credentials Needed |
+| Platform | What you need |
 |---|---|
 | Telegram | Bot token from [@BotFather](https://t.me/BotFather) |
 | Discord | Bot token from Discord Developer Portal |
-| WhatsApp | Access token + Phone ID from Meta Business |
+| WhatsApp | Access token + Phone Number ID from Meta Business |
 | Signal | Phone number + `signal-cli` daemon running |
-| Slack | Bot token (xoxb-) + App token (xapp-) from Slack API |
+| Slack | Bot token (`xoxb-`) + App token (`xapp-`) from Slack API |
 | Teams | App ID + App Password from Azure Bot registration |
-| iMessage | None (uses local Messages.app, macOS only) |
+| iMessage | None — uses local Messages.app (macOS only) |
 
-## Docker
+## Docker Deployment
 
 ```bash
-# Standard deployment (Telegram/Discord/WhatsApp + Claude)
-cp .env.example .env
-# Edit .env with your credentials
-docker compose up -d
+# Standard: bot + Claude API
+docker compose up -d zenbot
 
-# With Redis for multi-instance
+# With Redis for multi-instance shared state
 docker compose up -d zenbot redis
 
 # With local LLM (Ollama)
 docker compose --profile local-llm up -d
 ```
 
-### Docker Security
+### Container Security
 
-- Non-root user (`zenbot:zenbot`)
-- Read-only root filesystem
-- All Linux capabilities dropped
-- `no-new-privileges` enforced
-- tmpfs for `/tmp` (noexec, nosuid)
-- JSON log rotation (10MB, 3 files)
-- Bridge network isolation between services
-- Redis healthcheck enabled
+| Measure | Details |
+|---|---|
+| Non-root user | Runs as `zenbot:zenbot` (UID/GID created at build) |
+| Read-only filesystem | Root FS is read-only; `/tmp` is tmpfs (noexec, nosuid, 64MB) |
+| Capability dropping | All Linux capabilities dropped via `cap_drop: ALL` |
+| Privilege escalation | Blocked via `no-new-privileges: true` |
+| Network isolation | Bridge network (`zenbot-net`) between services |
+| Log rotation | Docker json-file driver, 10MB max, 3 files |
+| Health checks | Bot: HTTP `/health` every 30s; Redis: `redis-cli ping` every 10s |
+| Persistent volumes | `zenbot-data` (config/memory/logs), `redis-data`, `ollama-data` |
+
+### Exposed Ports
+
+| Port | Service |
+|---|---|
+| 8080 | Webhook server (WhatsApp, Telegram, Teams) |
+| 8081 | Healthcheck (`/health`, `/ready`) |
+| 8082 | Dashboard (SSE, token-authenticated) |
 
 ## CLI Reference
 
+### Core
+
 ```bash
-# ---- Core ----
-zenbot init                          # Interactive setup wizard
-zenbot run                           # Start the bot
-zenbot run -c ./config.yaml          # Start with custom config
+zenbot init                            # Interactive setup wizard with colorful output
+zenbot run                             # Start the bot with all enabled platforms
+zenbot run -c ./config.yaml            # Start with custom config file
+```
 
-# ---- Credentials ----
-zenbot credentials set <key>         # Store securely in OS keychain
-zenbot credentials check <key>       # Check if credential exists
-zenbot credentials delete <key>      # Remove a credential
+### Credentials
 
-# ---- Plugins ----
-zenbot plugin install <dir>          # Install a signed plugin
-zenbot plugin list                   # List installed plugins
-zenbot plugin enable <name>          # Enable a plugin
-zenbot plugin disable <name>         # Disable a plugin
-zenbot plugin uninstall <name>       # Remove a plugin
-zenbot plugin sign <dir> <key>       # Sign a plugin with Ed25519 key
-zenbot plugin keygen <dir>           # Generate signing keypair
+```bash
+zenbot credentials set <key>           # Store in OS keychain (hidden input)
+zenbot credentials check <key>         # Check existence without revealing value
+zenbot credentials delete <key>        # Remove from keychain
+```
 
-# ---- Plugin SDK ----
-zenbot sdk new <name>                # Scaffold a new plugin project
-zenbot sdk test <dir>                # Run the 5-test harness
-zenbot sdk validate <dir>            # Validate manifest file
+### Plugins
 
-# ---- Marketplace ----
-zenbot marketplace search <query>    # Search for plugins
-zenbot marketplace info <name>       # Get plugin details
+```bash
+zenbot plugin install <dir>            # Install a signed plugin
+zenbot plugin list                     # List installed plugins with status
+zenbot plugin enable <name>            # Enable a disabled plugin
+zenbot plugin disable <name>           # Disable without uninstalling
+zenbot plugin uninstall <name>         # Remove from registry
+zenbot plugin sign <dir> <key-file>    # Sign with Ed25519 private key
+zenbot plugin keygen <output-dir>      # Generate Ed25519 signing keypair
+```
 
-# ---- Teams ----
-zenbot team create <name>            # Create a team
-zenbot team list                     # List all teams
+### Plugin SDK
+
+```bash
+zenbot sdk new <name>                  # Scaffold plugin with boilerplate
+zenbot sdk test <dir>                  # Run 5-test validation harness
+zenbot sdk validate <dir>              # Check manifest for errors
+```
+
+### Marketplace & Teams
+
+```bash
+zenbot marketplace search <query>      # Search plugin marketplace
+zenbot marketplace info <name>         # Get plugin details
+zenbot team create <name>              # Create a new team
+zenbot team list                       # List all teams
 ```
 
 ## Plugin Development
 
+### Full Workflow
+
 ```bash
-# 1. Scaffold a new plugin
-zenbot sdk new weather-lookup --desc "Look up weather" --author "you"
+# 1. Scaffold
+zenbot sdk new weather-lookup --desc "Weather by location" --author "you"
 
-# 2. Implement your logic in weather-lookup/plugin.py
+# 2. Implement logic in weather-lookup/plugin.py
+#    (see examples/plugins/ for reference)
 
-# 3. Test locally
+# 3. Test locally (runs 5 automated checks)
 zenbot sdk test ./weather-lookup
 
-# 4. Validate the manifest
+# 4. Validate manifest
 zenbot sdk validate ./weather-lookup
 
-# 5. Generate a signing key (one time)
+# 5. Generate signing key (one time)
 zenbot plugin keygen ./my-keys
 
 # 6. Sign the plugin
 zenbot plugin sign ./weather-lookup ./my-keys/zenbot_signing_key.pem
 
-# 7. Install locally
+# 7. Trust the key and install
 cp ./my-keys/zenbot_signing_key.pub ~/.zenbot/trust_store/
 zenbot plugin install ./weather-lookup
 ```
@@ -279,6 +302,7 @@ zenbot plugin install ./weather-lookup
     "version": "1.0.0",
     "description": "Look up weather by location",
     "author": "you@example.com",
+    "min_zenbot_version": "0.1.0",
     "network_domains": ["api.openweathermap.org"],
     "filesystem": "none",
     "secrets": ["OPENWEATHER_API_KEY"],
@@ -287,13 +311,20 @@ zenbot plugin install ./weather-lookup
 }
 ```
 
+### Example Plugins
+
+| Plugin | Location | What it does |
+|---|---|---|
+| **Calculator** | `examples/plugins/calculator/` | Safe math via AST parsing (not eval), blocks DoS via exponent limits |
+| **Weather** | `examples/plugins/weather/` | OpenWeatherMap API with declared network permissions and secret handling |
+
 ## Testing
 
 ```bash
 # Install dev dependencies
 pip install -e ".[dev]"
 
-# Run all 235 tests
+# Run all tests
 pytest tests/ -v
 
 # Unit tests only
@@ -309,56 +340,61 @@ ruff check src/ tests/ examples/
 mypy src/
 ```
 
-### Test Coverage
+### Test Breakdown
 
-| Area | Tests | What's Covered |
-|---|---|---|
-| Security | 56 | Auth, rate limiting, policy, sanitizer, prompt guard, teams, credentials |
-| Core | 19 | Message routing, context, summarizer, healthcheck, task engine |
-| Plugins | 41 | Signing, verification, sandbox, registry, SDK, calculator plugin |
-| Platforms | 9 | Import guards, platform names, iMessage macOS check |
-| Memory | 8 | SQLite persistence, history, summaries, preferences |
-| Dashboard | 9 | SSE broadcasting, events, config, marketplace entries |
-| Logging | 7 | File creation, JSON format, error filtering, permissions, audit separation |
-| E2E | 59 | Full pipeline, multi-user isolation, injection blocking, persistence |
-| **Total** | **235** | |
+| Category | Files | Tests | Coverage |
+|---|---|---|---|
+| **Security** | 8 | 56 | Auth, rate limiting, policy, sanitizer, prompt guard, teams, credentials, logging |
+| **Core** | 4 | 19 | Message routing, context, summarizer, healthcheck, task engine |
+| **Plugins** | 5 | 41 | Signing, verification, sandbox, registry, SDK, calculator plugin |
+| **Platforms** | 1 | 9 | Import guards, platform names, macOS checks |
+| **Memory** | 1 | 8 | SQLite CRUD, persistence across restarts, chat isolation |
+| **Dashboard** | 1 | 9 | SSE broadcasting, events, config, marketplace entries |
+| **E2E Integration** | 3 | 59 | Full pipeline, multi-user isolation, injection blocking, plugin lifecycle, memory persistence, team workflows, SSE streaming |
+| **Webhook** | 1 | 4 | Query parsing, WhatsApp verification |
+| **Total** | **24** | **235** | |
 
 ## Logging
 
 ZenBot writes structured JSON logs to `~/.zenbot/logs/`:
 
-| File | Content | Level |
-|---|---|---|
-| `zenbot.log` | All application events | Configured (default: INFO) |
-| `zenbot.error.log` | Errors and warnings only | WARNING+ |
-| `audit.log` | Security audit events | All auth, actions, plugins |
+| File | Content | Level | Rotation |
+|---|---|---|---|
+| `zenbot.log` | All application events | Configured (default INFO) | 10MB, 5 backups |
+| `zenbot.error.log` | Warnings and errors only | WARNING+ | 10MB, 5 backups |
+| `audit.log` | Security audit events | All | 10MB, 5 backups |
 
-Every log entry includes timestamp, level, event name, filename, function, and line number.
+Every log entry includes: ISO timestamp, log level, event name, source filename, function name, and line number. File permissions are `0600` (owner read/write only).
 
-Logs rotate at 10MB with 5 backups retained. File permissions are `0600` (owner-only).
+## Project Overview
 
-## Project Stats
-
-- **Language**: Python 3.11+
-- **Source files**: 54
-- **Test files**: 28
-- **Total tests**: 235
-- **Platforms**: 7
-- **LLM backends**: 3
-- **Security layers**: 10
-- **License**: MIT
+| Metric | Value |
+|---|---|
+| **Version** | 0.1.0 (alpha) |
+| **Language** | Python 3.11+ |
+| **Source files** | 54 |
+| **Test files** | 28 |
+| **Total tests** | 235 |
+| **Platforms** | 7 |
+| **LLM backends** | 3 |
+| **Memory backends** | 2 (SQLite, Redis) |
+| **Security layers** | 10 |
+| **CLI commands** | 20+ across 7 groups |
+| **Config variables** | 30+ |
+| **License** | MIT |
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+2. Create a feature branch (`git checkout -b feature/your-feature`)
 3. Write tests for your changes
-4. Ensure all tests pass (`pytest tests/ -v`)
-5. Ensure lint passes (`ruff check src/ tests/`)
-6. Commit your changes
-7. Push to the branch
-8. Open a Pull Request
+4. Ensure all tests pass: `pytest tests/ -v`
+5. Ensure lint passes: `ruff check src/ tests/`
+6. Commit your changes with a descriptive message
+7. Push to the branch and open a Pull Request
+
+For security vulnerabilities, see [SECURITY.md](SECURITY.md) for the responsible disclosure process.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+MIT License. See [LICENSE](LICENSE) for details.
