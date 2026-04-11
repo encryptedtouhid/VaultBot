@@ -82,9 +82,19 @@ class DiscordAdapter:
 
     async def send(self, message: OutboundMessage) -> None:
         """Send a message to a Discord channel."""
-        channel = self._bot.get_channel(int(message.chat_id))
+        try:
+            channel_id = int(message.chat_id)
+        except ValueError:
+            logger.error("discord_invalid_channel_id", chat_id=message.chat_id)
+            return
+
+        channel = self._bot.get_channel(channel_id)
         if channel is None:
-            channel = await self._bot.fetch_channel(int(message.chat_id))
+            try:
+                channel = await self._bot.fetch_channel(channel_id)
+            except nextcord.NotFound:
+                logger.error("discord_channel_not_found", channel_id=message.chat_id)
+                return
 
         if not isinstance(channel, nextcord.abc.Messageable):
             logger.error("discord_not_messageable", channel_id=message.chat_id)
@@ -95,7 +105,7 @@ class DiscordAdapter:
             try:
                 ref_msg = await channel.fetch_message(int(message.reply_to))
                 kwargs["reference"] = ref_msg
-            except nextcord.NotFound:
+            except (nextcord.NotFound, ValueError):
                 pass
 
         await channel.send(**kwargs)  # type: ignore[arg-type]

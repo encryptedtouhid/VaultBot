@@ -89,10 +89,23 @@ class TelegramAdapter:
         if not self._app or not self._app.bot:
             raise RuntimeError("Telegram adapter not connected")
 
+        try:
+            chat_id = int(message.chat_id)
+        except ValueError:
+            logger.error("telegram_invalid_chat_id", chat_id=message.chat_id)
+            return
+
+        reply_to: int | None = None
+        if message.reply_to:
+            try:
+                reply_to = int(message.reply_to)
+            except ValueError:
+                pass
+
         await self._app.bot.send_message(
-            chat_id=int(message.chat_id),
+            chat_id=chat_id,
             text=message.text,
-            reply_to_message_id=int(message.reply_to) if message.reply_to else None,
+            reply_to_message_id=reply_to,
         )
 
     async def healthcheck(self) -> bool:

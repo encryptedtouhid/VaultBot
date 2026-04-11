@@ -39,6 +39,7 @@ class SignalAdapter:
         self._message_queue: asyncio.Queue[InboundMessage] = asyncio.Queue()
         self._client: httpx.AsyncClient | None = None
         self._polling = False
+        self._poll_task: asyncio.Task[None] | None = None
 
     @property
     def platform_name(self) -> str:
@@ -51,12 +52,18 @@ class SignalAdapter:
             timeout=30.0,
         )
         self._polling = True
-        asyncio.create_task(self._poll_messages())
+        self._poll_task = asyncio.create_task(self._poll_messages())
         logger.info("signal_connected", account=self._account)
 
     async def disconnect(self) -> None:
         """Stop polling and close the client."""
         self._polling = False
+        if self._poll_task and not self._poll_task.done():
+            self._poll_task.cancel()
+            try:
+                await self._poll_task
+            except asyncio.CancelledError:
+                pass
         if self._client:
             await self._client.aclose()
         logger.info("signal_disconnected")

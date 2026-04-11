@@ -45,6 +45,8 @@ class OpenAIProvider:
             max_tokens=max_tokens,
         )
 
+        if not response.choices:
+            raise RuntimeError("OpenAI returned empty choices array")
         choice = response.choices[0]
         content = choice.message.content or ""
 

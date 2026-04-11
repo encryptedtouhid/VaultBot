@@ -48,10 +48,12 @@ class ApprovalRequest:
     """A pending approval request sent to the user."""
 
     action: Action
-    future: asyncio.Future[ApprovalStatus] = field(
-        default_factory=lambda: asyncio.get_event_loop().create_future()
-    )
+    future: asyncio.Future[ApprovalStatus] = field(default=None)  # type: ignore[assignment]
     approval_timeout: float = 120.0  # 2 minutes default
+
+    def __post_init__(self) -> None:
+        if self.future is None:
+            self.future = asyncio.get_running_loop().create_future()
 
 
 @dataclass(frozen=True, slots=True)

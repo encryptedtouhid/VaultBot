@@ -44,6 +44,10 @@ class LocalProvider:
     def provider_name(self) -> str:
         return "local"
 
+    async def close(self) -> None:
+        """Close the HTTP client."""
+        await self._client.aclose()
+
     async def complete(
         self,
         messages: list[ChatMessage],
@@ -69,11 +73,15 @@ class LocalProvider:
         response.raise_for_status()
         data = response.json()
 
-        choice = data["choices"][0]
+        choices = data.get("choices", [])
+        if not choices:
+            raise RuntimeError("Local LLM returned empty choices array")
+
+        choice = choices[0]
         usage = data.get("usage", {})
 
         return LLMResponse(
-            content=choice["message"]["content"],
+            content=choice.get("message", {}).get("content", ""),
             model=data.get("model", model or self._default_model),
             input_tokens=usage.get("prompt_tokens", 0),
             output_tokens=usage.get("completion_tokens", 0),
@@ -113,10 +121,12 @@ class LocalProvider:
 
                 import json
 
-                data = json.loads(data_str)
-                if data["choices"] and data["choices"][0].get("delta", {}).get(
-                    "content"
-                ):
-                    yield LLMChunk(content=data["choices"][0]["delta"]["content"])
+                try:
+                    data = json.loads(data_str)
+                except json.JSONDecodeError:
+                    continue
+                choices = data.get("choices", [])
+                if choices and choices[0].get("delta", {}).get("content"):
+                    yield LLMChunk(content=choices[0]["delta"]["content"])
 
         yield LLMChunk(content="", is_final=True)

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections import defaultdict
 from dataclasses import dataclass, field
 
 from zenbot.core.message import ChatMessage
@@ -47,13 +46,7 @@ class ContextManager:
     def __init__(self, system_prompt: str = "", max_history: int = 20) -> None:
         self._system_prompt = system_prompt
         self._max_history = max_history
-        self._contexts: dict[str, ConversationContext] = defaultdict(
-            lambda: ConversationContext(
-                chat_id="",
-                system_prompt=self._system_prompt,
-                max_history=self._max_history,
-            )
-        )
+        self._contexts: dict[str, ConversationContext] = {}
 
     def get(self, chat_id: str) -> ConversationContext:
         """Get or create a conversation context for a chat."""

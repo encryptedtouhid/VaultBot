@@ -100,10 +100,13 @@ class ZenBot:
         for adapter in self._platforms.values():
             await adapter.connect()
 
-        # Set up graceful shutdown
-        loop = asyncio.get_running_loop()
-        for sig in (signal.SIGINT, signal.SIGTERM):
-            loop.add_signal_handler(sig, lambda: asyncio.create_task(self.stop()))
+        # Set up graceful shutdown (Unix only — Windows uses KeyboardInterrupt)
+        import sys
+
+        if sys.platform != "win32":
+            loop = asyncio.get_running_loop()
+            for sig in (signal.SIGINT, signal.SIGTERM):
+                loop.add_signal_handler(sig, lambda: asyncio.create_task(self.stop()))
 
         # Listen on all platforms concurrently
         tasks = [
