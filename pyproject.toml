@@ -7,7 +7,7 @@ name = "vaultbot"
 version = "0.1.0"
 description = "V.A.U.L.T. BOT — Security-first, open-source autonomous AI agent"
 readme = "README.md"
-license = "MIT"
+license = "BSL-1.1"
 requires-python = ">=3.11"
 authors = [
     { name = "Khaled Md Tuhidul Hossain" },
@@ -16,7 +16,7 @@ keywords = ["ai", "bot", "agent", "telegram", "discord", "security"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+    "License :: Other/Proprietary License",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Communications :: Chat",
