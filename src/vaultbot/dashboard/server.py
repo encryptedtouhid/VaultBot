@@ -107,9 +107,9 @@ class DashboardServer:
 
     def _setup_routes(self) -> None:
         """Register route handlers."""
+        self._routes["GET /dashboard"] = self._handle_dashboard_page
         self._routes["GET /dashboard/api/status"] = self._handle_status
         self._routes["GET /dashboard/api/plugins"] = self._handle_plugins
-        self._routes["GET /dashboard/api/events"] = self._handle_sse
 
     @property
     def broadcaster(self) -> SSEBroadcaster:
@@ -172,10 +172,25 @@ class DashboardServer:
                     key, value = line.split(":", 1)
                     headers[key.strip().lower()] = value.strip()
 
-            # Authenticate
-            if not self._authenticate(headers):
-                await self._send(writer, 401, "text/plain", "Unauthorized")
-                return
+            # Parse query string for token auth (SSE can't set headers)
+            query_string = parts[1].split("?")[1] if "?" in parts[1] else ""
+            query_token = ""
+            for pair in query_string.split("&"):
+                if pair.startswith("token="):
+                    query_token = pair[6:]
+
+            # Dashboard HTML page — no auth (token is shown on CLI)
+            no_auth_paths = {"/dashboard"}
+
+            if path not in no_auth_paths:
+                # Check header auth or query param auth
+                has_auth = self._authenticate(headers) or (
+                    query_token
+                    and secrets.compare_digest(query_token, self._config.api_token)
+                )
+                if not has_auth:
+                    await self._send(writer, 401, "text/plain", "Unauthorized")
+                    return
 
             # CORS headers
             cors = self._config.cors_origin
@@ -205,6 +220,13 @@ class DashboardServer:
                 await writer.wait_closed()
             except Exception:
                 pass
+
+    async def _handle_dashboard_page(self, **_: Any) -> tuple[int, str, str]:
+        """Serve the real-time HTML dashboard."""
+        token = self._config.api_token
+        port = self._config.port
+        html = _DASHBOARD_HTML.replace("{{TOKEN}}", token).replace("{{PORT}}", str(port))
+        return 200, "text/html", html
 
     async def _handle_status(self, **_: Any) -> tuple[int, str, str]:
         """Return bot status as JSON."""
@@ -277,3 +299,223 @@ class DashboardServer:
         response += f"Connection: close\r\n\r\n{body}"
         writer.write(response.encode())
         await writer.drain()
+
+
+# Dashboard HTML — uses textContent for user data to prevent XSS.
+# innerHTML is only used with server-controlled template strings.
+_DASHBOARD_HTML = """\
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>V.A.U.L.T. BOT Dashboard</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+    background: #0a0a0a; color: #e0e0e0; padding: 20px;
+  }
+  .header {
+    text-align: center; padding: 20px 0; border-bottom: 1px solid #222;
+    margin-bottom: 20px;
+  }
+  .header h1 { color: #00d4ff; font-size: 1.5em; letter-spacing: 4px; }
+  .header .subtitle { color: #666; font-size: 0.8em; margin-top: 4px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .card {
+    background: #111; border: 1px solid #222; border-radius: 8px; padding: 16px;
+  }
+  .card h2 {
+    color: #888; font-size: 0.75em; text-transform: uppercase;
+    letter-spacing: 2px; margin-bottom: 12px;
+  }
+  .status-dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    margin-right: 6px;
+  }
+  .dot-green { background: #00ff88; box-shadow: 0 0 6px #00ff88; }
+  .dot-red { background: #ff4444; box-shadow: 0 0 6px #ff4444; }
+  .dot-yellow { background: #ffaa00; box-shadow: 0 0 6px #ffaa00; }
+  .stat { margin: 8px 0; font-size: 0.9em; }
+  .stat-value { color: #fff; font-weight: bold; }
+  .events-container {
+    background: #111; border: 1px solid #222; border-radius: 8px; padding: 16px;
+  }
+  .events-container h2 {
+    color: #888; font-size: 0.75em; text-transform: uppercase;
+    letter-spacing: 2px; margin-bottom: 12px;
+  }
+  #events {
+    max-height: 400px; overflow-y: auto; font-size: 0.8em;
+  }
+  .event {
+    padding: 8px 12px; margin: 4px 0; border-radius: 4px;
+    border-left: 3px solid #333; background: #0d0d0d;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; }
+  }
+  .type-message_in { border-left-color: #00d4ff; }
+  .type-message_in .event-type { color: #00d4ff; }
+  .type-message_out { border-left-color: #00ff88; }
+  .type-message_out .event-type { color: #00ff88; }
+  .type-auth_denied { border-left-color: #ff4444; }
+  .type-auth_denied .event-type { color: #ff4444; }
+  .type-rate_limited { border-left-color: #ffaa00; }
+  .type-rate_limited .event-type { color: #ffaa00; }
+  .type-error { border-left-color: #ff4444; }
+  .type-error .event-type { color: #ff4444; }
+  .event-time { color: #555; font-size: 0.85em; }
+  .event-type { font-weight: bold; margin: 0 8px; }
+  .event-data { color: #888; }
+  .connection-status {
+    position: fixed; top: 10px; right: 20px; font-size: 0.75em;
+    padding: 4px 12px; border-radius: 12px;
+  }
+  .connected { background: #0a2a0a; color: #00ff88; border: 1px solid #00ff88; }
+  .disconnected { background: #2a0a0a; color: #ff4444; border: 1px solid #ff4444; }
+  .counter { font-size: 2em; color: #fff; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div class="connection-status disconnected" id="connStatus">Connecting...</div>
+
+<div class="header">
+  <h1>V.A.U.L.T. BOT</h1>
+  <div class="subtitle">Verified Autonomous Utility &amp; Logical Taskrunner</div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h2>Status</h2>
+    <div class="stat">
+      <span class="status-dot dot-red" id="healthDot"></span>
+      <span id="healthText">Loading...</span>
+    </div>
+    <div class="stat">Uptime: <span class="stat-value" id="uptime">-</span></div>
+    <div class="stat">LLM: <span class="stat-value" id="llm">-</span></div>
+  </div>
+  <div class="card">
+    <h2>Counters</h2>
+    <div class="stat">Messages In: <span class="counter" id="msgIn">0</span></div>
+    <div class="stat">Messages Out: <span class="counter" id="msgOut">0</span></div>
+    <div class="stat">Blocked: <span class="counter" id="blocked">0</span></div>
+  </div>
+  <div class="card">
+    <h2>Platforms</h2>
+    <div id="platforms">Loading...</div>
+  </div>
+  <div class="card">
+    <h2>Tokens Used</h2>
+    <div class="stat">Input: <span class="counter" id="tokensIn">0</span></div>
+    <div class="stat">Output: <span class="counter" id="tokensOut">0</span></div>
+  </div>
+</div>
+
+<div class="events-container">
+  <h2>Live Events</h2>
+  <div id="events"></div>
+</div>
+
+<script>
+const TOKEN = '{{TOKEN}}';
+let msgIn = 0, msgOut = 0, blocked = 0, tokensIn = 0, tokensOut = 0;
+
+async function fetchStatus() {
+  try {
+    const res = await fetch('/dashboard/api/status', {
+      headers: { 'Authorization': 'Bearer ' + TOKEN }
+    });
+    const data = await res.json();
+    const dot = document.getElementById('healthDot');
+    dot.className = 'status-dot ' +
+      (data.ready ? 'dot-green' : data.healthy ? 'dot-yellow' : 'dot-red');
+    document.getElementById('healthText').textContent =
+      data.ready ? 'Ready' : data.healthy ? 'Healthy' : 'Unhealthy';
+    document.getElementById('uptime').textContent =
+      Math.round(data.uptime_seconds) + 's';
+    document.getElementById('llm').textContent =
+      data.llm_available ? 'Connected' : 'Disconnected';
+    const pDiv = document.getElementById('platforms');
+    pDiv.textContent = '';
+    for (const [name, connected] of Object.entries(data.platforms || {})) {
+      const row = document.createElement('div');
+      row.className = 'stat';
+      const d = document.createElement('span');
+      d.className = 'status-dot ' + (connected ? 'dot-green' : 'dot-red');
+      row.appendChild(d);
+      row.appendChild(document.createTextNode(name));
+      pDiv.appendChild(row);
+    }
+  } catch(e) { /* retry on next interval */ }
+}
+fetchStatus();
+setInterval(fetchStatus, 5000);
+
+function connectSSE() {
+  const es = new EventSource('/dashboard/api/events?token=' + TOKEN);
+  const el = document.getElementById('connStatus');
+  es.onopen = () => { el.className = 'connection-status connected'; el.textContent = 'Live'; };
+  es.onerror = () => {
+    el.className = 'connection-status disconnected';
+    el.textContent = 'Reconnecting...';
+  };
+
+  es.addEventListener('message_in', (e) => {
+    msgIn++; document.getElementById('msgIn').textContent = msgIn;
+    addEvent('message_in', JSON.parse(e.data));
+  });
+  es.addEventListener('message_out', (e) => {
+    msgOut++; document.getElementById('msgOut').textContent = msgOut;
+    const d = JSON.parse(e.data);
+    tokensIn += (d.data && d.data.tokens_in) || 0;
+    tokensOut += (d.data && d.data.tokens_out) || 0;
+    document.getElementById('tokensIn').textContent = tokensIn.toLocaleString();
+    document.getElementById('tokensOut').textContent = tokensOut.toLocaleString();
+    addEvent('message_out', d);
+  });
+  es.addEventListener('auth_denied', (e) => {
+    blocked++; document.getElementById('blocked').textContent = blocked;
+    addEvent('auth_denied', JSON.parse(e.data));
+  });
+  es.addEventListener('rate_limited', (e) => {
+    blocked++; document.getElementById('blocked').textContent = blocked;
+    addEvent('rate_limited', JSON.parse(e.data));
+  });
+  es.addEventListener('error', (e) => {
+    if (e.data) addEvent('error', JSON.parse(e.data));
+  });
+}
+connectSSE();
+
+function addEvent(type, payload) {
+  const evDiv = document.getElementById('events');
+  const el = document.createElement('div');
+  el.className = 'event type-' + type;
+
+  const timeSpan = document.createElement('span');
+  timeSpan.className = 'event-time';
+  timeSpan.textContent = new Date().toLocaleTimeString();
+
+  const typeSpan = document.createElement('span');
+  typeSpan.className = 'event-type';
+  typeSpan.textContent = type;
+
+  const dataSpan = document.createElement('span');
+  dataSpan.className = 'event-data';
+  dataSpan.textContent = JSON.stringify(payload.data || payload).substring(0, 120);
+
+  el.appendChild(timeSpan);
+  el.appendChild(typeSpan);
+  el.appendChild(dataSpan);
+  evDiv.insertBefore(el, evDiv.firstChild);
+  if (evDiv.children.length > 100) evDiv.removeChild(evDiv.lastChild);
+}
+</script>
+</body>
+</html>
+"""

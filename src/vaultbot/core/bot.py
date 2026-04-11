@@ -7,7 +7,9 @@ import signal
 from typing import TYPE_CHECKING
 
 from vaultbot.core.context import ContextManager
+from vaultbot.core.healthcheck import HealthcheckServer, HealthStatus
 from vaultbot.core.router import MessageRouter
+from vaultbot.dashboard.server import DashboardConfig, DashboardServer
 from vaultbot.security.audit import AuditLogger
 from vaultbot.security.auth import AuthManager
 from vaultbot.security.rate_limiter import RateLimiter
@@ -44,6 +46,11 @@ class VaultBot:
             max_history=config.max_history,
         )
         self._router: MessageRouter | None = None
+
+        # Infrastructure servers
+        self._health = HealthStatus()
+        self._healthcheck = HealthcheckServer(self._health, port=8081)
+        self._dashboard = DashboardServer(DashboardConfig(), self._health)
 
     def register_platform(self, adapter: PlatformAdapter) -> None:
         """Register a messaging platform adapter."""
@@ -87,6 +94,7 @@ class VaultBot:
             audit=self._audit,
             context_manager=self._context_manager,
             llm=self._llm,
+            broadcaster=self._dashboard.broadcaster,
         )
 
         self._running = True
@@ -96,11 +104,23 @@ class VaultBot:
             llm=self._llm.provider_name,
         )
 
+        # Start infrastructure servers
+        await self._healthcheck.start()
+        await self._dashboard.start()
+        self._health.llm_available = True
+        logger.info(
+            "servers_started",
+            healthcheck="http://localhost:8081/health",
+            dashboard=f"http://localhost:{self._dashboard._config.port}/dashboard/api/status",
+        )
+
         # Connect all platforms
         for adapter in self._platforms.values():
             try:
                 await adapter.connect()
+                self._health.platforms_connected[adapter.platform_name] = True
             except Exception as e:
+                self._health.platforms_connected[adapter.platform_name] = False
                 logger.error(
                     "platform_connect_failed",
                     platform=adapter.platform_name,
@@ -134,9 +154,14 @@ class VaultBot:
         self._running = False
         logger.info("vaultbot_stopping")
 
+        # Stop infrastructure servers
+        await self._dashboard.stop()
+        await self._healthcheck.stop()
+
         for adapter in self._platforms.values():
             try:
                 await adapter.disconnect()
+                self._health.platforms_connected[adapter.platform_name] = False
             except Exception as e:
                 logger.error("disconnect_error", platform=adapter.platform_name, error=str(e))
 

@@ -515,6 +515,9 @@ def run(
     # Wrap with prompt injection guard
     bot.set_llm(GuardedLLMProvider(llm_provider))
 
+    # Get dashboard token for display
+    dashboard_token = bot._dashboard._config.api_token
+
     # Show startup summary
     style.startup_summary(
         platforms=registered_platforms,
@@ -527,6 +530,16 @@ def run(
             "Encrypted credential storage",
         ],
     )
+
+    style.section("🌐", "Endpoints")
+    style.key_value("Health", "http://localhost:8081/health")
+    style.key_value("Dashboard", "http://localhost:8082/dashboard/api/status")
+    style.key_value("SSE Events", "http://localhost:8082/dashboard/api/events")
+    style.key_value("Dashboard Token", dashboard_token)
+    style.hint(
+        "curl -H 'Authorization: Bearer TOKEN' http://localhost:8082/dashboard/api/status"
+    )
+    typer.echo()
 
     try:
         asyncio.run(bot.start())
