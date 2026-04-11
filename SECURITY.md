@@ -8,7 +8,7 @@ If you discover a security vulnerability in VaultBot, please report it responsib
 
 ### How to Report
 
-1. Email: Send details to **security@vaultbot.dev** (placeholder — update with real contact)
+1. Email: Send details to **security@vaultbot.app** (placeholder — update with real contact)
 2. Include:
    - Description of the vulnerability
    - Steps to reproduce
