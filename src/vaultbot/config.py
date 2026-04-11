@@ -75,6 +75,10 @@ class VaultBotConfig(BaseSettings):
     irc: PlatformConfig = PlatformConfig(credential_key="irc_server")
     matrix: PlatformConfig = PlatformConfig(credential_key="matrix_access_token")
     mattermost: PlatformConfig = PlatformConfig(credential_key="mattermost_token")
+    line: PlatformConfig = PlatformConfig(credential_key="line_channel_token")
+    googlechat: PlatformConfig = PlatformConfig(credential_key="googlechat_service_key")
+    twitch: PlatformConfig = PlatformConfig(credential_key="twitch_oauth_token")
+    nostr: PlatformConfig = PlatformConfig(credential_key="nostr_private_key")
 
     # LLM
     llm: LLMConfig = LLMConfig()
