@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <strong>Security-first, open-source autonomous AI agent</strong>
+  <strong>Security-first, source-available autonomous AI agent</strong>
   <br>
   <em>V.A.U.L.T. — Verified Autonomous Utility & Logical Taskrunner</em>
   <br>
@@ -395,7 +395,7 @@ Every log entry includes: ISO timestamp, log level, event name, source filename,
 | **Security layers** | 10 |
 | **CLI commands** | 20+ across 7 groups |
 | **Config variables** | 30+ |
-| **License** | MIT |
+| **License** | BSL 1.1 (converts to Apache 2.0 on 2030-04-11) |
 
 ## Contributing
 
@@ -411,4 +411,8 @@ For security vulnerabilities, see [SECURITY.md](SECURITY.md) for the responsible
 
 ## License
 
-MIT License. See [LICENSE](LICENSE) for details.
+VaultBot is licensed under the [Business Source License 1.1](LICENSE).
+
+**Free to use** for personal, development, testing, educational, and internal purposes. A [commercial license](mailto:your-email@example.com) is required for production services offered to third parties.
+
+On **2030-04-11**, all code released under this license automatically converts to **Apache License 2.0**.
