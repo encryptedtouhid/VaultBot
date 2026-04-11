@@ -9,10 +9,13 @@ from typing import TYPE_CHECKING
 from vaultbot.core.context import ContextManager
 from vaultbot.core.healthcheck import HealthcheckServer, HealthStatus
 from vaultbot.core.router import MessageRouter
+from vaultbot.dashboard.api import DashboardContext
 from vaultbot.dashboard.server import DashboardConfig, DashboardServer
 from vaultbot.security.audit import AuditLogger
 from vaultbot.security.auth import AuthManager
+from vaultbot.security.credentials import CredentialStore
 from vaultbot.security.rate_limiter import RateLimiter
+from vaultbot.security.teams import TeamManager
 from vaultbot.utils.logging import get_logger
 
 if TYPE_CHECKING:
@@ -46,11 +49,24 @@ class VaultBot:
             max_history=config.max_history,
         )
         self._router: MessageRouter | None = None
+        self._teams = TeamManager()
+        self._credentials = CredentialStore()
 
         # Infrastructure servers
         self._health = HealthStatus()
         self._healthcheck = HealthcheckServer(self._health, port=8081)
-        self._dashboard = DashboardServer(DashboardConfig(), self._health)
+        self._dashboard_ctx = DashboardContext(
+            config=config,
+            health=self._health,
+            auth=self._auth,
+            rate_limiter=self._rate_limiter,
+            credentials=self._credentials,
+            audit=self._audit,
+            teams=self._teams,
+        )
+        self._dashboard = DashboardServer(
+            DashboardConfig(), self._health, context=self._dashboard_ctx
+        )
 
     def register_platform(self, adapter: PlatformAdapter) -> None:
         """Register a messaging platform adapter."""

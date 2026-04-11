@@ -7,6 +7,7 @@ are logged. Logs are append-only — the bot process cannot delete them.
 from __future__ import annotations
 
 import time
+from collections import deque
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -56,10 +57,11 @@ class AuditLogger:
     - ~/.vaultbot/logs/zenbot.log (main application log)
     """
 
-    def __init__(self, log_dir: Path | None = None) -> None:
+    def __init__(self, log_dir: Path | None = None, buffer_size: int = 500) -> None:
         self._log_dir = log_dir or _AUDIT_LOG_DIR
         self._log_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
         self._logger = structlog.get_logger("vaultbot.audit")
+        self._buffer: deque[dict[str, Any]] = deque(maxlen=buffer_size)
 
     def log(self, event: AuditEvent) -> None:
         """Record an audit event."""
@@ -70,6 +72,13 @@ class AuditLogger:
             timestamp=event.timestamp,
             **event.details,
         )
+        self._buffer.append({
+            "type": event.event_type.value,
+            "platform": event.platform,
+            "user_id": event.user_id,
+            "details": event.details,
+            "timestamp": event.timestamp,
+        })
 
     def log_auth(
         self, *, platform: str, user_id: str, success: bool, reason: str = ""
@@ -117,3 +126,12 @@ class AuditLogger:
                 details={"error": error, **extra},
             )
         )
+
+    def recent(
+        self, limit: int = 50, event_type: str | None = None
+    ) -> list[dict[str, Any]]:
+        """Return recent audit events from the in-memory buffer."""
+        events = list(self._buffer)
+        if event_type:
+            events = [e for e in events if e["type"] == event_type]
+        return list(reversed(events))[:limit]

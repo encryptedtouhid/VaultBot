@@ -533,11 +533,12 @@ def run(
 
     style.section("🌐", "Endpoints")
     style.key_value("Health", "http://localhost:8081/health")
-    style.key_value("Dashboard", "http://localhost:8082/dashboard/api/status")
+    style.key_value("Dashboard UI", "http://localhost:8082/dashboard")
+    style.key_value("API Status", "http://localhost:8082/dashboard/api/status")
     style.key_value("SSE Events", "http://localhost:8082/dashboard/api/events")
     style.key_value("Dashboard Token", dashboard_token)
     style.hint(
-        "curl -H 'Authorization: Bearer TOKEN' http://localhost:8082/dashboard/api/status"
+        "Open http://localhost:8082/dashboard in your browser for the full control panel"
     )
     typer.echo()
 
