@@ -27,10 +27,12 @@ class TestDevicePairing:
         assert mgr.complete_pairing("000000", "phone") is None
 
     def test_expired_code_fails(self) -> None:
+        import time
+
         mgr = DevicePairingManager()
         code = mgr.generate_pairing_code()
-        # Manually expire it
-        mgr._pending_codes[code].created_at = 0  # Way in the past
+        # Set created_at far enough in the past to guarantee expiry (>300s ago)
+        mgr._pending_codes[code].created_at = time.monotonic() - 999
         assert mgr.complete_pairing(code, "phone") is None
 
     def test_code_consumed_on_use(self) -> None:
@@ -92,11 +94,13 @@ class TestDevicePairing:
         assert mgr.get_device(device.id).last_seen >= old_seen
 
     def test_cleanup_expired_codes(self) -> None:
+        import time
+
         mgr = DevicePairingManager()
         mgr.generate_pairing_code()
-        # Manually expire
+        # Set created_at far enough in the past to guarantee expiry
         for pc in mgr._pending_codes.values():
-            pc.created_at = 0
+            pc.created_at = time.monotonic() - 999
         removed = mgr.cleanup_expired_codes()
         assert removed == 1
         assert mgr.pending_codes_count == 0
