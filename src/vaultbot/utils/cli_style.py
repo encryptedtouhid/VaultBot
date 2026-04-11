@@ -5,6 +5,12 @@ from __future__ import annotations
 import typer
 
 
+def _get_version() -> str:
+    from vaultbot import __version__
+
+    return __version__
+
+
 def success(msg: str) -> None:
     """Green text for successful operations."""
     typer.echo(typer.style(f"  ✓ {msg}", fg=typer.colors.GREEN, bold=True))
@@ -40,17 +46,16 @@ def banner() -> None:
     """Display the V.A.U.L.T. BOT ASCII banner."""
     art = typer.style(
         r"""
-  ╔═══════════════════════════════════════════════════╗
-  ║                                                   ║
-  ║  ██╗   ██╗ █████╗ ██╗   ██╗██╗  ████████╗         ║
-  ║  ██║   ██║██╔══██╗██║   ██║██║  ╚══██╔══╝         ║
-  ║  ██║   ██║███████║██║   ██║██║     ██║            ║
-  ║  ╚██╗ ██╔╝██╔══██║██║   ██║██║     ██║            ║
-  ║   ╚████╔╝ ██║  ██║╚██████╔╝███████╗██║   BOT      ║
-  ║    ╚═══╝  ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝            ║
-  ║                                                   ║
-  ║  Security-first, open-source autonomous AI agent  ║
-  ╚═══════════════════════════════════════════════════╝
+ ██╗   ██       ███████╗       ██╗   ██╗     ██╗         ████████╗
+ ██║   ██║      ██╔══██╗       ██║   ██║     ██║         ╚══██╔══╝
+ ██║   ██║      ███████║       ██║   ██║     ██║            ██║
+ ╚██╗ ██╔╝      ██╔══██║       ██║   ██║     ██║            ██║
+  ╚████╔╝  ██╗  ██║  ██║  ██╗  ╚██████╔╝ ██╗ ███████╗  ██╗  ██║  ██╗
+   ╚═══╝   ╚═╝  ╚═╝  ╚═╝  ╚═╝   ╚═════╝  ╚═╝ ╚══════╝  ╚═╝  ╚═╝  ╚═╝  BOT v"""
+        + _get_version()
+        + r"""
+
+ Security-first, source-available autonomous AI agent
 """,
         fg=typer.colors.BRIGHT_CYAN,
         bold=True,
