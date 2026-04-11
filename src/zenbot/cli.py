@@ -34,7 +34,7 @@ logger = get_logger(__name__)
 @app.command()
 def init() -> None:
     """Initialize ZenBot with a guided setup wizard."""
-    setup_logging()
+    setup_logging(enable_file_logging=False)
     style.banner()
 
     style.section("🔒", "Security Check")
@@ -166,7 +166,12 @@ def run(
 ) -> None:
     """Start the ZenBot agent."""
     config = ZenBotConfig.load(config_path)
-    setup_logging(json_output=config.log_json, level=config.log_level)
+    setup_logging(
+        json_output=config.log_json,
+        level=config.log_level,
+        log_dir=Path(config.log_dir) if config.log_dir else None,
+        enable_file_logging=config.log_file,
+    )
 
     store = CredentialStore()
 
@@ -285,7 +290,7 @@ def credentials_set(
     ),
 ) -> None:
     """Store a credential securely in the OS keychain."""
-    setup_logging()
+    setup_logging(enable_file_logging=False)
     value = typer.prompt(
         typer.style(f"  Value for '{key}'", fg=typer.colors.CYAN),
         hide_input=True,
@@ -300,7 +305,7 @@ def credentials_delete(
     key: str = typer.Argument(help="Credential key to delete"),
 ) -> None:
     """Remove a credential from the store."""
-    setup_logging()
+    setup_logging(enable_file_logging=False)
     store = CredentialStore()
     store.delete(key)
     style.success(f"Credential '{key}' deleted.")
@@ -311,7 +316,7 @@ def credentials_check(
     key: str = typer.Argument(help="Credential key to check"),
 ) -> None:
     """Check if a credential exists (without revealing its value)."""
-    setup_logging()
+    setup_logging(enable_file_logging=False)
     store = CredentialStore()
     if store.exists(key):
         style.success(f"Credential '{key}' exists.")
@@ -327,7 +332,7 @@ def plugin_install(
     plugin_dir: Path = typer.Argument(help="Path to the plugin directory"),
 ) -> None:
     """Install a signed plugin from a directory."""
-    setup_logging()
+    setup_logging(enable_file_logging=False)
     from zenbot.plugins.loader import PluginLoader, PluginLoadError
     from zenbot.plugins.registry import PluginRegistry
     from zenbot.plugins.signer import PluginVerifier
@@ -352,7 +357,7 @@ def plugin_install(
 @plugin_app.command("list")
 def plugin_list() -> None:
     """List all installed plugins."""
-    setup_logging()
+    setup_logging(enable_file_logging=False)
     from zenbot.plugins.registry import PluginRegistry
 
     registry = PluginRegistry()
@@ -381,7 +386,7 @@ def plugin_enable(
     name: str = typer.Argument(help="Plugin name to enable"),
 ) -> None:
     """Enable a disabled plugin."""
-    setup_logging()
+    setup_logging(enable_file_logging=False)
     from zenbot.plugins.registry import PluginRegistry
 
     registry = PluginRegistry()
@@ -397,7 +402,7 @@ def plugin_disable(
     name: str = typer.Argument(help="Plugin name to disable"),
 ) -> None:
     """Disable a plugin without uninstalling it."""
-    setup_logging()
+    setup_logging(enable_file_logging=False)
     from zenbot.plugins.registry import PluginRegistry
 
     registry = PluginRegistry()
@@ -413,7 +418,7 @@ def plugin_uninstall(
     name: str = typer.Argument(help="Plugin name to uninstall"),
 ) -> None:
     """Remove a plugin from the registry."""
-    setup_logging()
+    setup_logging(enable_file_logging=False)
     from zenbot.plugins.registry import PluginRegistry
 
     registry = PluginRegistry()
@@ -433,7 +438,7 @@ def plugin_sign(
     ),
 ) -> None:
     """Sign a plugin with an Ed25519 private key."""
-    setup_logging()
+    setup_logging(enable_file_logging=False)
     import json
 
     from zenbot.plugins.signer import PluginSigner
@@ -467,7 +472,7 @@ def plugin_keygen(
     ),
 ) -> None:
     """Generate an Ed25519 keypair for plugin signing."""
-    setup_logging()
+    setup_logging(enable_file_logging=False)
     from zenbot.plugins.signer import PluginSigner
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -497,7 +502,7 @@ def marketplace_search(
     query: str = typer.Argument("", help="Search query"),
 ) -> None:
     """Search the plugin marketplace."""
-    setup_logging()
+    setup_logging(enable_file_logging=False)
     style.info(f"Searching marketplace for '{query}'...")
     style.hint("Marketplace server not configured yet.")
     style.hint("Set ZENBOT_MARKETPLACE_URL or wait for marketplace launch.")
@@ -508,7 +513,7 @@ def marketplace_info(
     name: str = typer.Argument(help="Plugin name"),
 ) -> None:
     """Get details about a marketplace plugin."""
-    setup_logging()
+    setup_logging(enable_file_logging=False)
     style.info(f"Looking up plugin '{name}'...")
     style.hint("Marketplace server not configured yet.")
 
@@ -522,7 +527,7 @@ def team_create(
     description: str = typer.Option("", "--desc", "-d", help="Team description"),
 ) -> None:
     """Create a new team."""
-    setup_logging()
+    setup_logging(enable_file_logging=False)
     from zenbot.security.teams import TeamManager
 
     mgr = TeamManager()
@@ -537,7 +542,7 @@ def team_create(
 @team_app.command("list")
 def team_list() -> None:
     """List all teams."""
-    setup_logging()
+    setup_logging(enable_file_logging=False)
     style.info("Teams are stored in config. Use `zenbot init` to set up teams.")
     style.hint("Team persistence coming in a future update.")
 
@@ -553,7 +558,7 @@ def sdk_new(
     author: str = typer.Option("", "--author", "-a"),
 ) -> None:
     """Scaffold a new plugin project."""
-    setup_logging()
+    setup_logging(enable_file_logging=False)
     from zenbot.plugins.sdk import scaffold_plugin
 
     plugin_dir = scaffold_plugin(output_dir, name, description, author)
@@ -568,7 +573,7 @@ def sdk_test(
     plugin_dir: Path = typer.Argument(help="Path to plugin directory"),
 ) -> None:
     """Run the test harness against a plugin."""
-    setup_logging()
+    setup_logging(enable_file_logging=False)
     import importlib.util
 
     from zenbot.plugins.sdk import PluginTestHarness
@@ -634,7 +639,7 @@ def sdk_validate(
     plugin_dir: Path = typer.Argument(help="Path to plugin directory"),
 ) -> None:
     """Validate a plugin's manifest file."""
-    setup_logging()
+    setup_logging(enable_file_logging=False)
     from zenbot.plugins.sdk import validate_manifest
 
     manifest_path = plugin_dir / "zenbot_plugin.json"

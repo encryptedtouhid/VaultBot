@@ -61,6 +61,8 @@ class ZenBotConfig(BaseSettings):
     max_history: int = 20
     log_level: str = "INFO"
     log_json: bool = False
+    log_file: bool = True  # Write logs to ~/.zenbot/logs/
+    log_dir: str = ""  # Custom log directory (empty = default)
 
     # Platforms
     telegram: PlatformConfig = PlatformConfig(credential_key="telegram_bot_token")

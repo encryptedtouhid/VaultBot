@@ -48,7 +48,13 @@ class AuditEvent:
 
 
 class AuditLogger:
-    """Append-only structured audit logger."""
+    """Append-only structured audit logger.
+
+    Writes to the 'zenbot.audit' logger which is routed to:
+    - Console (via root logger)
+    - ~/.zenbot/logs/audit.log (dedicated audit file)
+    - ~/.zenbot/logs/zenbot.log (main application log)
+    """
 
     def __init__(self, log_dir: Path | None = None) -> None:
         self._log_dir = log_dir or _AUDIT_LOG_DIR
