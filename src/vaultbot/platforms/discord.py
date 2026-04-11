@@ -74,9 +74,30 @@ class DiscordAdapter:
 
     async def connect(self) -> None:
         """Start the Discord bot in the background."""
-        asyncio.create_task(self._bot.start(self._token))
-        # Wait for the bot to be ready
-        await self._bot.wait_until_ready()
+        self._start_task = asyncio.create_task(self._bot.start(self._token))
+
+        # Wait for ready or early failure
+        ready_event = asyncio.Event()
+
+        @self._bot.event
+        async def on_ready() -> None:
+            ready_event.set()
+
+        try:
+            await asyncio.wait_for(ready_event.wait(), timeout=30.0)
+        except TimeoutError:
+            # Check if the start task failed
+            if self._start_task.done() and self._start_task.exception():
+                exc = self._start_task.exception()
+                raise RuntimeError(
+                    f"Discord connection failed: {exc}\n\n"
+                    "If you see 'PrivilegedIntentsRequired', go to:\n"
+                    "  https://discord.com/developers/applications/\n"
+                    "  -> Your App -> Bot -> Privileged Gateway Intents\n"
+                    "  -> Enable 'Message Content Intent'\n"
+                ) from exc
+            raise RuntimeError("Discord connection timed out after 30s") from None
+
         logger.info("discord_connected")
 
     async def disconnect(self) -> None:

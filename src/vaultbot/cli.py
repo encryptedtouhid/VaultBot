@@ -429,7 +429,13 @@ def run(
     style.divider()
     style.header("🚀 Starting V.A.U.L.T. BOT...")
     style.divider()
-    asyncio.run(bot.start())
+    try:
+        asyncio.run(bot.start())
+    except RuntimeError as e:
+        style.error(str(e))
+        raise typer.Exit(1) from e
+    except KeyboardInterrupt:
+        style.info("Shutting down...")
 
 
 # --- Credentials commands ---

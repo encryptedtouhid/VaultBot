@@ -98,7 +98,15 @@ class VaultBot:
 
         # Connect all platforms
         for adapter in self._platforms.values():
-            await adapter.connect()
+            try:
+                await adapter.connect()
+            except Exception as e:
+                logger.error(
+                    "platform_connect_failed",
+                    platform=adapter.platform_name,
+                    error=str(e),
+                )
+                raise
 
         # Set up graceful shutdown (Unix only — Windows uses KeyboardInterrupt)
         import sys
