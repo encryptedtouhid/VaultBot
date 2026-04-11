@@ -281,10 +281,14 @@ def run(
             style.error("Discord token not found.")
             style.command_hint("vaultbot credentials set discord_bot_token")
             raise typer.Exit(1)
-        from vaultbot.platforms.discord import DiscordAdapter
+        try:
+            from vaultbot.platforms.discord import DiscordAdapter
 
-        bot.register_platform(DiscordAdapter(token))
-        style.success("Discord adapter registered.")
+            bot.register_platform(DiscordAdapter(token))
+            style.success("Discord adapter registered.")
+        except ImportError as e:
+            style.error(f"Discord: {e}")
+            raise typer.Exit(1) from e
 
     if config.whatsapp.enabled:
         access_token = store.get("whatsapp_access_token")
@@ -318,12 +322,16 @@ def run(
             style.error("Slack bot token not found.")
             style.command_hint("vaultbot credentials set slack_bot_token")
             raise typer.Exit(1)
-        from vaultbot.platforms.slack import SlackAdapter
+        try:
+            from vaultbot.platforms.slack import SlackAdapter
 
-        bot.register_platform(
-            SlackAdapter(bot_token=bot_token, app_token=app_token or "")
-        )
-        style.success("Slack adapter registered.")
+            bot.register_platform(
+                SlackAdapter(bot_token=bot_token, app_token=app_token or "")
+            )
+            style.success("Slack adapter registered.")
+        except ImportError as e:
+            style.error(f"Slack: {e}")
+            raise typer.Exit(1) from e
 
     if config.teams.enabled:
         app_id = store.get("teams_app_id")
@@ -332,18 +340,26 @@ def run(
             style.error("Teams credentials not found.")
             style.command_hint("vaultbot credentials set teams_app_id")
             raise typer.Exit(1)
-        from vaultbot.platforms.teams import TeamsAdapter
+        try:
+            from vaultbot.platforms.teams import TeamsAdapter
 
-        bot.register_platform(
-            TeamsAdapter(app_id=app_id, app_password=app_password)
-        )
-        style.success("Teams adapter registered.")
+            bot.register_platform(
+                TeamsAdapter(app_id=app_id, app_password=app_password)
+            )
+            style.success("Teams adapter registered.")
+        except ImportError as e:
+            style.error(f"Teams: {e}")
+            raise typer.Exit(1) from e
 
     if config.imessage.enabled:
-        from vaultbot.platforms.imessage import IMessageAdapter
+        try:
+            from vaultbot.platforms.imessage import IMessageAdapter
 
-        bot.register_platform(IMessageAdapter())
-        style.success("iMessage adapter registered.")
+            bot.register_platform(IMessageAdapter())
+            style.success("iMessage adapter registered.")
+        except (ImportError, RuntimeError) as e:
+            style.error(f"iMessage: {e}")
+            raise typer.Exit(1) from e
 
     # Register LLM provider with prompt guard
     from vaultbot.llm.prompt_guard import GuardedLLMProvider
