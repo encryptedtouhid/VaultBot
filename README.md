@@ -1,301 +1,325 @@
-<p align="center">                                                                                                                                              
-  <pre align="center">                                                                                                                                          
-██╗   ██       ███████╗       ██╗   ██╗     ██╗         ████████╗       ██████╗   ██████╗  ████████╗                                                                                
-██║   ██║      ██╔══██╗       ██║   ██║     ██║         ╚══██╔══╝       ██╔══██╗ ██╔═══██╗ ╚══██╔══╝                                                                                
-██║   ██║      ███████║       ██║   ██║     ██║            ██║          ██████╔╝ ██║   ██║    ██║                                                                                   
-╚██╗ ██╔╝      ██╔══██║       ██║   ██║     ██║            ██║          ██╔══██╗ ██║   ██║    ██║                                                                                   
- ╚████╔╝  ██╗  ██║  ██║  ██╗  ╚██████╔╝ ██╗ ███████╗  ██╗  ██║  ██╗     ██████╔╝ ╚██████╔╝    ██║                                                                                   
-  ╚═══╝   ╚═╝  ╚═╝  ╚═╝  ╚═╝   ╚═════╝  ╚═╝ ╚══════╝  ╚═╝  ╚═╝  ╚═╝     ╚═════╝   ╚═════╝     ╚═╝                                                                                   
- </pre>                                                                                                                                                        
-</p> 
-
 <p align="center">
-  <strong>Security-first, source-available autonomous AI agent</strong>
-  <br>
-  <em>V.A.U.L.T. — Verified Autonomous Utility & Logical Taskrunner</em>
-  <br>
-  <em>14 platforms &bull; 16 LLM providers &bull; 10 security layers &bull; 840+ tests</em>
+  <pre align="center">
+██╗   ██       ███████╗       ██╗   ██╗     ██╗         ████████╗       ██████╗   ██████╗  ████████╗
+██║   ██║      ██╔══██╗       ██║   ██║     ██║         ╚══██╔══╝       ██╔══██╗ ██╔═══██╗ ╚══██╔══╝
+██║   ██║      ███████║       ██║   ██║     ██║            ██║          ██████╔╝ ██║   ██║    ██║
+╚██╗ ██╔╝      ██╔══██║       ██║   ██║     ██║            ██║          ██╔══██╗ ██║   ██║    ██║
+ ╚████╔╝  ██╗  ██║  ██║  ██╗  ╚██████╔╝ ██╗ ███████╗  ██╗  ██║  ██╗     ██████╔╝ ╚██████╔╝    ██║
+  ╚═══╝   ╚═╝  ╚═╝  ╚═╝  ╚═╝   ╚═════╝  ╚═╝ ╚══════╝  ╚═╝  ╚═╝  ╚═╝     ╚═════╝   ╚═════╝     ╚═╝
+ </pre>
 </p>
 
 <p align="center">
-  <a href="#quick-start">Quick Start</a> &bull;
-  <a href="#features">Features</a> &bull;
-  <a href="#supported-platforms">Platforms</a> &bull;
-  <a href="#security-architecture">Security</a> &bull;
-  <a href="#media--ai-tools">Media & AI</a> &bull;
-  <a href="#docker-deployment">Docker</a> &bull;
-  <a href="#plugin-development">Plugins</a> &bull;
-  <a href="#cli-reference">CLI</a> &bull;
-  <a href="#testing">Testing</a> &bull;
+  <strong>Security-first, Your Own Personal Autonomous AI assistant.</strong>
+  <br>
+  <em>V.A.U.L.T. — Verified Autonomous Utility & Logical Taskrunner</em>
+</p>
+
+<p align="center">
+  <a href="https://github.com/encryptedtouhid/VaultBot/actions"><img src="https://img.shields.io/github/actions/workflow/status/encryptedtouhid/VaultBot/ci.yml?branch=main&label=CI&style=flat-square" alt="CI"></a>
+  <a href="https://github.com/encryptedtouhid/VaultBot/releases"><img src="https://img.shields.io/github/v/release/encryptedtouhid/VaultBot?style=flat-square&label=version" alt="Version"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-BSL--1.1-blue?style=flat-square" alt="License"></a>
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.11%2B-blue?style=flat-square" alt="Python"></a>
+</p>
+
+<p align="center">
+  <a href="#quick-start">Quick Start</a> &middot;
+  <a href="#platform-support">Platforms</a> &middot;
+  <a href="#llm-providers">LLM Providers</a> &middot;
+  <a href="#security-architecture">Security</a> &middot;
+  <a href="#media--ai-tools">Media & AI</a> &middot;
+  <a href="#plugin-system">Plugins</a> &middot;
+  <a href="#deployment">Deployment</a> &middot;
+  <a href="#cli-reference">CLI</a> &middot;
+  <a href="#configuration">Configuration</a> &middot;
+  <a href="#testing">Testing</a> &middot;
+  <a href="#roadmap">Roadmap</a> &middot;
   <a href="#contributing">Contributing</a>
 </p>
 
 ---
 
-## Why VaultBot?
+## Overview
 
-AI agent bots like OpenClaw ship with authentication disabled by default, store credentials in plain text, and let anyone upload executable plugins with zero code review. The result: [138+ CVEs](https://blink.new/blog/openclaw-security-best-practices-2026), [42,000+ exposed instances](https://www.sangfor.com/blog/cybersecurity/openclaw-ai-agent-security-risks-2026), and [824+ malicious plugins](https://www.immersivelabs.com/resources/c7-blog/openclaw-what-you-need-to-know-before-it-claws-its-way-into-your-organization) in the wild.
+VaultBot is a **security-first, autonomous AI agent platform** that connects 14+ messaging platforms to 16+ LLM providers through a hardened, auditable pipeline. Every credential is encrypted, every plugin is cryptographically signed, every action is logged, and every security mechanism is on by default and cannot be turned off.
 
-VaultBot takes the opposite approach. Every security mechanism is **on by default and cannot be turned off**. Credentials are never stored in plain text. Plugins are cryptographically signed and run in sandboxed subprocesses. Every action is audited.
+Built for teams and individuals who need an AI assistant they can trust with production systems.
 
-| | OpenClaw | VaultBot |
-|---|---|---|
-| **CVEs** | 138+ (41% High/Critical) | 0 (secure by design) |
-| **Auth default** | Disabled | Always on, immutable |
-| **Credentials** | Plain text in `~/.clawdbot` | OS keychain + encrypted fallback |
-| **Plugin vetting** | Zero review | Ed25519 signed + subprocess sandboxed |
-| **Prompt injection** | No protection | 13 input patterns + 3 output leak patterns |
-| **Autonomy control** | Over-autonomous ($400+ token burns) | 5-level approval engine with user confirmation |
+### Key Principles
+
+- **Secure by default** — Zero-trust authentication, immutable security policies, encrypted credential storage
+- **Multi-platform** — Single bot instance serving Telegram, Discord, Slack, WhatsApp, Signal, Teams, and 8 more
+- **Provider-agnostic** — Claude, GPT, Gemini, 12+ compatible providers, and local models via Ollama/vLLM
+- **Auditable** — Structured JSON audit logging, append-only, covering every action and decision
+- **Extensible** — Ed25519-signed plugins running in sandboxed subprocesses with declarative permissions
+
+---
 
 ## Quick Start
 
+### From Source
+
 ```bash
-# Install from source
+# Clone and install
+git clone https://github.com/encryptedtouhid/VaultBot.git
+cd VaultBot
 pip install -e .
 
-# Run diagnostics to verify setup
+# Verify environment
 vaultbot doctor
 
-# Interactive setup wizard — credentials stored in OS keychain
+# Interactive setup — credentials stored in OS keychain
 vaultbot init
 
 # Start the bot
 vaultbot run
 ```
 
-Or with Docker:
+### With Docker
 
 ```bash
-cp .env.example .env    # Fill in your tokens and API keys
-docker compose up -d
+cp .env.example .env       # Configure your tokens and API keys
+docker compose up -d        # Start VaultBot
 ```
 
-## Features
+### With Docker + Redis (multi-instance)
 
-### Supported Platforms
+```bash
+docker compose up -d vaultbot redis
+```
 
-VaultBot supports **14 messaging platforms** out of the box:
+### With Local LLM
 
-| Platform | Library | Connection Mode |
+```bash
+docker compose --profile local-llm up -d
+```
+
+---
+
+## Platform Support
+
+VaultBot supports **14 messaging platforms** with a unified adapter interface. Each platform is fully async with healthcheck monitoring and graceful reconnection.
+
+| Platform | Library | Connection Mode | Features |
+|---|---|---|---|
+| **Telegram** | `python-telegram-bot` | Polling + Webhook | Inline keyboards, file handling, topic threads |
+| **Discord** | `nextcord` | Gateway + Intents | Guild support, embeds, mentions, threads |
+| **WhatsApp** | `httpx` (Cloud API) | Webhook | Meta Business integration, media messages |
+| **Signal** | `signal-cli` JSON-RPC | TCP polling | End-to-end encryption via Signal protocol |
+| **Slack** | `slack-bolt` | Socket Mode + Events API | App tokens, channels, threads |
+| **Microsoft Teams** | `botbuilder-core` | Bot Framework | Enterprise SSO, channel routing |
+| **iMessage** | AppleScript + SQLite | Local polling | macOS native, read/unread tracking |
+| **IRC** | `asyncio` raw | TLS + plaintext | RFC 1459, SASL auth, multi-channel |
+| **Matrix** | `httpx` (CS API) | Long-poll `/sync` | Federated rooms, E2EE-ready |
+| **Mattermost** | `httpx` + WebSocket | REST v4 + WS | Self-hosted, slash commands |
+| **LINE** | `httpx` (Messaging API) | Webhook | Rich menus, reply tokens |
+| **Google Chat** | `httpx` (Chat API) | Webhook + SA | Workspace integration, threads |
+| **Twitch** | `asyncio` IRC gateway | TLS + OAuth | Chat commands, moderation |
+| **Nostr** | WebSocket (NIP-01) | Multi-relay | Decentralized, relay management |
+
+### Platform Features
+
+- **Unified message model** — `InboundMessage` / `OutboundMessage` abstractions across all platforms
+- **Async-first** — All adapters are fully asynchronous with non-blocking I/O
+- **Auto-reconnect** — Graceful disconnect and reconnection handling
+- **Health monitoring** — Per-platform `healthcheck()` for orchestration readiness
+- **Multi-platform routing** — Single bot instance responds on all enabled platforms
+
+---
+
+## LLM Providers
+
+VaultBot integrates with **16 LLM providers** — 3 native SDKs and 12+ OpenAI-compatible endpoints. Any OpenAI-compatible API works out of the box.
+
+### Native SDK Providers
+
+| Provider | Default Model | Features |
 |---|---|---|
-| **Telegram** | `python-telegram-bot` | Polling + Webhook |
-| **Discord** | `nextcord` | Message events + intents |
-| **WhatsApp** | `httpx` (Cloud API) | Webhook |
-| **Signal** | `signal-cli` JSON-RPC | TCP polling |
-| **Slack** | `slack-bolt` | Socket Mode + Events API |
-| **Microsoft Teams** | `botbuilder-core` | Bot Framework webhook |
-| **iMessage** | AppleScript + SQLite | Local polling (macOS only) |
-| **IRC** | `asyncio` raw protocol | TLS + plaintext |
-| **Matrix** | `httpx` (Client-Server API) | Long-poll `/sync` |
-| **Mattermost** | `httpx` + WebSocket | REST API v4 + WS events |
-| **LINE** | `httpx` (Messaging API) | Webhook + reply tokens |
-| **Google Chat** | `httpx` (Chat API) | Webhook + service account |
-| **Twitch** | `asyncio` IRC gateway | TLS + OAuth |
-| **Nostr** | WebSocket (NIP-01) | Multi-relay subscription |
+| **Anthropic Claude** | claude-sonnet-4-20250514 | Vision, tool use, extended thinking |
+| **OpenAI GPT** | gpt-4o | Vision, function calling, streaming |
+| **Google Gemini** | gemini-2.0-flash | Multimodal, long context |
 
-### 16 LLM Providers
+### Compatible Providers
 
-Any OpenAI-compatible API works out of the box. Native SDKs for Claude, OpenAI, and Google Gemini.
-
-| Provider | Type | Default Model |
+| Provider | Default Model | Notes |
 |---|---|---|
-| **Claude** (recommended) | Native SDK | claude-sonnet-4-20250514 |
-| **OpenAI GPT** | Native SDK | gpt-4o |
-| **Google Gemini** | Native REST | gemini-2.0-flash |
-| **OpenRouter** | Compatible | anthropic/claude-sonnet-4 (200+ models) |
-| **Together AI** | Compatible | Llama-3-70b |
-| **Groq** | Compatible | llama-3.1-70b-versatile |
-| **Mistral** | Compatible | mistral-large-latest |
-| **Perplexity** | Compatible | llama-3.1-sonar-large (with web search) |
-| **DeepSeek** | Compatible | deepseek-chat |
-| **Fireworks AI** | Compatible | llama-v3p1-70b-instruct |
-| **xAI (Grok)** | Compatible | grok-2-latest |
-| **Amazon Bedrock** | Compatible | anthropic.claude-sonnet-4 |
-| **Ollama** | Local | llama3.2 |
-| **vLLM** | Local | Any loaded model |
-| **LM Studio** | Local | Any loaded model |
-| **Custom** | Any URL | Any OpenAI-compatible endpoint |
+| **OpenRouter** | anthropic/claude-sonnet-4 | Gateway to 200+ models |
+| **Together AI** | Llama-3-70b | Open-source model hosting |
+| **Groq** | llama-3.1-70b-versatile | Ultra-fast inference |
+| **Mistral** | mistral-large-latest | European AI provider |
+| **Perplexity** | llama-3.1-sonar-large | Built-in web search |
+| **DeepSeek** | deepseek-chat | Cost-effective reasoning |
+| **Fireworks AI** | llama-v3p1-70b-instruct | Fast open-source hosting |
+| **xAI (Grok)** | grok-2-latest | Real-time knowledge |
+| **Amazon Bedrock** | anthropic.claude-sonnet-4 | AWS-managed inference |
 
-All LLM calls pass through a **prompt injection guard** that scans for 13 known attack patterns and 3 output leak indicators before responses reach users.
+### Local Providers
 
-#### Model Fallback & Failover
-
-VaultBot includes automatic **provider failover** with exponential backoff:
-
-- Ordered fallback chain (primary -> secondary -> tertiary)
-- Automatic failover on rate limits, timeouts, or 5xx errors
-- Per-provider health tracking and cooldown management
-- Works with both `complete()` and `stream()` methods
-
-### Media & AI Tools
-
-| Capability | Providers | Description |
-|---|---|---|
-| **Image Generation** | DALL-E 3, Stability AI | Text-to-image with size, quality, style controls |
-| **Video Generation** | Provider registry | Text-to-video with async job tracking |
-| **Music Generation** | Provider registry | Text-to-music with genre/duration controls |
-| **TTS (Text-to-Speech)** | OpenAI TTS, ElevenLabs | 14+ voices, MP3/OPUS/AAC/FLAC/WAV formats |
-| **Media Understanding** | Link extractor | URL content extraction, HTML parsing, title extraction |
-| **Web Search** | Brave Search, Tavily | Structured search results with multi-provider support |
-| **Web Fetch** | httpx | SSRF-protected page fetching with HTML-to-text conversion |
-| **Browser Automation** | Playwright | Headless browsing with SSRF protection and sandbox mode |
-
-### Agent Capabilities
-
-| Feature | Description |
+| Provider | Notes |
 |---|---|
-| **Sub-Agent Spawning** | Spawn child agents for parallel tasks with depth limits and token budgets |
-| **Cron Scheduler** | Cron expressions + simple intervals, persistent jobs, run logging |
-| **Hooks System** | Before/after tool execution, priority ordering, blocking support |
-| **MCP Client** | Model Context Protocol via stdio transport, tool discovery and execution |
-| **Auto-Reply** | Pattern-based automatic responses, smart model routing by content type |
-| **Polls** | Single/multi-choice voting, results aggregation, platform-native rendering |
-| **Canvas** | Collaborative document workspace with revisions and undo |
-| **Context Compaction** | Smart message summarization when conversations exceed token budgets |
-| **Vector Memory** | Semantic search via cosine similarity with importance weighting |
+| **Ollama** | One-command local model deployment |
+| **vLLM** | High-throughput local inference |
+| **LM Studio** | Desktop-friendly local models |
+| **Custom** | Any OpenAI-compatible endpoint URL |
 
-### Plugin System
+### LLM Security & Reliability
 
-| Feature | Description |
-|---|---|
-| **Ed25519 signing** | Unsigned or untrusted plugins refuse to load |
-| **Subprocess sandbox** | Plugins run in isolated processes via JSON-RPC with restricted env |
-| **Manifest permissions** | Plugins declare network domains, filesystem access, and required secrets |
-| **Time & memory limits** | Configurable timeout (default 30s) and memory cap (default 256MB) |
-| **Approval engine** | 5 severity levels: INFO (auto) / LOW (audit) / MEDIUM (confirm) / HIGH (confirm + cooldown) / CRITICAL (confirm + 2FA) |
-| **SDK** | Scaffold, test, validate, sign, and install plugins from the CLI |
-| **Marketplace** | Browse, install, and update reviewed plugins with version pinning |
-| **Version Manager** | Track versions, check for updates, auto-update with rollback |
+- **Prompt injection guard** — 13 input attack patterns + 3 output leak patterns scanned on every request
+- **Model fallback** — Automatic provider failover with exponential backoff on rate limits, timeouts, and 5xx errors
+- **Health tracking** — Per-provider cooldown management and health state
+- **Streaming** — Both `complete()` and `stream()` methods with consistent error handling
 
-### Production Hardening
-
-| Feature | Details |
-|---|---|
-| **Docker** | Multi-stage build, non-root user, read-only FS, all capabilities dropped |
-| **CI/CD** | GitHub Actions: ruff lint, format check, mypy, pytest, pip-audit, Docker build |
-| **Daemon Mode** | Background operation with PID file, signal handling (SIGTERM/SIGHUP), status monitoring |
-| **Healthcheck** | `/health` and `/ready` endpoints for Kubernetes/Docker orchestration |
-| **Redis** | Optional shared memory backend for multi-instance deployments |
-| **Summarization** | LLM-powered conversation compression to manage token costs |
-| **Dashboard** | SSE-based real-time monitoring with metrics (messages/sec, token usage, error rates) |
-| **Teams** | Multi-user roles (Admin/User), per-team daily budgets, shared plugin configs |
-| **Device Pairing** | Secure 6-digit codes with expiry for mobile companion app connections |
-| **i18n** | YAML locale files with variable substitution (English, Spanish included) |
-| **TUI** | Rich terminal interface with colorized output, status panels, help display |
-| **Observability** | OpenTelemetry-compatible metrics, counters, gauges, histograms, and spans |
-| **Security Scanner** | Deep audit scanning for leaked secrets, risky configs, dangerous code patterns |
-| **2FA** | TOTP-based two-factor authentication for CRITICAL severity actions |
+---
 
 ## Security Architecture
 
+VaultBot implements **10+ defense-in-depth security layers**. All security mechanisms are enabled by default and cannot be disabled.
+
 > Full policy and responsible disclosure: [SECURITY.md](SECURITY.md)
+
+### Security Layers
 
 | Layer | Implementation |
 |---|---|
-| **Credential storage** | OS keychain via `keyring`, Fernet + Argon2id fallback, `VAULTBOT_*` env vars for Docker |
-| **Zero-trust auth** | Every user must be explicitly allowlisted; unknown senders are rejected and logged |
-| **Immutable defaults** | `auth.require_allowlist`, `plugins.require_signature`, `actions.require_approval`, `audit.enabled` cannot be set to false |
-| **Prompt guard** | 13 injection patterns (ignore instructions, jailbreak, DAN mode, role override, etc.) + 3 output leak patterns |
-| **Input sanitizer** | Strips zero-width chars, control chars, bidi overrides; normalizes Unicode (NFC); 4096-char limit |
-| **Rate limiting** | Token bucket per user and globally, always enabled, configurable burst/sustain rates |
-| **Plugin signing** | Ed25519 signatures verified against a local trust store of approved public keys |
-| **Plugin sandbox** | Subprocess isolation, restricted PATH/env, network allowlists from manifest, hard timeout + kill |
-| **Action approval** | Severity-based gates — MEDIUM+ actions require explicit user confirmation via messaging platform |
-| **Audit logging** | Structured JSON, append-only, covers auth, messages, actions, plugins, config changes, errors |
-| **SSRF protection** | Blocks internal IPs, cloud metadata endpoints, non-HTTP schemes in web fetch and browser tools |
-| **Secret scanning** | Pre-commit hooks + audit scanner detect leaked API keys, passwords, and tokens |
-| **2FA enforcement** | TOTP-based verification for CRITICAL actions (key rotation, data deletion) |
+| **Credential Storage** | OS keychain via `keyring`, Fernet + Argon2id encrypted fallback, `VAULTBOT_*` env vars for containers |
+| **Zero-Trust Auth** | Explicit allowlist required — unknown senders are rejected and audit-logged |
+| **Immutable Policies** | `auth.require_allowlist`, `plugins.require_signature`, `actions.require_approval`, `audit.enabled` — hardcoded `true`, override attempts are logged |
+| **Prompt Guard** | 13 injection patterns (ignore instructions, jailbreak, DAN mode, role override) + 3 output leak patterns |
+| **Input Sanitizer** | Strips zero-width chars, control chars, bidi overrides; Unicode NFC normalization; 4096-char limit |
+| **Rate Limiting** | Token bucket per-user and global, always enabled, configurable burst/sustain rates |
+| **Plugin Signing** | Ed25519 signatures verified against local trust store — unsigned plugins refuse to load |
+| **Plugin Sandbox** | Subprocess isolation with restricted PATH/env, network allowlists, hard timeout + OOM kill |
+| **Action Approval** | 5-level severity engine: INFO (auto) through CRITICAL (2FA required) |
+| **Audit Logging** | Structured JSON, append-only — covers auth, messages, actions, plugins, config changes, errors |
+| **SSRF Protection** | Blocks private IPs, cloud metadata endpoints, non-HTTP schemes in fetch and browser tools |
+| **Secret Scanning** | Pre-commit hooks + runtime scanner detect API keys, passwords, and tokens |
+| **2FA Enforcement** | TOTP verification for CRITICAL actions (key rotation, data deletion, admin operations) |
 
-## Architecture
+### Approval Engine
 
-```
-src/vaultbot/                          106 source files across 14 modules
-├── core/                            Bot orchestrator, router, context, compaction,
-│                                    summarizer, task engine, healthcheck, auto-reply
-├── platforms/                       Telegram, Discord, WhatsApp, Signal, Slack, Teams,
-│                                    iMessage, IRC, Matrix, Mattermost, LINE, Google Chat,
-│                                    Twitch, Nostr, webhook server
-├── llm/                             Claude, OpenAI, Gemini, compatible providers, local
-│                                    adapters, prompt guard, factory, fallback
-├── plugins/                         Base, loader, sandbox, signer, registry, SDK,
-│                                    marketplace, version manager
-├── security/                        Credentials, auth, rate limiter, audit, policy,
-│                                    sanitizer, teams, audit scanner, two-factor
-├── memory/                          SQLite, Redis, vector store (semantic search)
-├── media/                           Image generation (DALL-E, Stability AI), TTS (OpenAI,
-│                                    ElevenLabs), video generation, music generation,
-│                                    media understanding (link extraction)
-├── tools/                           Web search (Brave, Tavily), web fetch (SSRF protected),
-│                                    browser automation (Playwright), canvas, polls
-├── mcp/                             Model Context Protocol client (stdio transport)
-├── agents/                          Sub-agent spawning and orchestration
-├── cron/                            Scheduled task system with cron expressions
-├── hooks/                           Before/after tool execution event system
-├── i18n/                            Internationalization with YAML locales
-├── dashboard/                       SSE web dashboard, REST API, real-time metrics
-├── config.py                        Pydantic config with .env + YAML + env vars
-├── cli.py                           7 command groups, 20+ subcommands
-├── daemon.py                        Background daemon with PID management
-├── setup.py                         Setup wizard and doctor diagnostics
-├── tui.py                           Terminal UI with ANSI colors
-├── pairing.py                       Device pairing for companion apps
-└── observability.py                 OpenTelemetry-compatible metrics and tracing
-```
-
-## Configuration
-
-VaultBot reads configuration from three sources (highest priority first):
-
-1. **Environment variables** — `VAULTBOT_*` prefix, best for Docker
-2. **`.env` file** — auto-loaded by pydantic-settings
-3. **YAML config** — `~/.vaultbot/config.yaml`, created by `vaultbot init`
-
-### Environment Variables
-
-```bash
-cp .env.example .env
-# Edit .env with your tokens, API keys, and preferences
-```
-
-All 30+ variables are documented in [`.env.example`](.env.example), organized by section: general, LLM, platforms, rate limiting, infrastructure.
-
-### Credential Lookup Order
-
-| Priority | Source | Best for |
+| Severity | Behavior | Example Actions |
 |---|---|---|
-| 1 | `VAULTBOT_*` env var | Docker, CI/CD |
-| 2 | OS keychain (`keyring`) | Desktop (macOS, Windows, Linux) |
-| 3 | Encrypted file store | Headless servers |
+| **INFO** | Auto-approved | Read-only queries, search |
+| **LOW** | Auto-approved + audit log | LLM requests, memory reads |
+| **MEDIUM** | Requires user confirmation | Config changes, plugin enable/disable |
+| **HIGH** | Confirmation + cooldown period | Plugin install/remove, credential changes |
+| **CRITICAL** | Confirmation + TOTP 2FA | Data deletion, key rotation, admin operations |
 
-### Platform Credentials
+---
 
-| Platform | What you need |
+## Media & AI Tools
+
+| Capability | Providers | Description |
+|---|---|---|
+| **Image Generation** | DALL-E 3, Stability AI | Text-to-image with size, quality, and style controls |
+| **Video Generation** | Provider registry | Extensible text-to-video with async job tracking |
+| **Music Generation** | Provider registry | Text-to-music with genre and duration controls |
+| **Text-to-Speech** | OpenAI TTS, ElevenLabs | 14+ voices, MP3/OPUS/AAC/FLAC/WAV output |
+| **Web Search** | Brave Search, DuckDuckGo, Tavily | Multi-provider with fallback and structured results |
+| **Web Fetch** | httpx | SSRF-protected page fetching with HTML-to-text |
+| **Browser Automation** | Playwright | Headless browsing, screenshots, form filling, JS execution |
+| **Link Understanding** | Built-in | URL content extraction, HTML parsing, metadata |
+
+---
+
+## Agent Capabilities
+
+| Feature | Description |
 |---|---|
-| Telegram | Bot token from [@BotFather](https://t.me/BotFather) |
-| Discord | Bot token from Discord Developer Portal |
-| WhatsApp | Access token + Phone Number ID from Meta Business |
-| Signal | Phone number + `signal-cli` daemon running |
-| Slack | Bot token (`xoxb-`) + App token (`xapp-`) from Slack API |
-| Teams | App ID + App Password from Azure Bot registration |
-| iMessage | None — uses local Messages.app (macOS only) |
-| IRC | Server, port, nick, channels (TLS by default) |
-| Matrix | Homeserver URL + access token or user/password |
-| Mattermost | Server URL + personal access token |
-| LINE | Channel access token + channel secret |
-| Google Chat | Service account key or webhook URL |
-| Twitch | OAuth token + bot username |
-| Nostr | Private key hex + relay URLs |
+| **Sub-Agent Spawning** | Parallel task execution with depth limits (max 3), token budgets (50k default), and timeout protection |
+| **Cron Scheduler** | Standard cron expressions + simple intervals, persistent storage, run logging, success/failure tracking |
+| **Hooks System** | 8 event types (before/after tool, LLM, message, startup, shutdown, error) with priority ordering |
+| **MCP Client** | Model Context Protocol via stdio/HTTP transport — automatic tool and resource discovery |
+| **Auto-Reply** | Pattern-based triggers with regex matching, case sensitivity control, instant responses |
+| **Smart Routing** | Content-based LLM selection — route coding questions to one model, creative tasks to another |
+| **Polls** | Single/multi-choice voting with results aggregation and platform-native rendering |
+| **Canvas** | Collaborative document workspace (text, code, markdown, table) with revision history |
+| **Context Compaction** | LLM-powered conversation summarization with token budget management |
+| **Vector Memory** | Semantic search via cosine similarity with importance weighting and metadata |
 
-## Docker Deployment
+---
+
+## Plugin System
+
+VaultBot's plugin system enforces security at every layer — from cryptographic signing to subprocess isolation.
+
+### Plugin Security Model
+
+| Feature | Details |
+|---|---|
+| **Ed25519 Signing** | Plugins must be signed with a trusted key — unsigned plugins refuse to load |
+| **Subprocess Sandbox** | Each plugin runs in an isolated process via JSON-RPC with restricted environment |
+| **Manifest Permissions** | Plugins declare required network domains, filesystem access level, and secrets |
+| **Resource Limits** | Configurable timeout (default 30s) and memory cap (default 256MB) per plugin |
+| **Approval Integration** | Plugin actions route through the 5-level severity approval engine |
+
+### Plugin Lifecycle
 
 ```bash
-# Standard: bot + Claude API
+# Scaffold a new plugin
+vaultbot sdk new weather-lookup --desc "Weather by location" --author "you"
+
+# Implement logic in weather-lookup/plugin.py
+
+# Run automated validation (5 checks)
+vaultbot sdk test ./weather-lookup
+
+# Validate manifest
+vaultbot sdk validate ./weather-lookup
+
+# Generate signing keypair (one time)
+vaultbot plugin keygen ./my-keys
+
+# Sign the plugin
+vaultbot plugin sign ./weather-lookup ./my-keys/vaultbot_signing_key.pem
+
+# Trust the key and install
+cp ./my-keys/vaultbot_signing_key.pub ~/.vaultbot/trust_store/
+vaultbot plugin install ./weather-lookup
+```
+
+### Marketplace
+
+```bash
+vaultbot marketplace search <query>      # Search reviewed plugins
+vaultbot marketplace info <name>         # Plugin details and compatibility
+vaultbot plugin install <name>           # Install with version pinning
+```
+
+---
+
+## Memory System
+
+VaultBot provides three pluggable memory backends:
+
+| Backend | Use Case | Features |
+|---|---|---|
+| **SQLite** | Single-instance deployments | Async I/O, indexed queries, zero config |
+| **Redis** | Multi-instance with shared state | Distributed cache, optional TTL, hiredis support |
+| **Vector Store** | Semantic search | Cosine similarity, importance weighting, metadata |
+
+### Memory Features
+
+- Per-user and per-chat conversation history
+- Automatic context compaction via LLM summarization
+- Semantic memory search with relevance scoring
+- Thread-safe atomic operations
+- Configurable TTL (Redis backend)
+
+---
+
+## Deployment
+
+### Docker
+
+```bash
+# Bot only
 docker compose up -d vaultbot
 
-# With Redis for multi-instance shared state
+# Bot + Redis (multi-instance shared state)
 docker compose up -d vaultbot redis
 
-# With local LLM (Ollama)
+# Bot + local LLM (Ollama)
 docker compose --profile local-llm up -d
 ```
 
@@ -303,52 +327,107 @@ docker compose --profile local-llm up -d
 
 | Measure | Details |
 |---|---|
-| Non-root user | Runs as `vaultbot:vaultbot` (UID/GID created at build) |
-| Read-only filesystem | Root FS is read-only; `/tmp` is tmpfs (noexec, nosuid, 64MB) |
-| Capability dropping | All Linux capabilities dropped via `cap_drop: ALL` |
-| Privilege escalation | Blocked via `no-new-privileges: true` |
-| Network isolation | Bridge network (`vaultbot-net`) between services |
-| Log rotation | Docker json-file driver, 10MB max, 3 files |
-| Health checks | Bot: HTTP `/health` every 30s; Redis: `redis-cli ping` every 10s |
-| Persistent volumes | `vaultbot-data` (config/memory/logs), `redis-data`, `ollama-data` |
+| **Non-root user** | Runs as `vaultbot:vaultbot` (dedicated UID/GID) |
+| **Read-only filesystem** | Root FS is read-only; `/tmp` is tmpfs (noexec, nosuid, 64MB) |
+| **Capability dropping** | All Linux capabilities dropped via `cap_drop: ALL` |
+| **No privilege escalation** | Enforced via `no-new-privileges: true` |
+| **Network isolation** | Bridge network between services |
+| **Log rotation** | json-file driver, 10MB max, 3 files |
+| **Health checks** | HTTP `/health` every 30s; Redis `ping` every 10s |
+| **Persistent volumes** | `vaultbot-data`, `redis-data`, `ollama-data` |
+
+### Daemon Mode
+
+```bash
+vaultbot run --daemon                    # Start in background
+vaultbot run --daemon --status           # Check daemon status
+```
+
+- PID file management with stale PID detection
+- Signal handling (SIGTERM for graceful shutdown, SIGHUP for reload)
+- Health endpoints (`/health`, `/ready`) for Kubernetes probes
+
+---
+
+## Configuration
+
+VaultBot reads configuration from three sources (highest priority first):
+
+| Priority | Source | Best For |
+|---|---|---|
+| 1 | `VAULTBOT_*` environment variables | Docker, CI/CD, Kubernetes |
+| 2 | `.env` file | Local development |
+| 3 | `~/.vaultbot/config.yaml` | Desktop, persistent config |
+
+### Credential Storage
+
+| Priority | Source | Best For |
+|---|---|---|
+| 1 | `VAULTBOT_*` env vars | Containers and CI/CD |
+| 2 | OS keychain (`keyring`) | Desktop (macOS, Windows, Linux) |
+| 3 | Fernet + Argon2id encrypted file | Headless servers |
+
+### Platform Credentials
+
+| Platform | Requirement |
+|---|---|
+| Telegram | Bot token from [@BotFather](https://t.me/BotFather) |
+| Discord | Bot token from [Developer Portal](https://discord.com/developers) |
+| WhatsApp | Access token + Phone Number ID from Meta Business |
+| Signal | Phone number + `signal-cli` daemon |
+| Slack | Bot token (`xoxb-`) + App token (`xapp-`) |
+| Teams | App ID + Password from Azure Bot registration |
+| iMessage | None — uses local Messages.app (macOS only) |
+| IRC | Server, port, nick, channels |
+| Matrix | Homeserver URL + access token |
+| Mattermost | Server URL + personal access token |
+| LINE | Channel access token + channel secret |
+| Google Chat | Service account key or webhook URL |
+| Twitch | OAuth token + bot username |
+| Nostr | Private key hex + relay URLs |
+
+All 30+ configuration variables are documented in [`.env.example`](.env.example).
+
+---
 
 ## CLI Reference
 
-### Core
+### Core Commands
 
 ```bash
 vaultbot init                            # Interactive setup wizard
 vaultbot run                             # Start the bot
-vaultbot doctor                          # Run diagnostic checks
 vaultbot run -c ./config.yaml            # Start with custom config
+vaultbot run --daemon                    # Start in background
+vaultbot doctor                          # Run diagnostic checks
 ```
 
-### Credentials
+### Credential Management
 
 ```bash
 vaultbot credentials set <key>           # Store in OS keychain (hidden input)
-vaultbot credentials check <key>         # Check existence without revealing value
+vaultbot credentials check <key>         # Verify existence without revealing value
 vaultbot credentials delete <key>        # Remove from keychain
 ```
 
-### Plugins
+### Plugin Management
 
 ```bash
 vaultbot plugin install <dir>            # Install a signed plugin
-vaultbot plugin list                     # List installed plugins with status
-vaultbot plugin enable <name>            # Enable a disabled plugin
+vaultbot plugin list                     # List installed plugins
+vaultbot plugin enable <name>            # Enable a plugin
 vaultbot plugin disable <name>           # Disable without uninstalling
 vaultbot plugin uninstall <name>         # Remove from registry
-vaultbot plugin sign <dir> <key-file>    # Sign with Ed25519 private key
-vaultbot plugin keygen <output-dir>      # Generate Ed25519 signing keypair
+vaultbot plugin sign <dir> <key-file>    # Sign with Ed25519 key
+vaultbot plugin keygen <output-dir>      # Generate signing keypair
 ```
 
 ### Plugin SDK
 
 ```bash
-vaultbot sdk new <name>                  # Scaffold plugin with boilerplate
-vaultbot sdk test <dir>                  # Run 5-test validation harness
-vaultbot sdk validate <dir>              # Check manifest for errors
+vaultbot sdk new <name>                  # Scaffold plugin boilerplate
+vaultbot sdk test <dir>                  # Run validation harness
+vaultbot sdk validate <dir>              # Check manifest
 ```
 
 ### Marketplace & Teams
@@ -360,33 +439,39 @@ vaultbot team create <name>              # Create a new team
 vaultbot team list                       # List all teams
 ```
 
-## Plugin Development
+---
 
-### Full Workflow
+## Architecture
 
-```bash
-# 1. Scaffold
-vaultbot sdk new weather-lookup --desc "Weather by location" --author "you"
-
-# 2. Implement logic in weather-lookup/plugin.py
-#    (see examples/plugins/ for reference)
-
-# 3. Test locally (runs 5 automated checks)
-vaultbot sdk test ./weather-lookup
-
-# 4. Validate manifest
-vaultbot sdk validate ./weather-lookup
-
-# 5. Generate signing key (one time)
-vaultbot plugin keygen ./my-keys
-
-# 6. Sign the plugin
-vaultbot plugin sign ./weather-lookup ./my-keys/vaultbot_signing_key.pem
-
-# 7. Trust the key and install
-cp ./my-keys/vaultbot_signing_key.pub ~/.vaultbot/trust_store/
-vaultbot plugin install ./weather-lookup
 ```
+src/vaultbot/
+├── core/               Bot orchestrator, message router, context management,
+│                       compaction, summarizer, task engine, healthcheck, auto-reply
+├── platforms/          14 messaging adapters with unified PlatformAdapter protocol
+├── llm/                Claude, OpenAI, Gemini, compatible providers, local adapters,
+│                       prompt guard, factory, fallback engine
+├── security/           Credentials, auth, rate limiter, audit logger, policy enforcer,
+│                       sanitizer, teams, audit scanner, two-factor auth
+├── plugins/            Loader, sandbox, signer, registry, SDK, marketplace, versioning
+├── memory/             SQLite, Redis, and vector store backends
+├── media/              Image/video/music generation, TTS, link understanding
+├── tools/              Web search, web fetch, browser automation, canvas, polls
+├── mcp/                Model Context Protocol client (stdio + HTTP transport)
+├── agents/             Sub-agent spawning and orchestration
+├── cron/               Scheduled task system with persistent storage
+├── hooks/              Event system with 8 hook types
+├── i18n/               Internationalization with YAML locale files
+├── dashboard/          SSE web dashboard with real-time metrics
+├── config.py           Pydantic config with multi-source resolution
+├── cli.py              Typer CLI with 7 command groups
+├── daemon.py           Background daemon with PID and signal management
+├── setup.py            Setup wizard and doctor diagnostics
+├── tui.py              Terminal UI with ANSI rendering
+├── pairing.py          Device pairing for companion apps
+└── observability.py    OpenTelemetry-compatible metrics and tracing
+```
+
+---
 
 ## Testing
 
@@ -394,61 +479,93 @@ vaultbot plugin install ./weather-lookup
 # Install dev dependencies
 pip install -e ".[dev]"
 
-# Run all tests
+# Run full test suite
 pytest tests/ -v
 
 # Unit tests only
 pytest tests/unit/ -v
 
-# Integration / e2e tests only
+# Integration tests only
 pytest tests/integration/ -v
 
-# Lint
+# Linting
 ruff check src/ tests/
 
 # Format check
 ruff format --check src/ tests/
+
+# Type checking
+mypy src/
+
+# Security audit
+pip-audit
 ```
 
-### Test Breakdown
+### Test Coverage
 
-| Category | Tests | Coverage |
+| Category | Tests | Scope |
 |---|---|---|
-| **Security** | 56+ | Auth, rate limiting, policy, sanitizer, prompt guard, teams, credentials, logging, audit scanner, 2FA |
+| **Security** | 56+ | Auth, rate limiting, policy, sanitizer, prompt guard, teams, credentials, audit, 2FA |
 | **Core** | 50+ | Message routing, context, compaction, summarizer, healthcheck, task engine, auto-reply |
-| **Platforms** | 180+ | All 14 adapters: init, send, receive, healthcheck, connect/disconnect, line handling |
-| **LLM Providers** | 40+ | Gemini, compatible presets, factory, fallback/failover, protocol compliance |
-| **Media & Tools** | 100+ | Image/video/music/TTS generation, web search/fetch, browser, canvas, polls |
+| **Platforms** | 180+ | All 14 adapters — init, send, receive, healthcheck, connect, disconnect |
+| **LLM Providers** | 40+ | Gemini, compatible presets, factory, fallback, protocol compliance |
+| **Media & Tools** | 100+ | Image/video/music/TTS generation, web search, fetch, browser, canvas, polls |
 | **Plugins** | 60+ | Signing, sandbox, registry, SDK, marketplace, version manager |
-| **Infrastructure** | 80+ | MCP, cron, hooks, sub-agents, daemon, pairing, i18n, TUI, metrics, observability |
+| **Infrastructure** | 80+ | MCP, cron, hooks, sub-agents, daemon, pairing, i18n, TUI, observability |
 | **E2E Integration** | 80+ | Full pipeline per platform, multi-user isolation, injection blocking, failover |
 | **Total** | **840+** | |
 
-## Project Overview
+---
+
+## Roadmap
+
+VaultBot is under active development. Key areas on the roadmap:
+
+- **Voice I/O** — Speech-to-text, wake word detection, push-to-talk, talk mode
+- **Native Apps** — macOS, iOS, Android, and Apple Watch companion apps
+- **Gateway** — WebSocket control plane for remote management and multi-client access
+- **Expanded Providers** — 35+ LLM providers including Asian market coverage
+- **Video & Music** — Concrete generation providers (FAL, Runway, Comfy, Suno)
+- **Advanced Memory** — Wiki-based knowledge, active memory, dreaming, LanceDB vectors
+- **Workflow Engine** — Multi-step typed pipelines with approval gates and branching
+- **Coding Agent** — Sandboxed code execution with multi-language support
+- **More Platforms** — 9+ additional messaging platforms including WeChat, QQ, Feishu
+- **Enterprise Cron** — Delivery plans, stagger, heartbeat, session reaping
+- **Plugin Ecosystem** — Published SDK, hosted marketplace, bundled and managed skills
+- **Prompt Caching** — Provider-native caching for cost optimization
+- **Block Streaming** — Paragraph-aware chunked delivery with backpressure
+
+See the [full issue tracker](https://github.com/encryptedtouhid/VaultBot/issues) for detailed implementation plans.
+
+---
+
+## Project Stats
 
 | Metric | Value |
 |---|---|
 | **Version** | 0.1.0 (alpha) |
 | **Language** | Python 3.11+ |
-| **Source files** | 106 |
-| **Test files** | 60 |
-| **Total tests** | 840+ |
-| **Platforms** | 14 |
-| **LLM providers** | 16 (3 native + 12 compatible + custom) |
-| **Memory backends** | 3 (SQLite, Redis, Vector) |
-| **Security layers** | 10+ |
-| **CLI commands** | 20+ across 7 groups |
-| **Config variables** | 30+ |
+| **Source Files** | 106 |
+| **Test Files** | 64 |
+| **Total Tests** | 840+ |
+| **Messaging Platforms** | 14 |
+| **LLM Providers** | 16 (3 native + 12 compatible + custom) |
+| **Memory Backends** | 3 (SQLite, Redis, Vector) |
+| **Security Layers** | 10+ |
+| **CLI Commands** | 20+ across 7 groups |
 | **CI/CD** | GitHub Actions (lint, format, type check, tests, security audit, Docker) |
-| **License** | BSL 1.1 (converts to Apache 2.0 on 2030-04-11) |
+
+---
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, code style, and PR process.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, code style, and pull request process.
 
-For security vulnerabilities, see [SECURITY.md](SECURITY.md) for the responsible disclosure process.
+For security vulnerabilities, see [SECURITY.md](SECURITY.md) for responsible disclosure.
 
 For incident response procedures, see [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md).
+
+---
 
 ## License
 
