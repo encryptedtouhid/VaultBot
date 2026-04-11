@@ -111,6 +111,42 @@ def init() -> None:
         store.set("signal_account", account)
         style.success("Signal account stored securely.")
 
+    if typer.confirm("  Enable Slack?", default=False):
+        config.slack.enabled = True
+        token = typer.prompt(
+            typer.style("  Slack bot token (xoxb-...)", fg=typer.colors.CYAN),
+            hide_input=True,
+        )
+        store.set("slack_bot_token", token)
+        app_token = typer.prompt(
+            typer.style("  Slack app token (xapp-...)", fg=typer.colors.CYAN),
+            hide_input=True,
+        )
+        store.set("slack_app_token", app_token)
+        style.success("Slack tokens stored securely.")
+
+    if typer.confirm("  Enable Microsoft Teams?", default=False):
+        config.teams.enabled = True
+        app_id = typer.prompt(
+            typer.style("  Teams App ID", fg=typer.colors.CYAN),
+        )
+        store.set("teams_app_id", app_id)
+        app_password = typer.prompt(
+            typer.style("  Teams App Password", fg=typer.colors.CYAN),
+            hide_input=True,
+        )
+        store.set("teams_app_password", app_password)
+        style.success("Teams credentials stored securely.")
+
+    if typer.confirm("  Enable iMessage? (macOS only)", default=False):
+        import sys
+
+        if sys.platform != "darwin":
+            style.warning("iMessage is only available on macOS. Skipping.")
+        else:
+            config.imessage.enabled = True
+            style.success("iMessage enabled (uses local Messages.app).")
+
     # LLM setup
     style.section("🤖", "LLM Setup")
     provider = typer.prompt(
@@ -237,6 +273,40 @@ def run(
 
         bot.register_platform(SignalAdapter(account=account))
         style.success("Signal adapter registered.")
+
+    if config.slack.enabled:
+        bot_token = store.get("slack_bot_token")
+        app_token = store.get("slack_app_token")
+        if not bot_token:
+            style.error("Slack bot token not found.")
+            style.command_hint("zenbot credentials set slack_bot_token")
+            raise typer.Exit(1)
+        from zenbot.platforms.slack import SlackAdapter
+
+        bot.register_platform(
+            SlackAdapter(bot_token=bot_token, app_token=app_token or "")
+        )
+        style.success("Slack adapter registered.")
+
+    if config.teams.enabled:
+        app_id = store.get("teams_app_id")
+        app_password = store.get("teams_app_password")
+        if not app_id or not app_password:
+            style.error("Teams credentials not found.")
+            style.command_hint("zenbot credentials set teams_app_id")
+            raise typer.Exit(1)
+        from zenbot.platforms.teams import TeamsAdapter
+
+        bot.register_platform(
+            TeamsAdapter(app_id=app_id, app_password=app_password)
+        )
+        style.success("Teams adapter registered.")
+
+    if config.imessage.enabled:
+        from zenbot.platforms.imessage import IMessageAdapter
+
+        bot.register_platform(IMessageAdapter())
+        style.success("iMessage adapter registered.")
 
     # Register LLM provider with prompt guard
     from zenbot.llm.prompt_guard import GuardedLLMProvider

@@ -69,6 +69,9 @@ class ZenBotConfig(BaseSettings):
     discord: PlatformConfig = PlatformConfig(credential_key="discord_bot_token")
     whatsapp: PlatformConfig = PlatformConfig(credential_key="whatsapp_api_token")
     signal: PlatformConfig = PlatformConfig(credential_key="signal_phone_number")
+    slack: PlatformConfig = PlatformConfig(credential_key="slack_bot_token")
+    teams: PlatformConfig = PlatformConfig(credential_key="teams_app_id")
+    imessage: PlatformConfig = PlatformConfig(credential_key="imessage")
 
     # LLM
     llm: LLMConfig = LLMConfig()
