@@ -14,7 +14,7 @@
   <br>
   <em>V.A.U.L.T. — Verified Autonomous Utility & Logical Taskrunner</em>
   <br>
-  <em>7 platforms &bull; 13 LLM providers &bull; 10 security layers &bull; 235 tests</em>
+  <em>14 platforms &bull; 16 LLM providers &bull; 10 security layers &bull; 840+ tests</em>
 </p>
 
 <p align="center">
@@ -22,10 +22,12 @@
   <a href="#features">Features</a> &bull;
   <a href="#supported-platforms">Platforms</a> &bull;
   <a href="#security-architecture">Security</a> &bull;
+  <a href="#media--ai-tools">Media & AI</a> &bull;
   <a href="#docker-deployment">Docker</a> &bull;
   <a href="#plugin-development">Plugins</a> &bull;
   <a href="#cli-reference">CLI</a> &bull;
-  <a href="#testing">Testing</a>
+  <a href="#testing">Testing</a> &bull;
+  <a href="#contributing">Contributing</a>
 </p>
 
 ---
@@ -51,6 +53,9 @@ VaultBot takes the opposite approach. Every security mechanism is **on by defaul
 # Install from source
 pip install -e .
 
+# Run diagnostics to verify setup
+vaultbot doctor
+
 # Interactive setup wizard — credentials stored in OS keychain
 vaultbot init
 
@@ -69,6 +74,8 @@ docker compose up -d
 
 ### Supported Platforms
 
+VaultBot supports **14 messaging platforms** out of the box:
+
 | Platform | Library | Connection Mode |
 |---|---|---|
 | **Telegram** | `python-telegram-bot` | Polling + Webhook |
@@ -78,15 +85,23 @@ docker compose up -d
 | **Slack** | `slack-bolt` | Socket Mode + Events API |
 | **Microsoft Teams** | `botbuilder-core` | Bot Framework webhook |
 | **iMessage** | AppleScript + SQLite | Local polling (macOS only) |
+| **IRC** | `asyncio` raw protocol | TLS + plaintext |
+| **Matrix** | `httpx` (Client-Server API) | Long-poll `/sync` |
+| **Mattermost** | `httpx` + WebSocket | REST API v4 + WS events |
+| **LINE** | `httpx` (Messaging API) | Webhook + reply tokens |
+| **Google Chat** | `httpx` (Chat API) | Webhook + service account |
+| **Twitch** | `asyncio` IRC gateway | TLS + OAuth |
+| **Nostr** | WebSocket (NIP-01) | Multi-relay subscription |
 
-### 13 LLM Providers
+### 16 LLM Providers
 
-Any OpenAI-compatible API works out of the box. Native SDKs for Claude and OpenAI.
+Any OpenAI-compatible API works out of the box. Native SDKs for Claude, OpenAI, and Google Gemini.
 
 | Provider | Type | Default Model |
 |---|---|---|
 | **Claude** (recommended) | Native SDK | claude-sonnet-4-20250514 |
 | **OpenAI GPT** | Native SDK | gpt-4o |
+| **Google Gemini** | Native REST | gemini-2.0-flash |
 | **OpenRouter** | Compatible | anthropic/claude-sonnet-4 (200+ models) |
 | **Together AI** | Compatible | Llama-3-70b |
 | **Groq** | Compatible | llama-3.1-70b-versatile |
@@ -94,12 +109,50 @@ Any OpenAI-compatible API works out of the box. Native SDKs for Claude and OpenA
 | **Perplexity** | Compatible | llama-3.1-sonar-large (with web search) |
 | **DeepSeek** | Compatible | deepseek-chat |
 | **Fireworks AI** | Compatible | llama-v3p1-70b-instruct |
+| **xAI (Grok)** | Compatible | grok-2-latest |
+| **Amazon Bedrock** | Compatible | anthropic.claude-sonnet-4 |
 | **Ollama** | Local | llama3.2 |
 | **vLLM** | Local | Any loaded model |
 | **LM Studio** | Local | Any loaded model |
 | **Custom** | Any URL | Any OpenAI-compatible endpoint |
 
 All LLM calls pass through a **prompt injection guard** that scans for 13 known attack patterns and 3 output leak indicators before responses reach users.
+
+#### Model Fallback & Failover
+
+VaultBot includes automatic **provider failover** with exponential backoff:
+
+- Ordered fallback chain (primary -> secondary -> tertiary)
+- Automatic failover on rate limits, timeouts, or 5xx errors
+- Per-provider health tracking and cooldown management
+- Works with both `complete()` and `stream()` methods
+
+### Media & AI Tools
+
+| Capability | Providers | Description |
+|---|---|---|
+| **Image Generation** | DALL-E 3, Stability AI | Text-to-image with size, quality, style controls |
+| **Video Generation** | Provider registry | Text-to-video with async job tracking |
+| **Music Generation** | Provider registry | Text-to-music with genre/duration controls |
+| **TTS (Text-to-Speech)** | OpenAI TTS, ElevenLabs | 14+ voices, MP3/OPUS/AAC/FLAC/WAV formats |
+| **Media Understanding** | Link extractor | URL content extraction, HTML parsing, title extraction |
+| **Web Search** | Brave Search, Tavily | Structured search results with multi-provider support |
+| **Web Fetch** | httpx | SSRF-protected page fetching with HTML-to-text conversion |
+| **Browser Automation** | Playwright | Headless browsing with SSRF protection and sandbox mode |
+
+### Agent Capabilities
+
+| Feature | Description |
+|---|---|
+| **Sub-Agent Spawning** | Spawn child agents for parallel tasks with depth limits and token budgets |
+| **Cron Scheduler** | Cron expressions + simple intervals, persistent jobs, run logging |
+| **Hooks System** | Before/after tool execution, priority ordering, blocking support |
+| **MCP Client** | Model Context Protocol via stdio transport, tool discovery and execution |
+| **Auto-Reply** | Pattern-based automatic responses, smart model routing by content type |
+| **Polls** | Single/multi-choice voting, results aggregation, platform-native rendering |
+| **Canvas** | Collaborative document workspace with revisions and undo |
+| **Context Compaction** | Smart message summarization when conversations exceed token budgets |
+| **Vector Memory** | Semantic search via cosine similarity with importance weighting |
 
 ### Plugin System
 
@@ -111,19 +164,27 @@ All LLM calls pass through a **prompt injection guard** that scans for 13 known 
 | **Time & memory limits** | Configurable timeout (default 30s) and memory cap (default 256MB) |
 | **Approval engine** | 5 severity levels: INFO (auto) / LOW (audit) / MEDIUM (confirm) / HIGH (confirm + cooldown) / CRITICAL (confirm + 2FA) |
 | **SDK** | Scaffold, test, validate, sign, and install plugins from the CLI |
-| **Marketplace** | Client for browsing and installing reviewed plugins |
+| **Marketplace** | Browse, install, and update reviewed plugins with version pinning |
+| **Version Manager** | Track versions, check for updates, auto-update with rollback |
 
 ### Production Hardening
 
 | Feature | Details |
 |---|---|
 | **Docker** | Multi-stage build, non-root user, read-only FS, all capabilities dropped |
+| **CI/CD** | GitHub Actions: ruff lint, format check, mypy, pytest, pip-audit, Docker build |
+| **Daemon Mode** | Background operation with PID file, signal handling (SIGTERM/SIGHUP), status monitoring |
 | **Healthcheck** | `/health` and `/ready` endpoints for Kubernetes/Docker orchestration |
 | **Redis** | Optional shared memory backend for multi-instance deployments |
 | **Summarization** | LLM-powered conversation compression to manage token costs |
-| **File logging** | Rotating JSON logs: `vaultbot.log`, `vaultbot.error.log`, `audit.log` (10MB, 5 backups) |
-| **Dashboard** | SSE-based real-time monitoring, token-authenticated, localhost by default |
+| **Dashboard** | SSE-based real-time monitoring with metrics (messages/sec, token usage, error rates) |
 | **Teams** | Multi-user roles (Admin/User), per-team daily budgets, shared plugin configs |
+| **Device Pairing** | Secure 6-digit codes with expiry for mobile companion app connections |
+| **i18n** | YAML locale files with variable substitution (English, Spanish included) |
+| **TUI** | Rich terminal interface with colorized output, status panels, help display |
+| **Observability** | OpenTelemetry-compatible metrics, counters, gauges, histograms, and spans |
+| **Security Scanner** | Deep audit scanning for leaked secrets, risky configs, dangerous code patterns |
+| **2FA** | TOTP-based two-factor authentication for CRITICAL severity actions |
 
 ## Security Architecture
 
@@ -141,25 +202,44 @@ All LLM calls pass through a **prompt injection guard** that scans for 13 known 
 | **Plugin sandbox** | Subprocess isolation, restricted PATH/env, network allowlists from manifest, hard timeout + kill |
 | **Action approval** | Severity-based gates — MEDIUM+ actions require explicit user confirmation via messaging platform |
 | **Audit logging** | Structured JSON, append-only, covers auth, messages, actions, plugins, config changes, errors |
+| **SSRF protection** | Blocks internal IPs, cloud metadata endpoints, non-HTTP schemes in web fetch and browser tools |
+| **Secret scanning** | Pre-commit hooks + audit scanner detect leaked API keys, passwords, and tokens |
+| **2FA enforcement** | TOTP-based verification for CRITICAL actions (key rotation, data deletion) |
 
 ## Architecture
 
 ```
-src/vaultbot/                          54 source files across 8 modules
-├── core/                            Bot orchestrator, router, context, summarizer,
-│                                    task engine, healthcheck
-├── platforms/                       Telegram, Discord, WhatsApp, Signal, Slack,
-│                                    Teams, iMessage, webhook server
-├── llm/                             Claude, OpenAI, local adapters, prompt guard
-├── plugins/                         Base, loader, sandbox, signer, registry,
-│                                    SDK, marketplace
-├── security/                        Credentials, auth, rate limiter, audit,
-│                                    policy, sanitizer, teams
-├── memory/                          SQLite and Redis persistent storage
-├── dashboard/                       SSE web dashboard with token auth
-├── utils/                           Structured logging, crypto, CLI styling
+src/vaultbot/                          106 source files across 14 modules
+├── core/                            Bot orchestrator, router, context, compaction,
+│                                    summarizer, task engine, healthcheck, auto-reply
+├── platforms/                       Telegram, Discord, WhatsApp, Signal, Slack, Teams,
+│                                    iMessage, IRC, Matrix, Mattermost, LINE, Google Chat,
+│                                    Twitch, Nostr, webhook server
+├── llm/                             Claude, OpenAI, Gemini, compatible providers, local
+│                                    adapters, prompt guard, factory, fallback
+├── plugins/                         Base, loader, sandbox, signer, registry, SDK,
+│                                    marketplace, version manager
+├── security/                        Credentials, auth, rate limiter, audit, policy,
+│                                    sanitizer, teams, audit scanner, two-factor
+├── memory/                          SQLite, Redis, vector store (semantic search)
+├── media/                           Image generation (DALL-E, Stability AI), TTS (OpenAI,
+│                                    ElevenLabs), video generation, music generation,
+│                                    media understanding (link extraction)
+├── tools/                           Web search (Brave, Tavily), web fetch (SSRF protected),
+│                                    browser automation (Playwright), canvas, polls
+├── mcp/                             Model Context Protocol client (stdio transport)
+├── agents/                          Sub-agent spawning and orchestration
+├── cron/                            Scheduled task system with cron expressions
+├── hooks/                           Before/after tool execution event system
+├── i18n/                            Internationalization with YAML locales
+├── dashboard/                       SSE web dashboard, REST API, real-time metrics
 ├── config.py                        Pydantic config with .env + YAML + env vars
-└── cli.py                           7 command groups, 20+ subcommands
+├── cli.py                           7 command groups, 20+ subcommands
+├── daemon.py                        Background daemon with PID management
+├── setup.py                         Setup wizard and doctor diagnostics
+├── tui.py                           Terminal UI with ANSI colors
+├── pairing.py                       Device pairing for companion apps
+└── observability.py                 OpenTelemetry-compatible metrics and tracing
 ```
 
 ## Configuration
@@ -198,6 +278,13 @@ All 30+ variables are documented in [`.env.example`](.env.example), organized by
 | Slack | Bot token (`xoxb-`) + App token (`xapp-`) from Slack API |
 | Teams | App ID + App Password from Azure Bot registration |
 | iMessage | None — uses local Messages.app (macOS only) |
+| IRC | Server, port, nick, channels (TLS by default) |
+| Matrix | Homeserver URL + access token or user/password |
+| Mattermost | Server URL + personal access token |
+| LINE | Channel access token + channel secret |
+| Google Chat | Service account key or webhook URL |
+| Twitch | OAuth token + bot username |
+| Nostr | Private key hex + relay URLs |
 
 ## Docker Deployment
 
@@ -225,22 +312,15 @@ docker compose --profile local-llm up -d
 | Health checks | Bot: HTTP `/health` every 30s; Redis: `redis-cli ping` every 10s |
 | Persistent volumes | `vaultbot-data` (config/memory/logs), `redis-data`, `ollama-data` |
 
-### Exposed Ports
-
-| Port | Service |
-|---|---|
-| 8080 | Webhook server (WhatsApp, Telegram, Teams) |
-| 8081 | Healthcheck (`/health`, `/ready`) |
-| 8082 | Dashboard (SSE, token-authenticated) |
-
 ## CLI Reference
 
 ### Core
 
 ```bash
-vaultbot init                            # Interactive setup wizard with colorful output
-vaultbot run                             # Start the bot with all enabled platforms
-vaultbot run -c ./config.yaml            # Start with custom config file
+vaultbot init                            # Interactive setup wizard
+vaultbot run                             # Start the bot
+vaultbot doctor                          # Run diagnostic checks
+vaultbot run -c ./config.yaml            # Start with custom config
 ```
 
 ### Credentials
@@ -308,30 +388,6 @@ cp ./my-keys/vaultbot_signing_key.pub ~/.vaultbot/trust_store/
 vaultbot plugin install ./weather-lookup
 ```
 
-### Plugin Manifest (`vaultbot_plugin.json`)
-
-```json
-{
-    "name": "weather-lookup",
-    "version": "1.0.0",
-    "description": "Look up weather by location",
-    "author": "you@example.com",
-    "min_vaultbot_version": "0.1.0",
-    "network_domains": ["api.openweathermap.org"],
-    "filesystem": "none",
-    "secrets": ["OPENWEATHER_API_KEY"],
-    "timeout_seconds": 10.0,
-    "max_memory_mb": 64
-}
-```
-
-### Example Plugins
-
-| Plugin | Location | What it does |
-|---|---|---|
-| **Calculator** | `examples/plugins/calculator/` | Safe math via AST parsing (not eval), blocks DoS via exponent limits |
-| **Weather** | `examples/plugins/weather/` | OpenWeatherMap API with declared network permissions and secret handling |
-
 ## Testing
 
 ```bash
@@ -348,37 +404,25 @@ pytest tests/unit/ -v
 pytest tests/integration/ -v
 
 # Lint
-ruff check src/ tests/ examples/
+ruff check src/ tests/
 
-# Type check
-mypy src/
+# Format check
+ruff format --check src/ tests/
 ```
 
 ### Test Breakdown
 
-| Category | Files | Tests | Coverage |
-|---|---|---|---|
-| **Security** | 8 | 56 | Auth, rate limiting, policy, sanitizer, prompt guard, teams, credentials, logging |
-| **Core** | 4 | 19 | Message routing, context, summarizer, healthcheck, task engine |
-| **Plugins** | 5 | 41 | Signing, verification, sandbox, registry, SDK, calculator plugin |
-| **Platforms** | 1 | 9 | Import guards, platform names, macOS checks |
-| **Memory** | 1 | 8 | SQLite CRUD, persistence across restarts, chat isolation |
-| **Dashboard** | 1 | 9 | SSE broadcasting, events, config, marketplace entries |
-| **E2E Integration** | 3 | 59 | Full pipeline, multi-user isolation, injection blocking, plugin lifecycle, memory persistence, team workflows, SSE streaming |
-| **Webhook** | 1 | 4 | Query parsing, WhatsApp verification |
-| **Total** | **24** | **235** | |
-
-## Logging
-
-VaultBot writes structured JSON logs to `~/.vaultbot/logs/`:
-
-| File | Content | Level | Rotation |
-|---|---|---|---|
-| `vaultbot.log` | All application events | Configured (default INFO) | 10MB, 5 backups |
-| `vaultbot.error.log` | Warnings and errors only | WARNING+ | 10MB, 5 backups |
-| `audit.log` | Security audit events | All | 10MB, 5 backups |
-
-Every log entry includes: ISO timestamp, log level, event name, source filename, function name, and line number. File permissions are `0600` (owner read/write only).
+| Category | Tests | Coverage |
+|---|---|---|
+| **Security** | 56+ | Auth, rate limiting, policy, sanitizer, prompt guard, teams, credentials, logging, audit scanner, 2FA |
+| **Core** | 50+ | Message routing, context, compaction, summarizer, healthcheck, task engine, auto-reply |
+| **Platforms** | 180+ | All 14 adapters: init, send, receive, healthcheck, connect/disconnect, line handling |
+| **LLM Providers** | 40+ | Gemini, compatible presets, factory, fallback/failover, protocol compliance |
+| **Media & Tools** | 100+ | Image/video/music/TTS generation, web search/fetch, browser, canvas, polls |
+| **Plugins** | 60+ | Signing, sandbox, registry, SDK, marketplace, version manager |
+| **Infrastructure** | 80+ | MCP, cron, hooks, sub-agents, daemon, pairing, i18n, TUI, metrics, observability |
+| **E2E Integration** | 80+ | Full pipeline per platform, multi-user isolation, injection blocking, failover |
+| **Total** | **840+** | |
 
 ## Project Overview
 
@@ -386,28 +430,25 @@ Every log entry includes: ISO timestamp, log level, event name, source filename,
 |---|---|
 | **Version** | 0.1.0 (alpha) |
 | **Language** | Python 3.11+ |
-| **Source files** | 54 |
-| **Test files** | 28 |
-| **Total tests** | 235 |
-| **Platforms** | 7 |
-| **LLM providers** | 13 (2 native + 10 compatible + custom) |
-| **Memory backends** | 2 (SQLite, Redis) |
-| **Security layers** | 10 |
+| **Source files** | 106 |
+| **Test files** | 60 |
+| **Total tests** | 840+ |
+| **Platforms** | 14 |
+| **LLM providers** | 16 (3 native + 12 compatible + custom) |
+| **Memory backends** | 3 (SQLite, Redis, Vector) |
+| **Security layers** | 10+ |
 | **CLI commands** | 20+ across 7 groups |
 | **Config variables** | 30+ |
+| **CI/CD** | GitHub Actions (lint, format, type check, tests, security audit, Docker) |
 | **License** | BSL 1.1 (converts to Apache 2.0 on 2030-04-11) |
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/your-feature`)
-3. Write tests for your changes
-4. Ensure all tests pass: `pytest tests/ -v`
-5. Ensure lint passes: `ruff check src/ tests/`
-6. Commit your changes with a descriptive message
-7. Push to the branch and open a Pull Request
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, code style, and PR process.
 
 For security vulnerabilities, see [SECURITY.md](SECURITY.md) for the responsible disclosure process.
+
+For incident response procedures, see [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md).
 
 ## License
 
