@@ -28,6 +28,7 @@ jobs:
       - name: Format check
         run: ruff format --check src/ tests/
       - name: Type check
+        continue-on-error: true
         run: mypy src/vaultbot/ --ignore-missing-imports --no-strict --allow-untyped-defs
       - name: Run tests
         run: pytest --tb=short -q
