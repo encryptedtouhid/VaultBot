@@ -40,6 +40,8 @@ class TokenBucket:
         """Seconds until at least 1 token is available."""
         if self.tokens >= 1.0:
             return 0.0
+        if self.refill_rate <= 0:
+            return float("inf")
         return (1.0 - self.tokens) / self.refill_rate
 
 
