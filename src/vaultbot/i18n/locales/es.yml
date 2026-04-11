@@ -1,0 +1,20 @@
+greeting: "Hola! Soy VaultBot, tu asistente IA seguro."
+errors:
+  rate_limited: "Has sido limitado. Por favor espera {seconds} segundos."
+  unauthorized: "No tienes permiso para usar este bot."
+  provider_down: "El proveedor de IA no esta disponible. Intenta de nuevo."
+  not_connected: "No conectado a {platform}."
+commands:
+  help: "Comandos disponibles: /help, /status, /clear, /model, /quit"
+  status: "Estado de Plataformas"
+  clear: "Conversacion borrada."
+  model_switched: "Cambiado al modelo: {model}"
+security:
+  blocked_prompt: "Tu mensaje fue bloqueado por el guardia de inyeccion."
+  approval_required: "Esta accion requiere aprobacion. Severidad: {level}"
+  approved: "Accion aprobada."
+  denied: "Accion denegada."
+plugins:
+  installed: "Plugin '{name}' instalado exitosamente (v{version})."
+  removed: "Plugin '{name}' removido."
+  not_found: "Plugin '{name}' no encontrado."
