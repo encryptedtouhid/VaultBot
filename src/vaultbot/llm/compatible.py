@@ -83,6 +83,16 @@ PROVIDER_PRESETS: dict[str, dict[str, str]] = {
         "default_model": "default",
         "name": "LM Studio (local)",
     },
+    "xai": {
+        "base_url": "https://api.x.ai/v1",
+        "default_model": "grok-2-latest",
+        "name": "xAI (Grok)",
+    },
+    "bedrock_compat": {
+        "base_url": "https://bedrock-runtime.us-east-1.amazonaws.com/v1",
+        "default_model": "anthropic.claude-sonnet-4-20250514-v1:0",
+        "name": "Amazon Bedrock (compatible)",
+    },
 }
 
 
