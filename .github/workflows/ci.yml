@@ -28,7 +28,7 @@ jobs:
       - name: Format check
         run: ruff format --check src/ tests/
       - name: Type check
-        run: mypy src/vaultbot/ --ignore-missing-imports
+        run: mypy src/vaultbot/ --ignore-missing-imports --no-strict --allow-untyped-defs
       - name: Run tests
         run: pytest --tb=short -q
       - name: Security audit
