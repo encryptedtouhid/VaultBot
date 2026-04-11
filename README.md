@@ -14,7 +14,7 @@
   <br>
   <em>V.A.U.L.T. — Verified Autonomous Utility & Logical Taskrunner</em>
   <br>
-  <em>7 platforms &bull; 3 LLM backends &bull; 10 security layers &bull; 235 tests</em>
+  <em>7 platforms &bull; 13 LLM providers &bull; 10 security layers &bull; 235 tests</em>
 </p>
 
 <p align="center">
@@ -79,13 +79,25 @@ docker compose up -d
 | **Microsoft Teams** | `botbuilder-core` | Bot Framework webhook |
 | **iMessage** | AppleScript + SQLite | Local polling (macOS only) |
 
-### LLM Backends
+### 13 LLM Providers
 
-| Provider | Library | Default Model |
+Any OpenAI-compatible API works out of the box. Native SDKs for Claude and OpenAI.
+
+| Provider | Type | Default Model |
 |---|---|---|
-| **Claude** (recommended) | `anthropic` | claude-sonnet-4-20250514 |
-| **OpenAI GPT** | `openai` | gpt-4o |
-| **Local Models** | `httpx` | llama3.2 (via Ollama/vLLM/llama.cpp) |
+| **Claude** (recommended) | Native SDK | claude-sonnet-4-20250514 |
+| **OpenAI GPT** | Native SDK | gpt-4o |
+| **OpenRouter** | Compatible | anthropic/claude-sonnet-4 (200+ models) |
+| **Together AI** | Compatible | Llama-3-70b |
+| **Groq** | Compatible | llama-3.1-70b-versatile |
+| **Mistral** | Compatible | mistral-large-latest |
+| **Perplexity** | Compatible | llama-3.1-sonar-large (with web search) |
+| **DeepSeek** | Compatible | deepseek-chat |
+| **Fireworks AI** | Compatible | llama-v3p1-70b-instruct |
+| **Ollama** | Local | llama3.2 |
+| **vLLM** | Local | Any loaded model |
+| **LM Studio** | Local | Any loaded model |
+| **Custom** | Any URL | Any OpenAI-compatible endpoint |
 
 All LLM calls pass through a **prompt injection guard** that scans for 13 known attack patterns and 3 output leak indicators before responses reach users.
 
@@ -378,7 +390,7 @@ Every log entry includes: ISO timestamp, log level, event name, source filename,
 | **Test files** | 28 |
 | **Total tests** | 235 |
 | **Platforms** | 7 |
-| **LLM backends** | 3 |
+| **LLM providers** | 13 (2 native + 10 compatible + custom) |
 | **Memory backends** | 2 (SQLite, Redis) |
 | **Security layers** | 10 |
 | **CLI commands** | 20+ across 7 groups |

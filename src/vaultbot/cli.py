@@ -150,24 +150,60 @@ def init() -> None:
 
     # LLM setup
     style.section("🤖", "LLM Setup")
+    all_providers = [
+        "claude", "openai",
+        "openrouter", "together", "groq", "mistral",
+        "perplexity", "deepseek", "fireworks",
+        "ollama", "vllm", "lmstudio", "custom",
+    ]
     provider = typer.prompt(
         typer.style("  LLM provider", fg=typer.colors.CYAN),
         default="claude",
-        type=click.Choice(["claude", "openai", "local"]),
+        type=click.Choice(all_providers),
     )
     config.llm.provider = provider
 
-    if provider in ("claude", "openai"):
+    # Providers that need an API key
+    needs_key = {
+        "claude", "openai", "openrouter", "together", "groq",
+        "mistral", "perplexity", "deepseek", "fireworks",
+    }
+    # Local providers (no key needed)
+    local_providers = {"ollama", "vllm", "lmstudio"}
+
+    if provider in needs_key:
         api_key = typer.prompt(
             typer.style(f"  {provider} API key", fg=typer.colors.CYAN),
             hide_input=True,
         )
         store.set("llm_api_key", api_key)
-        style.success(f"{provider.capitalize()} API key stored securely.")
+        style.success(f"{provider} API key stored securely.")
 
-    if provider == "local":
-        style.info("Local mode — no API key needed.")
-        style.hint("Make sure Ollama or a compatible server is running.")
+    if provider in local_providers:
+        style.info(f"{provider} — no API key needed.")
+        style.hint("Make sure the local server is running.")
+
+    if provider == "custom":
+        base_url = typer.prompt(
+            typer.style(
+                "  Custom API base URL (e.g., https://my-server.com/v1)",
+                fg=typer.colors.CYAN,
+            ),
+        )
+        store.set("custom_llm_base_url", base_url)
+        model = typer.prompt(
+            typer.style("  Model name", fg=typer.colors.CYAN),
+            default="default",
+        )
+        config.llm.model = model
+        use_key = typer.confirm("  Does it require an API key?", default=False)
+        if use_key:
+            api_key = typer.prompt(
+                typer.style("  API key", fg=typer.colors.CYAN),
+                hide_input=True,
+            )
+            store.set("llm_api_key", api_key)
+        style.success("Custom LLM endpoint configured.")
 
     # Allowlist setup
     style.section("👤", "Allowlist Setup")
@@ -314,7 +350,12 @@ def run(
 
     llm_provider = None
 
-    if config.llm.provider == "claude":
+    from vaultbot.llm.compatible import PROVIDER_PRESETS, CompatibleProvider
+
+    compatible_providers = set(PROVIDER_PRESETS.keys())
+    provider_name = config.llm.provider
+
+    if provider_name == "claude":
         api_key = store.get(config.llm.credential_key)
         if not api_key:
             style.error("Claude API key not found.")
@@ -324,7 +365,7 @@ def run(
 
         llm_provider = ClaudeProvider(api_key, config.llm.model)
 
-    elif config.llm.provider == "openai":
+    elif provider_name == "openai":
         api_key = store.get(config.llm.credential_key)
         if not api_key:
             style.error("OpenAI API key not found.")
@@ -334,13 +375,35 @@ def run(
 
         llm_provider = OpenAIProvider(api_key, config.llm.model)
 
-    elif config.llm.provider == "local":
-        from vaultbot.llm.local import LocalProvider
+    elif provider_name in compatible_providers:
+        api_key = store.get(config.llm.credential_key) or "not-needed"
+        llm_provider = CompatibleProvider.from_preset(
+            provider_name,
+            api_key=api_key,
+            model=config.llm.model if config.llm.model != "claude-sonnet-4-20250514" else None,
+        )
 
-        llm_provider = LocalProvider(default_model=config.llm.model)
+    elif provider_name == "custom":
+        base_url = store.get("custom_llm_base_url")
+        if not base_url:
+            style.error("Custom LLM base URL not found.")
+            style.command_hint("vaultbot credentials set custom_llm_base_url")
+            raise typer.Exit(1)
+        api_key = store.get(config.llm.credential_key) or "not-needed"
+        llm_provider = CompatibleProvider(
+            base_url=base_url,
+            default_model=config.llm.model,
+            api_key=api_key,
+            provider_label="custom",
+        )
 
-    if llm_provider is None:
-        style.error(f"Unknown LLM provider '{config.llm.provider}'.")
+    else:
+        style.error(f"Unknown LLM provider '{provider_name}'.")
+        style.hint(
+            "Available: claude, openai, openrouter, together, groq, "
+            "mistral, perplexity, deepseek, fireworks, ollama, vllm, "
+            "lmstudio, custom"
+        )
         raise typer.Exit(1)
 
     # Wrap with prompt injection guard
