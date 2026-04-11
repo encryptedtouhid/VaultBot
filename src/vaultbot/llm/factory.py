@@ -11,9 +11,18 @@ from vaultbot.llm.base import LLMProvider
 # Mapping of provider names to their implementations
 _NATIVE_PROVIDERS = {"claude", "openai", "gemini"}
 _COMPATIBLE_PROVIDERS = {
-    "openrouter", "together", "groq", "mistral", "perplexity",
-    "deepseek", "fireworks", "ollama", "vllm", "lmstudio",
-    "xai", "bedrock_compat",
+    "openrouter",
+    "together",
+    "groq",
+    "mistral",
+    "perplexity",
+    "deepseek",
+    "fireworks",
+    "ollama",
+    "vllm",
+    "lmstudio",
+    "xai",
+    "bedrock_compat",
 }
 
 
@@ -47,18 +56,22 @@ def create_provider(
 
     if name == "claude":
         from vaultbot.llm.claude import ClaudeProvider
+
         return ClaudeProvider(api_key=api_key)
 
     if name == "openai":
         from vaultbot.llm.openai_gpt import OpenAIProvider
+
         return OpenAIProvider(api_key=api_key)
 
     if name == "gemini":
         from vaultbot.llm.gemini import GeminiProvider
+
         return GeminiProvider(api_key=api_key, default_model=model or "gemini-2.0-flash")
 
     if name == "local":
         from vaultbot.llm.local import LocalProvider
+
         return LocalProvider(
             base_url=base_url or "http://localhost:11434/v1",
             default_model=model or "llama3.2",
@@ -67,11 +80,13 @@ def create_provider(
 
     if name in _COMPATIBLE_PROVIDERS:
         from vaultbot.llm.compatible import CompatibleProvider
+
         return CompatibleProvider.from_preset(name, api_key=api_key, model=model)
 
     # Fallback: treat as custom OpenAI-compatible endpoint
     if base_url:
         from vaultbot.llm.compatible import CompatibleProvider
+
         return CompatibleProvider(
             base_url=base_url,
             default_model=model or "default",
@@ -80,9 +95,7 @@ def create_provider(
         )
 
     available = sorted(_NATIVE_PROVIDERS | _COMPATIBLE_PROVIDERS | {"local"})
-    raise ValueError(
-        f"Unknown LLM provider '{provider}'. Available: {', '.join(available)}"
-    )
+    raise ValueError(f"Unknown LLM provider '{provider}'. Available: {', '.join(available)}")
 
 
 def list_providers() -> list[str]:

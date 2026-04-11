@@ -33,16 +33,10 @@ class TelegramAdapter:
 
     async def connect(self) -> None:
         """Initialize and start the Telegram bot."""
-        self._app = (
-            Application.builder()
-            .token(self._token)
-            .build()
-        )
+        self._app = Application.builder().token(self._token).build()
 
         # Register message handler that feeds into our queue
-        self._app.add_handler(
-            MessageHandler(filters.TEXT & ~filters.COMMAND, self._on_message)
-        )
+        self._app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self._on_message))
 
         await self._app.initialize()
         await self._app.start()

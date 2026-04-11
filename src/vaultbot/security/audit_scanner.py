@@ -94,7 +94,6 @@ _CODE_RISK_PATTERNS: list[tuple[str, str]] = [
 
 
 class SecurityAuditScanner:
-
     def scan_file(self, file_path: Path) -> list[AuditFinding]:
         findings: list[AuditFinding] = []
         if not file_path.exists() or not file_path.is_file():
@@ -109,42 +108,48 @@ class SecurityAuditScanner:
         for pattern, desc in _SECRET_PATTERNS:
             for i, line in enumerate(lines, 1):
                 if re.search(pattern, line):
-                    findings.append(AuditFinding(
-                        severity=FindingSeverity.CRITICAL,
-                        category=FindingCategory.SECRET_LEAK,
-                        title=f"Potential secret: {desc}",
-                        description=f"Found '{desc}' in {file_path.name}:{i}",
-                        file_path=str(file_path),
-                        line_number=i,
-                        fix_suggestion="Move secrets to env vars or credential store.",
-                    ))
+                    findings.append(
+                        AuditFinding(
+                            severity=FindingSeverity.CRITICAL,
+                            category=FindingCategory.SECRET_LEAK,
+                            title=f"Potential secret: {desc}",
+                            description=f"Found '{desc}' in {file_path.name}:{i}",
+                            file_path=str(file_path),
+                            line_number=i,
+                            fix_suggestion="Move secrets to env vars or credential store.",
+                        )
+                    )
 
         suffix = file_path.suffix.lower()
         if suffix in (".yaml", ".yml", ".toml", ".ini", ".cfg", ".env", ".json"):
             for pattern, desc in _CONFIG_RISKS:
                 for i, line in enumerate(lines, 1):
                     if re.search(pattern, line):
-                        findings.append(AuditFinding(
-                            severity=FindingSeverity.HIGH,
-                            category=FindingCategory.CONFIG_RISK,
-                            title=f"Risky config: {desc}",
-                            description=f"Found '{desc}' in {file_path.name}:{i}",
-                            file_path=str(file_path),
-                            line_number=i,
-                        ))
+                        findings.append(
+                            AuditFinding(
+                                severity=FindingSeverity.HIGH,
+                                category=FindingCategory.CONFIG_RISK,
+                                title=f"Risky config: {desc}",
+                                description=f"Found '{desc}' in {file_path.name}:{i}",
+                                file_path=str(file_path),
+                                line_number=i,
+                            )
+                        )
 
         if suffix == ".py":
             for pattern, desc in _CODE_RISK_PATTERNS:
                 for i, line in enumerate(lines, 1):
                     if re.search(pattern, line):
-                        findings.append(AuditFinding(
-                            severity=FindingSeverity.MEDIUM,
-                            category=FindingCategory.CODE_SAFETY,
-                            title=f"Code risk: {desc}",
-                            description=f"Found '{desc}' in {file_path.name}:{i}",
-                            file_path=str(file_path),
-                            line_number=i,
-                        ))
+                        findings.append(
+                            AuditFinding(
+                                severity=FindingSeverity.MEDIUM,
+                                category=FindingCategory.CODE_SAFETY,
+                                title=f"Code risk: {desc}",
+                                description=f"Found '{desc}' in {file_path.name}:{i}",
+                                file_path=str(file_path),
+                                line_number=i,
+                            )
+                        )
 
         return findings
 
@@ -173,13 +178,15 @@ class SecurityAuditScanner:
         stat = path.stat()
         mode = stat.st_mode & 0o777
         if mode & 0o077:
-            findings.append(AuditFinding(
-                severity=FindingSeverity.HIGH,
-                category=FindingCategory.PERMISSION_RISK,
-                title="Overly permissive file permissions",
-                description=f"{path.name} has {oct(mode)} — should be 0600",
-                file_path=str(path),
-                auto_fixable=True,
-                fix_suggestion=f"chmod 600 {path}",
-            ))
+            findings.append(
+                AuditFinding(
+                    severity=FindingSeverity.HIGH,
+                    category=FindingCategory.PERMISSION_RISK,
+                    title="Overly permissive file permissions",
+                    description=f"{path.name} has {oct(mode)} — should be 0600",
+                    file_path=str(path),
+                    auto_fixable=True,
+                    fix_suggestion=f"chmod 600 {path}",
+                )
+            )
         return findings

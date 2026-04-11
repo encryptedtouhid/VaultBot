@@ -70,10 +70,7 @@ async def test_should_summarize_above_threshold(
 async def test_summarize_returns_summary(
     summarizer: ConversationSummarizer,
 ) -> None:
-    messages = [
-        ChatMessage(role="user", content=f"msg{i}")
-        for i in range(10)
-    ]
+    messages = [ChatMessage(role="user", content=f"msg{i}") for i in range(10)]
     summary = await summarizer.summarize(messages)
     assert "weather" in summary.lower()
 

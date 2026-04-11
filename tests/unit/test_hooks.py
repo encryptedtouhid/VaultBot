@@ -166,9 +166,11 @@ class TestHookEngine:
             return HookResult()
 
         engine.register("h1", HookEvent.BEFORE_TOOL, handler)
-        await engine.execute(HookContext(
-            event=HookEvent.BEFORE_TOOL,
-            tool_name="web_search",
-            data={"query": "test"},
-        ))
+        await engine.execute(
+            HookContext(
+                event=HookEvent.BEFORE_TOOL,
+                tool_name="web_search",
+                data={"query": "test"},
+            )
+        )
         assert received_data == {"query": "test"}

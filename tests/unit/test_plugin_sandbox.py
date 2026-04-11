@@ -34,7 +34,9 @@ def _write_plugin(tmpdir: str, code: str) -> Path:
 @pytest.mark.asyncio
 async def test_execute_simple_plugin(sandbox: PluginSandbox, context: PluginContext) -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
-        plugin_path = _write_plugin(tmpdir, '''
+        plugin_path = _write_plugin(
+            tmpdir,
+            """
 from vaultbot.plugins.base import (
     PluginBase, PluginContext, PluginManifest,
     PluginResult, PluginResultStatus)
@@ -45,7 +47,8 @@ class TestPlugin(PluginBase):
 
     async def handle(self, ctx):
         return PluginResult(status=PluginResultStatus.SUCCESS, output=f"Got: {ctx.user_input}")
-''')
+""",
+        )
         result = await sandbox.execute(plugin_path, context)
         assert result.status == PluginResultStatus.SUCCESS
         assert "Got: 2 + 3" in result.output
@@ -55,7 +58,9 @@ class TestPlugin(PluginBase):
 async def test_timeout_kills_plugin(context: PluginContext) -> None:
     sandbox = PluginSandbox(SandboxConfig(timeout_seconds=2.0))
     with tempfile.TemporaryDirectory() as tmpdir:
-        plugin_path = _write_plugin(tmpdir, '''
+        plugin_path = _write_plugin(
+            tmpdir,
+            """
 import time
 from vaultbot.plugins.base import (
     PluginBase, PluginContext, PluginManifest,
@@ -68,7 +73,8 @@ class SlowPlugin(PluginBase):
     async def handle(self, ctx):
         time.sleep(30)
         return PluginResult(status=PluginResultStatus.SUCCESS, output="done")
-''')
+""",
+        )
         result = await sandbox.execute(plugin_path, context)
         assert result.status == PluginResultStatus.ERROR
         assert "timed out" in result.error
@@ -77,7 +83,9 @@ class SlowPlugin(PluginBase):
 @pytest.mark.asyncio
 async def test_plugin_error_captured(sandbox: PluginSandbox, context: PluginContext) -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
-        plugin_path = _write_plugin(tmpdir, '''
+        plugin_path = _write_plugin(
+            tmpdir,
+            """
 from vaultbot.plugins.base import (
     PluginBase, PluginContext, PluginManifest,
     PluginResult, PluginResultStatus)
@@ -88,7 +96,8 @@ class BadPlugin(PluginBase):
 
     async def handle(self, ctx):
         raise ValueError("Something went wrong")
-''')
+""",
+        )
         result = await sandbox.execute(plugin_path, context)
         assert result.status == PluginResultStatus.ERROR
         assert "Something went wrong" in result.error

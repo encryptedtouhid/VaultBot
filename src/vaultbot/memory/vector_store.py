@@ -21,6 +21,7 @@ logger = get_logger(__name__)
 @dataclass
 class MemoryEntry:
     """A single memory entry with text and embedding."""
+
     id: str
     text: str
     embedding: list[float] = field(default_factory=list)
@@ -33,7 +34,7 @@ def cosine_similarity(a: list[float], b: list[float]) -> float:
     """Compute cosine similarity between two vectors."""
     if len(a) != len(b) or not a:
         return 0.0
-    dot = sum(x * y for x, y in zip(a, b))
+    dot = sum(x * y for x, y in zip(a, b, strict=True))
     norm_a = math.sqrt(sum(x * x for x in a))
     norm_b = math.sqrt(sum(x * x for x in b))
     if norm_a == 0 or norm_b == 0:
@@ -51,7 +52,7 @@ def simple_text_embedding(text: str, dim: int = 64) -> list[float]:
     # Convert hex to floats
     values = []
     for i in range(0, min(len(h), dim * 2), 2):
-        values.append((int(h[i:i + 2], 16) - 128) / 128.0)
+        values.append((int(h[i : i + 2], 16) - 128) / 128.0)
     # Pad or truncate
     while len(values) < dim:
         values.append(0.0)

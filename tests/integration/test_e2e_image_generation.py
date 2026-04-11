@@ -11,7 +11,6 @@ from vaultbot.media.base import (
     ImageGenerationRequest,
     ImageQuality,
     ImageSize,
-    ImageStyle,
 )
 from vaultbot.media.image_generation import ImageGenerationEngine
 from vaultbot.media.providers.dalle import DalleProvider
@@ -19,7 +18,6 @@ from vaultbot.media.providers.stability import StabilityProvider
 
 
 class TestE2EImageGeneration:
-
     @pytest.mark.asyncio
     async def test_dalle_full_pipeline(self) -> None:
         """Register DALL-E, generate, verify output."""
@@ -29,7 +27,9 @@ class TestE2EImageGeneration:
         mock_resp = MagicMock()
         mock_resp.raise_for_status = MagicMock()
         mock_resp.json.return_value = {
-            "data": [{"url": "https://oai.example.com/sunset.png", "revised_prompt": "beautiful sunset"}]
+            "data": [
+                {"url": "https://oai.example.com/sunset.png", "revised_prompt": "beautiful sunset"}
+            ]
         }
         dalle._client = AsyncMock()
         dalle._client.post = AsyncMock(return_value=mock_resp)
@@ -80,7 +80,9 @@ class TestE2EImageGeneration:
                 return self._name
 
             async def generate(self, request: ImageGenerationRequest) -> list[GeneratedImage]:
-                return [GeneratedImage(url=f"https://{self._name}.com/img.png", provider=self._name)]
+                return [
+                    GeneratedImage(url=f"https://{self._name}.com/img.png", provider=self._name)
+                ]
 
         engine.register_provider(FakeProvider("providerA"))
         engine.register_provider(FakeProvider("providerB"))
@@ -101,9 +103,11 @@ class TestE2EImageGeneration:
         class FakeProvider:
             def __init__(self, name: str) -> None:
                 self._name = name
+
             @property
             def provider_name(self) -> str:
                 return self._name
+
             async def generate(self, request: ImageGenerationRequest) -> list[GeneratedImage]:
                 return [GeneratedImage(url="test", provider=self._name)]
 

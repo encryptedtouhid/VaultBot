@@ -42,9 +42,7 @@ class TestPluginSDKWorkflow:
             base = Path(tmpdir)
 
             # 1. Scaffold
-            plugin_dir = scaffold_plugin(
-                base, "greeting", "Greets the user", "developer@test.com"
-            )
+            plugin_dir = scaffold_plugin(base, "greeting", "Greets the user", "developer@test.com")
             assert (plugin_dir / "plugin.py").exists()
             assert (plugin_dir / "vaultbot_plugin.json").exists()
 
@@ -76,9 +74,8 @@ class TestPluginSDKWorkflow:
             assert plugin is not None
             harness = PluginTestHarness(plugin)
             results = await harness.run_all()
-            assert all(r.passed for r in results), (
-                "Harness failures: "
-                + ", ".join(f"{r.test_name}: {r.message}" for r in results if not r.passed)
+            assert all(r.passed for r in results), "Harness failures: " + ", ".join(
+                f"{r.test_name}: {r.message}" for r in results if not r.passed
             )
 
             # 4. Sign the plugin
@@ -128,9 +125,7 @@ class TestPluginSDKWorkflow:
                 '        raise RuntimeError("Plugin is broken")\n'
             )
 
-            spec = importlib.util.spec_from_file_location(
-                "broken_plugin", plugin_dir / "plugin.py"
-            )
+            spec = importlib.util.spec_from_file_location("broken_plugin", plugin_dir / "plugin.py")
             assert spec is not None
             assert spec.loader is not None
             module = importlib.util.module_from_spec(spec)
@@ -282,9 +277,7 @@ class TestDashboardSSE:
         q1 = broadcaster.subscribe()
         q2 = broadcaster.subscribe()
 
-        await broadcaster.broadcast(
-            DashboardEvent(event_type="status", data={"healthy": True})
-        )
+        await broadcaster.broadcast(DashboardEvent(event_type="status", data={"healthy": True}))
 
         d1 = q1.get_nowait()
         d2 = q2.get_nowait()
@@ -298,9 +291,7 @@ class TestDashboardSSE:
         queue = broadcaster.subscribe()
         broadcaster.unsubscribe(queue)
 
-        await broadcaster.broadcast(
-            DashboardEvent(event_type="test", data={})
-        )
+        await broadcaster.broadcast(DashboardEvent(event_type="test", data={}))
         assert queue.empty()
 
     @pytest.mark.asyncio
@@ -314,9 +305,7 @@ class TestDashboardSSE:
             queue.put_nowait(f"filler-{i}")
 
         # Next broadcast should trigger cleanup
-        await broadcaster.broadcast(
-            DashboardEvent(event_type="overflow", data={})
-        )
+        await broadcaster.broadcast(DashboardEvent(event_type="overflow", data={}))
 
         # Client should be removed
         assert broadcaster.client_count == 0
@@ -347,49 +336,57 @@ class TestMarketplaceValidation:
     """Test marketplace entry parsing and review status enforcement."""
 
     def test_approved_plugin_entry(self) -> None:
-        entry = MarketplaceEntry.from_dict({
-            "name": "weather",
-            "version": "2.0.0",
-            "description": "Weather lookup",
-            "author": "zenbot-team",
-            "review_status": "approved",
-            "downloads": 5000,
-            "rating": 4.5,
-            "tags": ["weather", "utility"],
-            "checksum": "abc123",
-        })
+        entry = MarketplaceEntry.from_dict(
+            {
+                "name": "weather",
+                "version": "2.0.0",
+                "description": "Weather lookup",
+                "author": "zenbot-team",
+                "review_status": "approved",
+                "downloads": 5000,
+                "rating": 4.5,
+                "tags": ["weather", "utility"],
+                "checksum": "abc123",
+            }
+        )
         assert entry.review_status == ReviewStatus.APPROVED
         assert entry.downloads == 5000
         assert entry.rating == 4.5
         assert "utility" in entry.tags
 
     def test_rejected_plugin_entry(self) -> None:
-        entry = MarketplaceEntry.from_dict({
-            "name": "malware",
-            "version": "1.0",
-            "description": "Totally not malware",
-            "author": "hacker",
-            "review_status": "rejected",
-        })
+        entry = MarketplaceEntry.from_dict(
+            {
+                "name": "malware",
+                "version": "1.0",
+                "description": "Totally not malware",
+                "author": "hacker",
+                "review_status": "rejected",
+            }
+        )
         assert entry.review_status == ReviewStatus.REJECTED
 
     def test_revoked_plugin_entry(self) -> None:
-        entry = MarketplaceEntry.from_dict({
-            "name": "old-plugin",
-            "version": "1.0",
-            "description": "Was good, now revoked",
-            "author": "dev",
-            "review_status": "revoked",
-        })
+        entry = MarketplaceEntry.from_dict(
+            {
+                "name": "old-plugin",
+                "version": "1.0",
+                "description": "Was good, now revoked",
+                "author": "dev",
+                "review_status": "revoked",
+            }
+        )
         assert entry.review_status == ReviewStatus.REVOKED
 
     def test_default_review_status_is_pending(self) -> None:
-        entry = MarketplaceEntry.from_dict({
-            "name": "new-plugin",
-            "version": "0.1",
-            "description": "Brand new",
-            "author": "dev",
-        })
+        entry = MarketplaceEntry.from_dict(
+            {
+                "name": "new-plugin",
+                "version": "0.1",
+                "description": "Brand new",
+                "author": "dev",
+            }
+        )
         assert entry.review_status == ReviewStatus.PENDING
 
     def test_dashboard_config_secure_defaults(self) -> None:

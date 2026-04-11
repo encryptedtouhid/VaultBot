@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-import pytest
-
 from vaultbot.plugins.version_manager import (
-    InstalledPlugin,
     PluginVersionManager,
     is_newer,
     parse_version,

@@ -24,6 +24,7 @@ _TOTP_WINDOW = 1  # Allow 1 period before/after
 @dataclass(frozen=True, slots=True)
 class TOTPSetup:
     """TOTP setup information for the user."""
+
     secret_hex: str
     provisioning_uri: str
 
@@ -31,6 +32,7 @@ class TOTPSetup:
 def generate_totp_secret() -> str:
     """Generate a random TOTP secret (hex-encoded)."""
     import secrets
+
     return secrets.token_hex(20)
 
 
@@ -45,8 +47,8 @@ def compute_totp(secret_hex: str, timestamp: int | None = None) -> str:
 
     hmac_hash = hmac.new(secret_bytes, counter_bytes, hashlib.sha1).digest()
     offset = hmac_hash[-1] & 0x0F
-    code = struct.unpack(">I", hmac_hash[offset:offset + 4])[0] & 0x7FFFFFFF
-    return str(code % (10 ** _TOTP_DIGITS)).zfill(_TOTP_DIGITS)
+    code = struct.unpack(">I", hmac_hash[offset : offset + 4])[0] & 0x7FFFFFFF
+    return str(code % (10**_TOTP_DIGITS)).zfill(_TOTP_DIGITS)
 
 
 def verify_totp(secret_hex: str, code: str, timestamp: int | None = None) -> bool:
@@ -62,9 +64,12 @@ def verify_totp(secret_hex: str, code: str, timestamp: int | None = None) -> boo
     return False
 
 
-def get_provisioning_uri(secret_hex: str, account: str = "vaultbot", issuer: str = "VaultBot") -> str:
+def get_provisioning_uri(
+    secret_hex: str, account: str = "vaultbot", issuer: str = "VaultBot"
+) -> str:
     """Generate an otpauth:// URI for authenticator apps."""
     import base64
+
     secret_b32 = base64.b32encode(bytes.fromhex(secret_hex)).decode("utf-8").rstrip("=")
     return f"otpauth://totp/{issuer}:{account}?secret={secret_b32}&issuer={issuer}&digits={_TOTP_DIGITS}&period={_TOTP_PERIOD}"
 

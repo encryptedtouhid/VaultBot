@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 from vaultbot.security.audit_scanner import (
     AuditReport,
     FindingCategory,
@@ -22,13 +20,17 @@ class TestAuditReport:
 
     def test_report_with_critical_fails(self) -> None:
         from vaultbot.security.audit_scanner import AuditFinding
-        report = AuditReport(findings=[
-            AuditFinding(
-                severity=FindingSeverity.CRITICAL,
-                category=FindingCategory.SECRET_LEAK,
-                title="test", description="test",
-            )
-        ])
+
+        report = AuditReport(
+            findings=[
+                AuditFinding(
+                    severity=FindingSeverity.CRITICAL,
+                    category=FindingCategory.SECRET_LEAK,
+                    title="test",
+                    description="test",
+                )
+            ]
+        )
         assert report.passed is False
         assert report.critical_count == 1
 

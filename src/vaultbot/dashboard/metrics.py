@@ -8,13 +8,14 @@ from __future__ import annotations
 
 import time
 from collections import deque
-from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from dataclasses import dataclass
+from datetime import datetime
 
 
 @dataclass
 class MetricSnapshot:
     """Point-in-time metric reading."""
+
     timestamp: datetime
     value: float
     label: str = ""
@@ -23,6 +24,7 @@ class MetricSnapshot:
 @dataclass
 class DashboardMetrics:
     """Aggregated metrics for the dashboard."""
+
     messages_total: int = 0
     messages_per_minute: float = 0.0
     active_sessions: int = 0
@@ -69,9 +71,7 @@ class MetricsCollector:
         self._messages_total += 1
         self._message_times.append(time.monotonic())
 
-    def record_llm_request(
-        self, input_tokens: int, output_tokens: int, latency_ms: float
-    ) -> None:
+    def record_llm_request(self, input_tokens: int, output_tokens: int, latency_ms: float) -> None:
         """Record an LLM API request."""
         self._llm_requests_total += 1
         self._llm_input_tokens += input_tokens
@@ -109,8 +109,7 @@ class MetricsCollector:
 
         # Average LLM latency
         avg_latency = (
-            sum(self._llm_latencies) / len(self._llm_latencies)
-            if self._llm_latencies else 0.0
+            sum(self._llm_latencies) / len(self._llm_latencies) if self._llm_latencies else 0.0
         )
 
         return DashboardMetrics(

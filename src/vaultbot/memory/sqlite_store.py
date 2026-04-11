@@ -87,9 +87,7 @@ class SQLiteMemoryStore:
         )
         await db.commit()
 
-    async def get_history(
-        self, chat_id: str, *, limit: int = 20
-    ) -> list[ConversationTurn]:
+    async def get_history(self, chat_id: str, *, limit: int = 20) -> list[ConversationTurn]:
         """Retrieve conversation history for a chat, most recent first."""
         db = await self._ensure_connection()
         cursor = await db.execute(
@@ -109,9 +107,7 @@ class SQLiteMemoryStore:
                     chat_id=row["chat_id"],
                     user_message=row["user_message"],
                     assistant_response=row["assistant_response"],
-                    timestamp=datetime.fromisoformat(row["timestamp"]).replace(
-                        tzinfo=UTC
-                    ),
+                    timestamp=datetime.fromisoformat(row["timestamp"]).replace(tzinfo=UTC),
                     metadata=json.loads(row["metadata"]),
                 )
             )
@@ -151,9 +147,7 @@ class SQLiteMemoryStore:
         )
         await db.commit()
 
-    async def get_user_preferences(
-        self, user_id: str, platform: str
-    ) -> UserPreferences | None:
+    async def get_user_preferences(self, user_id: str, platform: str) -> UserPreferences | None:
         """Get user preferences."""
         db = await self._ensure_connection()
         cursor = await db.execute(

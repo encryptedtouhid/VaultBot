@@ -55,7 +55,9 @@ class TestLinkExtractor:
         mock_resp.status_code = 200
         mock_resp.raise_for_status = MagicMock()
         mock_resp.headers = {"content-type": "text/html"}
-        mock_resp.text = "<html><head><title>Test</title></head><body><p>Hello world</p></body></html>"
+        mock_resp.text = (
+            "<html><head><title>Test</title></head><body><p>Hello world</p></body></html>"
+        )
 
         extractor._client = AsyncMock()
         extractor._client.get = AsyncMock(return_value=mock_resp)
@@ -107,7 +109,9 @@ class TestMediaUnderstandingEngine:
     @pytest.mark.asyncio
     async def test_analyze_document(self) -> None:
         engine = MediaUnderstandingEngine()
-        req = MediaAnalysisRequest(media_type=MediaType.DOCUMENT, url="report.pdf", mime_type="application/pdf")
+        req = MediaAnalysisRequest(
+            media_type=MediaType.DOCUMENT, url="report.pdf", mime_type="application/pdf"
+        )
         result = await engine.analyze(req)
         assert result.media_type == MediaType.DOCUMENT
         assert "document" in result.summary.lower()

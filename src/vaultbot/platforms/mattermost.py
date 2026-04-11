@@ -74,9 +74,7 @@ class MattermostAdapter:
             headers=self._auth_headers(),
         )
         if resp.status_code != 200:
-            raise RuntimeError(
-                f"Mattermost auth failed ({resp.status_code}): {resp.text[:200]}"
-            )
+            raise RuntimeError(f"Mattermost auth failed ({resp.status_code}): {resp.text[:200]}")
         self._user_id = resp.json().get("id", "")
 
         # Start WebSocket listener
@@ -171,11 +169,13 @@ class MattermostAdapter:
             async for ws in websockets.connect(ws_url):
                 try:
                     # Authenticate over WebSocket
-                    auth_msg = json.dumps({
-                        "seq": self._ws_seq,
-                        "action": "authentication_challenge",
-                        "data": {"token": self._token},
-                    })
+                    auth_msg = json.dumps(
+                        {
+                            "seq": self._ws_seq,
+                            "action": "authentication_challenge",
+                            "data": {"token": self._token},
+                        }
+                    )
                     self._ws_seq += 1
                     await ws.send(auth_msg)
 

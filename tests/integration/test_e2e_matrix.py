@@ -17,7 +17,6 @@ from vaultbot.platforms.matrix import MatrixAdapter
 from vaultbot.security.auth import AuthManager, Role
 from vaultbot.security.rate_limiter import RateLimiter
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -118,9 +117,7 @@ class TestMatrixE2EMessagePipeline:
         assert auth.is_authorized("matrix", msg.sender_id)
 
         # LLM response
-        response = await llm.complete(
-            [ChatMessage(role="user", content=msg.text)]
-        )
+        response = await llm.complete([ChatMessage(role="user", content=msg.text)])
         assert "Echo: What is Python?" in response.content
 
         # Send response back
@@ -234,9 +231,7 @@ class TestMatrixE2EConnectionLifecycle:
         # Send replies
         llm = MockLLMProvider()
         for msg in messages:
-            response = await llm.complete(
-                [ChatMessage(role="user", content=msg.text)]
-            )
+            response = await llm.complete([ChatMessage(role="user", content=msg.text)])
             out = OutboundMessage(chat_id=msg.chat_id, text=response.content)
             await adapter.send(out)
 

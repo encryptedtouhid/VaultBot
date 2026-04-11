@@ -51,9 +51,7 @@ class TeamsAdapter:
         self._app_id = app_id
         self._app_password = app_password
         self._message_queue: asyncio.Queue[InboundMessage] = asyncio.Queue()
-        self._adapter = BotFrameworkAdapter(
-            BotFrameworkAdapterSettings(app_id, app_password)
-        )
+        self._adapter = BotFrameworkAdapter(BotFrameworkAdapterSettings(app_id, app_password))
         # Store conversation references for sending proactive messages
         self._conversation_refs: dict[str, object] = {}
 

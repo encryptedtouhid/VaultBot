@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from vaultbot.core.message import ChatMessage, OutboundMessage
-from vaultbot.llm.base import LLMChunk, LLMResponse, ToolDefinition
+from vaultbot.llm.base import LLMChunk, LLMResponse
 from vaultbot.security.auth import AuthManager, Role
 
 
@@ -19,7 +19,9 @@ class MockLLMProvider:
 
     async def complete(self, messages: list[ChatMessage], **kw: object) -> LLMResponse:
         user_msg = next((m.content for m in reversed(messages) if m.role == "user"), "")
-        return LLMResponse(content=f"Echo: {user_msg}", model="mock", input_tokens=10, output_tokens=5)
+        return LLMResponse(
+            content=f"Echo: {user_msg}", model="mock", input_tokens=10, output_tokens=5
+        )
 
     async def stream(self, messages: list[ChatMessage], **kw: object) -> AsyncIterator[LLMChunk]:
         yield LLMChunk(content="Echo: streamed", is_final=True)
@@ -34,6 +36,7 @@ class TestLineE2E:
     @pytest.mark.asyncio
     async def test_webhook_to_reply(self) -> None:
         from vaultbot.platforms.line import LineAdapter
+
         auth = AuthManager(allowlist={"line:user1": Role.USER})
         llm = MockLLMProvider()
 
@@ -44,13 +47,15 @@ class TestLineE2E:
         adapter._connected = True
 
         payload = {
-            "events": [{
-                "type": "message",
-                "replyToken": "rt1",
-                "source": {"userId": "user1"},
-                "timestamp": 1700000000000,
-                "message": {"id": "m1", "type": "text", "text": "What is LINE?"},
-            }]
+            "events": [
+                {
+                    "type": "message",
+                    "replyToken": "rt1",
+                    "source": {"userId": "user1"},
+                    "timestamp": 1700000000000,
+                    "message": {"id": "m1", "type": "text", "text": "What is LINE?"},
+                }
+            ]
         }
         adapter.handle_webhook(payload)
 
@@ -65,16 +70,19 @@ class TestLineE2E:
     @pytest.mark.asyncio
     async def test_unauthorized_line_user(self) -> None:
         from vaultbot.platforms.line import LineAdapter
+
         auth = AuthManager(allowlist={"line:user1": Role.USER})
 
         adapter = LineAdapter(channel_access_token="tok")
         payload = {
-            "events": [{
-                "type": "message",
-                "source": {"userId": "hacker"},
-                "timestamp": 0,
-                "message": {"id": "m2", "type": "text", "text": "hack"},
-            }]
+            "events": [
+                {
+                    "type": "message",
+                    "source": {"userId": "hacker"},
+                    "timestamp": 0,
+                    "message": {"id": "m2", "type": "text", "text": "hack"},
+                }
+            ]
         }
         adapter.handle_webhook(payload)
         msg = adapter._message_queue.get_nowait()
@@ -90,6 +98,7 @@ class TestGoogleChatE2E:
     @pytest.mark.asyncio
     async def test_webhook_to_response(self) -> None:
         from vaultbot.platforms.googlechat import GoogleChatAdapter
+
         auth = AuthManager(allowlist={"googlechat:users/u1": Role.USER})
         llm = MockLLMProvider()
 
@@ -102,8 +111,10 @@ class TestGoogleChatE2E:
         payload = {
             "type": "MESSAGE",
             "message": {
-                "name": "m1", "argumentText": "What is Go?",
-                "sender": {"name": "users/u1"}, "createTime": "2024-01-01T00:00:00Z",
+                "name": "m1",
+                "argumentText": "What is Go?",
+                "sender": {"name": "users/u1"},
+                "createTime": "2024-01-01T00:00:00Z",
             },
             "space": {"name": "spaces/s1"},
         }
@@ -119,12 +130,18 @@ class TestGoogleChatE2E:
     @pytest.mark.asyncio
     async def test_unauthorized_googlechat_user(self) -> None:
         from vaultbot.platforms.googlechat import GoogleChatAdapter
+
         auth = AuthManager(allowlist={"googlechat:users/u1": Role.USER})
 
         adapter = GoogleChatAdapter()
         payload = {
             "type": "MESSAGE",
-            "message": {"name": "m2", "argumentText": "hack", "sender": {"name": "users/hacker"}, "createTime": ""},
+            "message": {
+                "name": "m2",
+                "argumentText": "hack",
+                "sender": {"name": "users/hacker"},
+                "createTime": "",
+            },
             "space": {"name": "spaces/s1"},
         }
         adapter.handle_webhook(payload)
@@ -141,6 +158,7 @@ class TestTwitchE2E:
     @pytest.mark.asyncio
     async def test_message_to_response(self) -> None:
         from vaultbot.platforms.twitch import TwitchAdapter
+
         auth = AuthManager(allowlist={"twitch:alice": Role.USER})
         llm = MockLLMProvider()
 
@@ -165,6 +183,7 @@ class TestTwitchE2E:
     @pytest.mark.asyncio
     async def test_unauthorized_twitch_user(self) -> None:
         from vaultbot.platforms.twitch import TwitchAdapter
+
         auth = AuthManager(allowlist={"twitch:alice": Role.USER})
 
         adapter = TwitchAdapter(oauth_token="tok", nick="bot")
@@ -183,6 +202,7 @@ class TestNostrE2E:
     @pytest.mark.asyncio
     async def test_event_to_response(self) -> None:
         from vaultbot.platforms.nostr import NostrAdapter
+
         auth = AuthManager(allowlist={"nostr:sender_pub": Role.USER})
         llm = MockLLMProvider()
 
@@ -190,8 +210,12 @@ class TestNostrE2E:
         adapter._connected = True
 
         event = {
-            "id": "e1", "pubkey": "sender_pub", "created_at": 1700000000,
-            "kind": 1, "tags": [], "content": "What is Nostr?",
+            "id": "e1",
+            "pubkey": "sender_pub",
+            "created_at": 1700000000,
+            "kind": 1,
+            "tags": [],
+            "content": "What is Nostr?",
         }
         adapter._process_event(event)
 
@@ -204,10 +228,18 @@ class TestNostrE2E:
     @pytest.mark.asyncio
     async def test_unauthorized_nostr_user(self) -> None:
         from vaultbot.platforms.nostr import NostrAdapter
+
         auth = AuthManager(allowlist={"nostr:trusted": Role.USER})
 
         adapter = NostrAdapter(public_key_hex="mypub")
-        event = {"id": "e2", "pubkey": "untrusted", "created_at": 0, "kind": 1, "tags": [], "content": "hi"}
+        event = {
+            "id": "e2",
+            "pubkey": "untrusted",
+            "created_at": 0,
+            "kind": 1,
+            "tags": [],
+            "content": "hi",
+        }
         adapter._process_event(event)
 
         msg = adapter._message_queue.get_nowait()
@@ -216,10 +248,18 @@ class TestNostrE2E:
     @pytest.mark.asyncio
     async def test_multiple_events_processed(self) -> None:
         from vaultbot.platforms.nostr import NostrAdapter
+
         adapter = NostrAdapter(public_key_hex="mypub")
 
         for i in range(3):
-            event = {"id": f"e{i}", "pubkey": f"pub{i}", "created_at": 0, "kind": 1, "tags": [], "content": f"msg{i}"}
+            event = {
+                "id": f"e{i}",
+                "pubkey": f"pub{i}",
+                "created_at": 0,
+                "kind": 1,
+                "tags": [],
+                "content": f"msg{i}",
+            }
             adapter._process_event(event)
 
         messages = []

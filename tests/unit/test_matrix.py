@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 from vaultbot.core.message import OutboundMessage
 from vaultbot.platforms.matrix import MatrixAdapter
-
 
 # ---------------------------------------------------------------------------
 # Construction / properties
@@ -474,10 +472,7 @@ class TestMatrixConnectDisconnect:
             await adapter.connect()
 
         # post called for join
-        join_calls = [
-            c for c in mock_client.post.call_args_list
-            if "join" in str(c)
-        ]
+        join_calls = [c for c in mock_client.post.call_args_list if "join" in str(c)]
         assert len(join_calls) >= 1
 
         await adapter.disconnect()

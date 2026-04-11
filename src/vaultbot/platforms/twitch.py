@@ -57,7 +57,9 @@ class TwitchAdapter:
     async def connect(self) -> None:
         ssl_ctx = ssl.create_default_context()
         self._reader, self._writer = await asyncio.open_connection(
-            _TWITCH_IRC_HOST, _TWITCH_IRC_PORT, ssl=ssl_ctx,
+            _TWITCH_IRC_HOST,
+            _TWITCH_IRC_PORT,
+            ssl=ssl_ctx,
         )
 
         await self._send_raw(f"PASS {self._token}")

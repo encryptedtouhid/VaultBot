@@ -6,7 +6,6 @@ management (list, revoke), and paired device registry.
 
 from __future__ import annotations
 
-import hashlib
 import secrets
 import time
 from dataclasses import dataclass, field
@@ -23,6 +22,7 @@ _CODE_EXPIRY_SECONDS = 300  # 5 minutes
 @dataclass
 class PairedDevice:
     """A paired device."""
+
     id: str
     name: str
     device_type: str  # "ios", "android", "desktop", "web"
@@ -34,6 +34,7 @@ class PairedDevice:
 @dataclass
 class PairingCode:
     """A temporary pairing code."""
+
     code: str
     created_at: float = field(default_factory=time.monotonic)
     expiry_seconds: float = _CODE_EXPIRY_SECONDS

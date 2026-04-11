@@ -90,9 +90,7 @@ class MatrixAdapter:
         # Authenticate if no access token provided
         if not self._access_token:
             if not self._user_id or not self._password:
-                raise ValueError(
-                    "MatrixAdapter requires either access_token or user_id+password"
-                )
+                raise ValueError("MatrixAdapter requires either access_token or user_id+password")
             await self._login()
 
         # Resolve our own user ID if not known
@@ -142,9 +140,7 @@ class MatrixAdapter:
         self._txn_counter += 1
         txn_id = f"vaultbot_{self._txn_counter}"
 
-        url = self._url(
-            _SEND_EVENT.format(room_id=message.chat_id, txn_id=txn_id)
-        )
+        url = self._url(_SEND_EVENT.format(room_id=message.chat_id, txn_id=txn_id))
         body = {
             "msgtype": "m.text",
             "body": message.text,
@@ -200,9 +196,7 @@ class MatrixAdapter:
             },
         )
         if resp.status_code != 200:
-            raise RuntimeError(
-                f"Matrix login failed ({resp.status_code}): {resp.text[:200]}"
-            )
+            raise RuntimeError(f"Matrix login failed ({resp.status_code}): {resp.text[:200]}")
         data = resp.json()
         self._access_token = data["access_token"]
         self._user_id = data.get("user_id", self._user_id)

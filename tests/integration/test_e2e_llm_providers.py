@@ -21,19 +21,23 @@ class TestE2EProviderFactory:
         mock_resp = MagicMock()
         mock_resp.raise_for_status = MagicMock()
         mock_resp.json.return_value = {
-            "candidates": [{
-                "content": {"parts": [{"text": "Gemini response"}]},
-                "finishReason": "STOP",
-            }],
+            "candidates": [
+                {
+                    "content": {"parts": [{"text": "Gemini response"}]},
+                    "finishReason": "STOP",
+                }
+            ],
             "usageMetadata": {"promptTokenCount": 5, "candidatesTokenCount": 3},
         }
         provider._client = AsyncMock()
         provider._client.post = AsyncMock(return_value=mock_resp)
 
-        result = await provider.complete([
-            ChatMessage(role="system", content="Be helpful."),
-            ChatMessage(role="user", content="What is Python?"),
-        ])
+        result = await provider.complete(
+            [
+                ChatMessage(role="system", content="Be helpful."),
+                ChatMessage(role="user", content="What is Python?"),
+            ]
+        )
         assert result.content == "Gemini response"
         assert result.input_tokens == 5
 
@@ -69,6 +73,7 @@ class TestE2EProviderFactory:
     async def test_factory_to_complete_flow(self) -> None:
         """Full flow: factory -> provider -> complete with mock."""
         from vaultbot.llm.compatible import CompatibleProvider
+
         provider = CompatibleProvider.from_preset("deepseek", api_key="key")
 
         mock_resp = MagicMock()
@@ -89,6 +94,7 @@ class TestE2EProviderFactory:
     async def test_all_compatible_providers_creatable(self) -> None:
         """All compatible presets can be instantiated via factory."""
         from vaultbot.llm.factory import _COMPATIBLE_PROVIDERS
+
         for name in _COMPATIBLE_PROVIDERS:
             provider = create_provider(name, api_key="test_key")
             assert provider.provider_name == name

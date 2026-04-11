@@ -7,7 +7,7 @@ to different LLM models based on content type.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from vaultbot.utils.logging import get_logger
 

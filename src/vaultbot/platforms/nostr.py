@@ -176,9 +176,7 @@ class NostrAdapter:
         )
         self._message_queue.put_nowait(inbound)
 
-    def _build_event(
-        self, *, kind: int, content: str, tags: list[list[str]]
-    ) -> dict:
+    def _build_event(self, *, kind: int, content: str, tags: list[list[str]]) -> dict:
         """Build a Nostr event (unsigned — signing requires secp256k1)."""
         created_at = int(time.time())
         event = {

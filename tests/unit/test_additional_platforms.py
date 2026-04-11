@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-import asyncio
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
 from vaultbot.core.message import OutboundMessage
-
 
 # ==========================================================================
 # LINE Adapter Tests
@@ -18,11 +16,13 @@ from vaultbot.core.message import OutboundMessage
 class TestLineAdapterInit:
     def test_platform_name(self) -> None:
         from vaultbot.platforms.line import LineAdapter
+
         adapter = LineAdapter(channel_access_token="tok")
         assert adapter.platform_name == "line"
 
     def test_initial_state(self) -> None:
         from vaultbot.platforms.line import LineAdapter
+
         adapter = LineAdapter(channel_access_token="tok")
         assert adapter._connected is False
 
@@ -31,6 +31,7 @@ class TestLineHealthcheck:
     @pytest.mark.asyncio
     async def test_unhealthy_when_disconnected(self) -> None:
         from vaultbot.platforms.line import LineAdapter
+
         adapter = LineAdapter(channel_access_token="tok")
         assert await adapter.healthcheck() is False
 
@@ -38,16 +39,19 @@ class TestLineHealthcheck:
 class TestLineWebhook:
     def test_text_message_enqueued(self) -> None:
         from vaultbot.platforms.line import LineAdapter
+
         adapter = LineAdapter(channel_access_token="tok")
 
         payload = {
-            "events": [{
-                "type": "message",
-                "replyToken": "rtoken1",
-                "source": {"userId": "user1", "type": "user"},
-                "timestamp": 1700000000000,
-                "message": {"id": "msg1", "type": "text", "text": "hello"},
-            }]
+            "events": [
+                {
+                    "type": "message",
+                    "replyToken": "rtoken1",
+                    "source": {"userId": "user1", "type": "user"},
+                    "timestamp": 1700000000000,
+                    "message": {"id": "msg1", "type": "text", "text": "hello"},
+                }
+            ]
         }
         adapter.handle_webhook(payload)
 
@@ -58,21 +62,25 @@ class TestLineWebhook:
 
     def test_non_text_message_ignored(self) -> None:
         from vaultbot.platforms.line import LineAdapter
+
         adapter = LineAdapter(channel_access_token="tok")
 
         payload = {
-            "events": [{
-                "type": "message",
-                "source": {"userId": "user1"},
-                "timestamp": 0,
-                "message": {"id": "msg2", "type": "image"},
-            }]
+            "events": [
+                {
+                    "type": "message",
+                    "source": {"userId": "user1"},
+                    "timestamp": 0,
+                    "message": {"id": "msg2", "type": "image"},
+                }
+            ]
         }
         adapter.handle_webhook(payload)
         assert adapter._message_queue.empty()
 
     def test_non_message_event_ignored(self) -> None:
         from vaultbot.platforms.line import LineAdapter
+
         adapter = LineAdapter(channel_access_token="tok")
 
         payload = {"events": [{"type": "follow", "source": {"userId": "user1"}}]}
@@ -81,15 +89,18 @@ class TestLineWebhook:
 
     def test_group_chat_id(self) -> None:
         from vaultbot.platforms.line import LineAdapter
+
         adapter = LineAdapter(channel_access_token="tok")
 
         payload = {
-            "events": [{
-                "type": "message",
-                "source": {"userId": "user1", "groupId": "group123"},
-                "timestamp": 0,
-                "message": {"id": "msg3", "type": "text", "text": "group msg"},
-            }]
+            "events": [
+                {
+                    "type": "message",
+                    "source": {"userId": "user1", "groupId": "group123"},
+                    "timestamp": 0,
+                    "message": {"id": "msg3", "type": "text", "text": "group msg"},
+                }
+            ]
         }
         adapter.handle_webhook(payload)
         msg = adapter._message_queue.get_nowait()
@@ -97,16 +108,19 @@ class TestLineWebhook:
 
     def test_reply_token_stored(self) -> None:
         from vaultbot.platforms.line import LineAdapter
+
         adapter = LineAdapter(channel_access_token="tok")
 
         payload = {
-            "events": [{
-                "type": "message",
-                "replyToken": "rtoken_xyz",
-                "source": {"userId": "user1"},
-                "timestamp": 0,
-                "message": {"id": "msg4", "type": "text", "text": "hi"},
-            }]
+            "events": [
+                {
+                    "type": "message",
+                    "replyToken": "rtoken_xyz",
+                    "source": {"userId": "user1"},
+                    "timestamp": 0,
+                    "message": {"id": "msg4", "type": "text", "text": "hi"},
+                }
+            ]
         }
         adapter.handle_webhook(payload)
         assert "user1" in adapter._reply_tokens
@@ -116,6 +130,7 @@ class TestLineSend:
     @pytest.mark.asyncio
     async def test_send_raises_when_not_connected(self) -> None:
         from vaultbot.platforms.line import LineAdapter
+
         adapter = LineAdapter(channel_access_token="tok")
         with pytest.raises(RuntimeError, match="not connected"):
             await adapter.send(OutboundMessage(chat_id="user1", text="hi"))
@@ -123,6 +138,7 @@ class TestLineSend:
     @pytest.mark.asyncio
     async def test_send_uses_reply_when_available(self) -> None:
         from vaultbot.platforms.line import LineAdapter
+
         adapter = LineAdapter(channel_access_token="tok")
         mock_client = AsyncMock()
         mock_resp = MagicMock()
@@ -139,6 +155,7 @@ class TestLineSend:
     @pytest.mark.asyncio
     async def test_send_uses_push_when_no_reply_token(self) -> None:
         from vaultbot.platforms.line import LineAdapter
+
         adapter = LineAdapter(channel_access_token="tok")
         mock_client = AsyncMock()
         mock_resp = MagicMock()
@@ -155,12 +172,17 @@ class TestLineSend:
 class TestLineSignature:
     def test_verify_signature_no_secret(self) -> None:
         from vaultbot.platforms.line import LineAdapter
+
         adapter = LineAdapter(channel_access_token="tok", channel_secret="")
         assert adapter.verify_signature(b"body", "anysig") is True
 
     def test_verify_signature_valid(self) -> None:
-        import base64, hashlib, hmac as hmac_mod
+        import base64
+        import hashlib
+        import hmac as hmac_mod
+
         from vaultbot.platforms.line import LineAdapter
+
         secret = "test_secret"
         body = b'{"events":[]}'
         digest = hmac_mod.new(secret.encode(), body, hashlib.sha256).digest()
@@ -171,6 +193,7 @@ class TestLineSignature:
 
     def test_verify_signature_invalid(self) -> None:
         from vaultbot.platforms.line import LineAdapter
+
         adapter = LineAdapter(channel_access_token="tok", channel_secret="secret")
         assert adapter.verify_signature(b"body", "invalidsig") is False
 
@@ -183,11 +206,13 @@ class TestLineSignature:
 class TestGoogleChatAdapterInit:
     def test_platform_name(self) -> None:
         from vaultbot.platforms.googlechat import GoogleChatAdapter
+
         adapter = GoogleChatAdapter()
         assert adapter.platform_name == "googlechat"
 
     def test_initial_state(self) -> None:
         from vaultbot.platforms.googlechat import GoogleChatAdapter
+
         adapter = GoogleChatAdapter()
         assert adapter._connected is False
 
@@ -196,6 +221,7 @@ class TestGoogleChatHealthcheck:
     @pytest.mark.asyncio
     async def test_healthy_when_connected(self) -> None:
         from vaultbot.platforms.googlechat import GoogleChatAdapter
+
         adapter = GoogleChatAdapter()
         adapter._connected = True
         adapter._client = AsyncMock()
@@ -204,6 +230,7 @@ class TestGoogleChatHealthcheck:
     @pytest.mark.asyncio
     async def test_unhealthy_when_disconnected(self) -> None:
         from vaultbot.platforms.googlechat import GoogleChatAdapter
+
         adapter = GoogleChatAdapter()
         assert await adapter.healthcheck() is False
 
@@ -211,6 +238,7 @@ class TestGoogleChatHealthcheck:
 class TestGoogleChatWebhook:
     def test_message_event_enqueued(self) -> None:
         from vaultbot.platforms.googlechat import GoogleChatAdapter
+
         adapter = GoogleChatAdapter()
 
         payload = {
@@ -236,6 +264,7 @@ class TestGoogleChatWebhook:
 
     def test_non_message_event_ignored(self) -> None:
         from vaultbot.platforms.googlechat import GoogleChatAdapter
+
         adapter = GoogleChatAdapter()
 
         payload = {"type": "ADDED_TO_SPACE", "space": {"name": "spaces/s1"}}
@@ -244,6 +273,7 @@ class TestGoogleChatWebhook:
 
     def test_empty_text_ignored(self) -> None:
         from vaultbot.platforms.googlechat import GoogleChatAdapter
+
         adapter = GoogleChatAdapter()
 
         payload = {
@@ -259,6 +289,7 @@ class TestGoogleChatSend:
     @pytest.mark.asyncio
     async def test_send_raises_when_not_connected(self) -> None:
         from vaultbot.platforms.googlechat import GoogleChatAdapter
+
         adapter = GoogleChatAdapter()
         with pytest.raises(RuntimeError, match="not connected"):
             await adapter.send(OutboundMessage(chat_id="spaces/s1", text="hi"))
@@ -266,6 +297,7 @@ class TestGoogleChatSend:
     @pytest.mark.asyncio
     async def test_send_via_webhook_url(self) -> None:
         from vaultbot.platforms.googlechat import GoogleChatAdapter
+
         adapter = GoogleChatAdapter(webhook_url="https://hooks.example.com/chat")
         mock_client = AsyncMock()
         mock_client.post = AsyncMock(return_value=MagicMock(status_code=200))
@@ -284,26 +316,31 @@ class TestGoogleChatSend:
 class TestTwitchAdapterInit:
     def test_platform_name(self) -> None:
         from vaultbot.platforms.twitch import TwitchAdapter
+
         adapter = TwitchAdapter(oauth_token="tok", nick="bot")
         assert adapter.platform_name == "twitch"
 
     def test_oauth_prefix_added(self) -> None:
         from vaultbot.platforms.twitch import TwitchAdapter
+
         adapter = TwitchAdapter(oauth_token="mytoken", nick="bot")
         assert adapter._token == "oauth:mytoken"
 
     def test_oauth_prefix_not_doubled(self) -> None:
         from vaultbot.platforms.twitch import TwitchAdapter
+
         adapter = TwitchAdapter(oauth_token="oauth:mytoken", nick="bot")
         assert adapter._token == "oauth:mytoken"
 
     def test_nick_lowered(self) -> None:
         from vaultbot.platforms.twitch import TwitchAdapter
+
         adapter = TwitchAdapter(oauth_token="tok", nick="MyBot")
         assert adapter._nick == "mybot"
 
     def test_channels_lowered_and_stripped(self) -> None:
         from vaultbot.platforms.twitch import TwitchAdapter
+
         adapter = TwitchAdapter(oauth_token="tok", nick="bot", channels=["#MyChannel"])
         assert adapter._channels == ["mychannel"]
 
@@ -312,12 +349,14 @@ class TestTwitchHealthcheck:
     @pytest.mark.asyncio
     async def test_unhealthy_when_disconnected(self) -> None:
         from vaultbot.platforms.twitch import TwitchAdapter
+
         adapter = TwitchAdapter(oauth_token="tok", nick="bot")
         assert await adapter.healthcheck() is False
 
     @pytest.mark.asyncio
     async def test_healthy_when_connected(self) -> None:
         from vaultbot.platforms.twitch import TwitchAdapter
+
         adapter = TwitchAdapter(oauth_token="tok", nick="bot")
         adapter._connected = True
         writer = MagicMock()
@@ -330,6 +369,7 @@ class TestTwitchLineHandling:
     @pytest.mark.asyncio
     async def test_ping_pong(self) -> None:
         from vaultbot.platforms.twitch import TwitchAdapter
+
         adapter = TwitchAdapter(oauth_token="tok", nick="bot")
         writer = MagicMock()
         writer.is_closing.return_value = False
@@ -343,6 +383,7 @@ class TestTwitchLineHandling:
     @pytest.mark.asyncio
     async def test_privmsg_enqueued(self) -> None:
         from vaultbot.platforms.twitch import TwitchAdapter
+
         adapter = TwitchAdapter(oauth_token="tok", nick="bot")
         adapter._nick = "bot"
 
@@ -356,6 +397,7 @@ class TestTwitchLineHandling:
     @pytest.mark.asyncio
     async def test_privmsg_with_tags(self) -> None:
         from vaultbot.platforms.twitch import TwitchAdapter
+
         adapter = TwitchAdapter(oauth_token="tok", nick="bot")
 
         line = "@badge-info=;badges=;color=#FF0000 :alice!a@a.tmi.twitch.tv PRIVMSG #ch :tagged msg"
@@ -366,6 +408,7 @@ class TestTwitchLineHandling:
     @pytest.mark.asyncio
     async def test_self_messages_ignored(self) -> None:
         from vaultbot.platforms.twitch import TwitchAdapter
+
         adapter = TwitchAdapter(oauth_token="tok", nick="bot")
 
         await adapter._handle_line(":bot!bot@bot.tmi.twitch.tv PRIVMSG #ch :my msg")
@@ -376,6 +419,7 @@ class TestTwitchSend:
     @pytest.mark.asyncio
     async def test_send_raises_when_not_connected(self) -> None:
         from vaultbot.platforms.twitch import TwitchAdapter
+
         adapter = TwitchAdapter(oauth_token="tok", nick="bot")
         with pytest.raises(RuntimeError, match="not connected"):
             await adapter.send(OutboundMessage(chat_id="#ch", text="hi"))
@@ -383,6 +427,7 @@ class TestTwitchSend:
     @pytest.mark.asyncio
     async def test_send_adds_hash_prefix(self) -> None:
         from vaultbot.platforms.twitch import TwitchAdapter
+
         adapter = TwitchAdapter(oauth_token="tok", nick="bot")
         writer = MagicMock()
         writer.is_closing.return_value = False
@@ -398,6 +443,7 @@ class TestTwitchDisconnect:
     @pytest.mark.asyncio
     async def test_disconnect_idempotent(self) -> None:
         from vaultbot.platforms.twitch import TwitchAdapter
+
         adapter = TwitchAdapter(oauth_token="tok", nick="bot")
         await adapter.disconnect()
         assert adapter._connected is False
@@ -411,11 +457,13 @@ class TestTwitchDisconnect:
 class TestNostrAdapterInit:
     def test_platform_name(self) -> None:
         from vaultbot.platforms.nostr import NostrAdapter
+
         adapter = NostrAdapter(public_key_hex="abc123")
         assert adapter.platform_name == "nostr"
 
     def test_default_relay(self) -> None:
         from vaultbot.platforms.nostr import NostrAdapter
+
         adapter = NostrAdapter(public_key_hex="abc123")
         assert "wss://relay.damus.io" in adapter._relays
 
@@ -424,6 +472,7 @@ class TestNostrHealthcheck:
     @pytest.mark.asyncio
     async def test_unhealthy_when_disconnected(self) -> None:
         from vaultbot.platforms.nostr import NostrAdapter
+
         adapter = NostrAdapter(public_key_hex="abc123")
         assert await adapter.healthcheck() is False
 
@@ -431,6 +480,7 @@ class TestNostrHealthcheck:
 class TestNostrEventProcessing:
     def test_text_note_enqueued(self) -> None:
         from vaultbot.platforms.nostr import NostrAdapter
+
         adapter = NostrAdapter(public_key_hex="mypubkey")
 
         event = {
@@ -450,27 +500,48 @@ class TestNostrEventProcessing:
 
     def test_own_events_ignored(self) -> None:
         from vaultbot.platforms.nostr import NostrAdapter
+
         adapter = NostrAdapter(public_key_hex="mypubkey")
 
-        event = {"id": "e2", "pubkey": "mypubkey", "created_at": 0, "kind": 1, "content": "own", "tags": []}
+        event = {
+            "id": "e2",
+            "pubkey": "mypubkey",
+            "created_at": 0,
+            "kind": 1,
+            "content": "own",
+            "tags": [],
+        }
         adapter._process_event(event)
         assert adapter._message_queue.empty()
 
     def test_empty_content_ignored(self) -> None:
         from vaultbot.platforms.nostr import NostrAdapter
+
         adapter = NostrAdapter(public_key_hex="mypubkey")
 
-        event = {"id": "e3", "pubkey": "other", "created_at": 0, "kind": 1, "content": "", "tags": []}
+        event = {
+            "id": "e3",
+            "pubkey": "other",
+            "created_at": 0,
+            "kind": 1,
+            "content": "",
+            "tags": [],
+        }
         adapter._process_event(event)
         assert adapter._message_queue.empty()
 
     def test_reply_tag_extracted(self) -> None:
         from vaultbot.platforms.nostr import NostrAdapter
+
         adapter = NostrAdapter(public_key_hex="mypubkey")
 
         event = {
-            "id": "e4", "pubkey": "other", "created_at": 0, "kind": 1,
-            "content": "reply", "tags": [["e", "parent_event_id"]],
+            "id": "e4",
+            "pubkey": "other",
+            "created_at": 0,
+            "kind": 1,
+            "content": "reply",
+            "tags": [["e", "parent_event_id"]],
         }
         adapter._process_event(event)
         msg = adapter._message_queue.get_nowait()
@@ -480,6 +551,7 @@ class TestNostrEventProcessing:
 class TestNostrBuildEvent:
     def test_event_has_required_fields(self) -> None:
         from vaultbot.platforms.nostr import NostrAdapter
+
         adapter = NostrAdapter(public_key_hex="abc123")
 
         event = adapter._build_event(kind=1, content="test", tags=[])
@@ -494,6 +566,7 @@ class TestNostrConnect:
     @pytest.mark.asyncio
     async def test_connect_requires_pubkey(self) -> None:
         from vaultbot.platforms.nostr import NostrAdapter
+
         adapter = NostrAdapter(public_key_hex="")
         with pytest.raises(ValueError, match="public_key_hex"):
             await adapter.connect()
@@ -501,6 +574,7 @@ class TestNostrConnect:
     @pytest.mark.asyncio
     async def test_disconnect_idempotent(self) -> None:
         from vaultbot.platforms.nostr import NostrAdapter
+
         adapter = NostrAdapter(public_key_hex="abc")
         await adapter.disconnect()
         assert adapter._connected is False
@@ -510,6 +584,7 @@ class TestNostrSend:
     @pytest.mark.asyncio
     async def test_send_raises_when_not_connected(self) -> None:
         from vaultbot.platforms.nostr import NostrAdapter
+
         adapter = NostrAdapter(public_key_hex="abc")
         with pytest.raises(RuntimeError, match="not connected"):
             await adapter.send(OutboundMessage(chat_id="target", text="hi"))

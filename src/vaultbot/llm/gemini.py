@@ -99,10 +99,7 @@ class GeminiProvider:
     ) -> AsyncIterator[LLMChunk]:
         """Stream a completion using the Gemini API."""
         model_name = model or self._default_model
-        url = (
-            f"{_API_BASE}/models/{model_name}:streamGenerateContent"
-            f"?alt=sse&key={self._api_key}"
-        )
+        url = f"{_API_BASE}/models/{model_name}:streamGenerateContent?alt=sse&key={self._api_key}"
 
         contents = self._convert_messages(messages)
         body: dict = {
@@ -156,9 +153,11 @@ class GeminiProvider:
                 content = f"{system_text.strip()}\n\n{content}"
                 system_text = ""
 
-            contents.append({
-                "role": role,
-                "parts": [{"text": content}],
-            })
+            contents.append(
+                {
+                    "role": role,
+                    "parts": [{"text": content}],
+                }
+            )
 
         return contents

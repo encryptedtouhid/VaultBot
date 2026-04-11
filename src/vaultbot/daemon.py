@@ -24,6 +24,7 @@ _PID_FILE = CONFIG_DIR / "vaultbot.pid"
 @dataclass
 class DaemonStatus:
     """Status of the VaultBot daemon."""
+
     running: bool
     pid: int | None = None
     uptime_seconds: float = 0.0

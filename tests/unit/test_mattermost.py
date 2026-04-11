@@ -10,7 +10,6 @@ import pytest
 from vaultbot.core.message import OutboundMessage
 from vaultbot.platforms.mattermost import MattermostAdapter
 
-
 # ---------------------------------------------------------------------------
 # Construction / properties
 # ---------------------------------------------------------------------------
@@ -333,6 +332,7 @@ class TestMattermostConnectDisconnect:
         me_resp.json.return_value = {"id": "bot123"}
 
         from unittest.mock import patch
+
         with patch("httpx.AsyncClient") as mock_cls:
             mock_client = AsyncMock()
             mock_client.get = AsyncMock(return_value=me_resp)
@@ -354,6 +354,7 @@ class TestMattermostConnectDisconnect:
         fail_resp.text = "Unauthorized"
 
         from unittest.mock import patch
+
         with patch("httpx.AsyncClient") as mock_cls:
             mock_client = AsyncMock()
             mock_client.get = AsyncMock(return_value=fail_resp)

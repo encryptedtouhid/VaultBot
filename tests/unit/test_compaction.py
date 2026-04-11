@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from vaultbot.core.compaction import (
     ContextCompactor,
     TokenBudget,
@@ -40,7 +38,9 @@ class TestTokenBudget:
         assert budget.available_for_history > 0
 
     def test_custom_budget(self) -> None:
-        budget = TokenBudget(total=10_000, system_prompt=500, tools=500, response=500, compaction_summary=500)
+        budget = TokenBudget(
+            total=10_000, system_prompt=500, tools=500, response=500, compaction_summary=500
+        )
         assert budget.available_for_history == 8_000
 
 
@@ -57,7 +57,9 @@ class TestContextCompactor:
 
     def test_compaction_triggered(self) -> None:
         # Create a very small budget to force compaction
-        budget = TokenBudget(total=100, system_prompt=10, tools=10, response=10, compaction_summary=10)
+        budget = TokenBudget(
+            total=100, system_prompt=10, tools=10, response=10, compaction_summary=10
+        )
         compactor = ContextCompactor(budget=budget, preserve_recent=2)
 
         msgs = [
@@ -78,7 +80,9 @@ class TestContextCompactor:
         assert result[-2].content == "recent 1"
 
     def test_compaction_preserves_system_messages(self) -> None:
-        budget = TokenBudget(total=100, system_prompt=10, tools=10, response=10, compaction_summary=10)
+        budget = TokenBudget(
+            total=100, system_prompt=10, tools=10, response=10, compaction_summary=10
+        )
         compactor = ContextCompactor(budget=budget, preserve_recent=1)
 
         msgs = [
@@ -94,19 +98,23 @@ class TestContextCompactor:
         assert len(system_msgs) >= 1
 
     def test_summary_includes_topics(self) -> None:
-        summary = ContextCompactor._summarize_messages([
-            ChatMessage(role="user", content="Tell me about Python programming"),
-            ChatMessage(role="assistant", content="Python is a versatile language."),
-            ChatMessage(role="user", content="What about JavaScript?"),
-        ])
+        summary = ContextCompactor._summarize_messages(
+            [
+                ChatMessage(role="user", content="Tell me about Python programming"),
+                ChatMessage(role="assistant", content="Python is a versatile language."),
+                ChatMessage(role="user", content="What about JavaScript?"),
+            ]
+        )
         assert "Topics discussed" in summary
         assert "Python" in summary
 
     def test_summary_includes_message_count(self) -> None:
-        summary = ContextCompactor._summarize_messages([
-            ChatMessage(role="user", content="msg1"),
-            ChatMessage(role="user", content="msg2"),
-        ])
+        summary = ContextCompactor._summarize_messages(
+            [
+                ChatMessage(role="user", content="msg1"),
+                ChatMessage(role="user", content="msg2"),
+            ]
+        )
         assert "2" in summary
 
     def test_no_old_messages_no_compaction(self) -> None:

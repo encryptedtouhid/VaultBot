@@ -17,9 +17,7 @@ from vaultbot.plugins.sdk import (
 class TestScaffolding:
     def test_scaffold_creates_files(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
-            plugin_dir = scaffold_plugin(
-                Path(tmpdir), "my-plugin", "A test plugin", "tester"
-            )
+            plugin_dir = scaffold_plugin(Path(tmpdir), "my-plugin", "A test plugin", "tester")
             assert (plugin_dir / "plugin.py").exists()
             assert (plugin_dir / "vaultbot_plugin.json").exists()
 
@@ -69,12 +67,16 @@ class TestValidateManifest:
     def test_valid_manifest(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "vaultbot_plugin.json"
-            path.write_text(json.dumps({
-                "name": "test",
-                "version": "1.0",
-                "description": "A test",
-                "author": "me",
-            }))
+            path.write_text(
+                json.dumps(
+                    {
+                        "name": "test",
+                        "version": "1.0",
+                        "description": "A test",
+                        "author": "me",
+                    }
+                )
+            )
             errors = validate_manifest(path)
             assert errors == []
 
@@ -101,13 +103,17 @@ class TestValidateManifest:
     def test_invalid_filesystem_permission(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "vaultbot_plugin.json"
-            path.write_text(json.dumps({
-                "name": "test",
-                "version": "1.0",
-                "description": "A test",
-                "author": "me",
-                "filesystem": "full_access",
-            }))
+            path.write_text(
+                json.dumps(
+                    {
+                        "name": "test",
+                        "version": "1.0",
+                        "description": "A test",
+                        "author": "me",
+                        "filesystem": "full_access",
+                    }
+                )
+            )
             errors = validate_manifest(path)
             assert any("filesystem" in e.lower() for e in errors)
 
@@ -119,14 +125,10 @@ class TestPluginTestHarness:
         import importlib.util
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            plugin_dir = scaffold_plugin(
-                Path(tmpdir), "harness-test", "Test plugin", "tester"
-            )
+            plugin_dir = scaffold_plugin(Path(tmpdir), "harness-test", "Test plugin", "tester")
 
             # Load the scaffolded plugin
-            spec = importlib.util.spec_from_file_location(
-                "plugin_module", plugin_dir / "plugin.py"
-            )
+            spec = importlib.util.spec_from_file_location("plugin_module", plugin_dir / "plugin.py")
             assert spec is not None
             assert spec.loader is not None
             module = importlib.util.module_from_spec(spec)

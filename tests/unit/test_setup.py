@@ -46,27 +46,36 @@ class TestDiagnosticReport:
 
     def test_with_failure(self) -> None:
         from vaultbot.setup import DiagnosticCheck
-        report = DiagnosticReport(checks=[
-            DiagnosticCheck(name="test", status=CheckStatus.FAIL, message="bad"),
-        ])
+
+        report = DiagnosticReport(
+            checks=[
+                DiagnosticCheck(name="test", status=CheckStatus.FAIL, message="bad"),
+            ]
+        )
         assert report.passed is False
         assert report.fail_count == 1
 
     def test_skip_still_passes(self) -> None:
         from vaultbot.setup import DiagnosticCheck
-        report = DiagnosticReport(checks=[
-            DiagnosticCheck(name="test", status=CheckStatus.SKIP, message="skipped"),
-            DiagnosticCheck(name="test2", status=CheckStatus.PASS, message="ok"),
-        ])
+
+        report = DiagnosticReport(
+            checks=[
+                DiagnosticCheck(name="test", status=CheckStatus.SKIP, message="skipped"),
+                DiagnosticCheck(name="test2", status=CheckStatus.PASS, message="ok"),
+            ]
+        )
         assert report.passed is True
 
     def test_counts(self) -> None:
         from vaultbot.setup import DiagnosticCheck
-        report = DiagnosticReport(checks=[
-            DiagnosticCheck(name="a", status=CheckStatus.PASS, message="ok"),
-            DiagnosticCheck(name="b", status=CheckStatus.WARN, message="warn"),
-            DiagnosticCheck(name="c", status=CheckStatus.FAIL, message="fail"),
-        ])
+
+        report = DiagnosticReport(
+            checks=[
+                DiagnosticCheck(name="a", status=CheckStatus.PASS, message="ok"),
+                DiagnosticCheck(name="b", status=CheckStatus.WARN, message="warn"),
+                DiagnosticCheck(name="c", status=CheckStatus.FAIL, message="fail"),
+            ]
+        )
         assert report.pass_count == 1
         assert report.warn_count == 1
         assert report.fail_count == 1
@@ -75,6 +84,7 @@ class TestDiagnosticReport:
 class TestSetupWizard:
     def test_create_config_dir(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         import vaultbot.setup as setup_mod
+
         monkeypatch.setattr(setup_mod, "CONFIG_DIR", tmp_path / "vaultbot_test")
 
         wizard = SetupWizard()

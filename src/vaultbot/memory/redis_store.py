@@ -46,20 +46,20 @@ class RedisMemoryStore:
     async def save_turn(self, turn: ConversationTurn) -> None:
         """Save a conversation turn to a Redis list."""
         key = self._key("turns", turn.chat_id)
-        data = json.dumps({
-            "chat_id": turn.chat_id,
-            "user_message": turn.user_message,
-            "assistant_response": turn.assistant_response,
-            "timestamp": turn.timestamp.isoformat(),
-            "metadata": turn.metadata,
-        })
+        data = json.dumps(
+            {
+                "chat_id": turn.chat_id,
+                "user_message": turn.user_message,
+                "assistant_response": turn.assistant_response,
+                "timestamp": turn.timestamp.isoformat(),
+                "metadata": turn.metadata,
+            }
+        )
         await self._client.rpush(key, data)
         # Keep only last 1000 turns per chat to prevent unbounded growth
         await self._client.ltrim(key, -1000, -1)
 
-    async def get_history(
-        self, chat_id: str, *, limit: int = 20
-    ) -> list[ConversationTurn]:
+    async def get_history(self, chat_id: str, *, limit: int = 20) -> list[ConversationTurn]:
         """Retrieve conversation history from Redis."""
         key = self._key("turns", chat_id)
         # Get the last `limit` entries
@@ -73,9 +73,7 @@ class RedisMemoryStore:
                     chat_id=data["chat_id"],
                     user_message=data["user_message"],
                     assistant_response=data["assistant_response"],
-                    timestamp=datetime.fromisoformat(data["timestamp"]).replace(
-                        tzinfo=UTC
-                    ),
+                    timestamp=datetime.fromisoformat(data["timestamp"]).replace(tzinfo=UTC),
                     metadata=data.get("metadata", {}),
                 )
             )
@@ -94,15 +92,18 @@ class RedisMemoryStore:
     async def save_user_preferences(self, prefs: UserPreferences) -> None:
         """Save user preferences."""
         key = self._key("prefs", prefs.platform, prefs.user_id)
-        await self._client.set(key, json.dumps({
-            "user_id": prefs.user_id,
-            "platform": prefs.platform,
-            "preferences": prefs.preferences,
-        }))
+        await self._client.set(
+            key,
+            json.dumps(
+                {
+                    "user_id": prefs.user_id,
+                    "platform": prefs.platform,
+                    "preferences": prefs.preferences,
+                }
+            ),
+        )
 
-    async def get_user_preferences(
-        self, user_id: str, platform: str
-    ) -> UserPreferences | None:
+    async def get_user_preferences(self, user_id: str, platform: str) -> UserPreferences | None:
         """Get user preferences."""
         key = self._key("prefs", platform, user_id)
         raw = await self._client.get(key)

@@ -142,9 +142,7 @@ class CompatibleProvider:
         preset = PROVIDER_PRESETS.get(preset_name)
         if preset is None:
             available = ", ".join(sorted(PROVIDER_PRESETS.keys()))
-            raise ValueError(
-                f"Unknown preset '{preset_name}'. Available: {available}"
-            )
+            raise ValueError(f"Unknown preset '{preset_name}'. Available: {available}")
 
         extra_headers: dict[str, str] = {}
         # OpenRouter requires additional headers
@@ -191,9 +189,7 @@ class CompatibleProvider:
 
         choices = data.get("choices", [])
         if not choices:
-            raise RuntimeError(
-                f"{self._provider_label} returned empty choices array"
-            )
+            raise RuntimeError(f"{self._provider_label} returned empty choices array")
 
         choice = choices[0]
         usage = data.get("usage", {})

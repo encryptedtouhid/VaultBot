@@ -155,6 +155,5 @@ class PluginLoader:
             return py_files[0]
 
         raise PluginLoadError(
-            f"No Python module found in {plugin_dir}. "
-            "Plugins must contain at least one .py file."
+            f"No Python module found in {plugin_dir}. Plugins must contain at least one .py file."
         )

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 from datetime import UTC, datetime
 
 import pytest
@@ -15,7 +14,6 @@ from vaultbot.cron.scheduler import (
     _cron_matches,
     _field_matches,
 )
-
 
 # ---------------------------------------------------------------------------
 # Cron expression parsing

@@ -215,8 +215,19 @@ def init(
     # LLM
     style.section("🤖", "LLM Setup")
     all_providers = [
-        "claude", "openai", "openrouter", "together", "groq", "mistral",
-        "perplexity", "deepseek", "fireworks", "ollama", "vllm", "lmstudio", "custom",
+        "claude",
+        "openai",
+        "openrouter",
+        "together",
+        "groq",
+        "mistral",
+        "perplexity",
+        "deepseek",
+        "fireworks",
+        "ollama",
+        "vllm",
+        "lmstudio",
+        "custom",
     ]
     provider = typer.prompt(
         typer.style("  LLM provider", fg=typer.colors.CYAN),
@@ -226,8 +237,15 @@ def init(
     config.llm.provider = provider
 
     needs_key = {
-        "claude", "openai", "openrouter", "together", "groq",
-        "mistral", "perplexity", "deepseek", "fireworks",
+        "claude",
+        "openai",
+        "openrouter",
+        "together",
+        "groq",
+        "mistral",
+        "perplexity",
+        "deepseek",
+        "fireworks",
     }
     if provider in needs_key:
         api_key = typer.prompt(
@@ -248,7 +266,8 @@ def init(
     style.section("👤", "Admin Setup")
     # Auto-detect platform from what was enabled
     enabled_platforms = [
-        p for p in ["telegram", "discord", "slack", "whatsapp", "signal", "teams"]
+        p
+        for p in ["telegram", "discord", "slack", "whatsapp", "signal", "teams"]
         if getattr(config, p).enabled
     ]
     default_platform = enabled_platforms[0] if enabled_platforms else "telegram"
@@ -313,15 +332,11 @@ def _add_admin(config: VaultBotConfig, admin_str: str) -> None:
         style.error(f"Invalid format '{admin_str}'. Use platform:user_id")
         return
     platform, user_id = admin_str.split(":", 1)
-    config.allowlist.append(
-        AllowlistEntry(platform=platform, user_id=user_id, role="admin")
-    )
+    config.allowlist.append(AllowlistEntry(platform=platform, user_id=user_id, role="admin"))
     style.success(f"Admin: {platform}:{user_id}")
 
 
-_config_option: Path | None = typer.Option(
-    None, "--config", "-c", help="Config file path"
-)
+_config_option: Path | None = typer.Option(None, "--config", "-c", help="Config file path")
 
 
 @app.command()
@@ -389,9 +404,7 @@ def run(
             raise typer.Exit(1)
         from vaultbot.platforms.whatsapp import WhatsAppAdapter
 
-        bot.register_platform(
-            WhatsAppAdapter(access_token=access_token, phone_number_id=phone_id)
-        )
+        bot.register_platform(WhatsAppAdapter(access_token=access_token, phone_number_id=phone_id))
         style.success("WhatsApp adapter registered.")
 
     if config.signal.enabled:
@@ -415,9 +428,7 @@ def run(
         try:
             from vaultbot.platforms.slack import SlackAdapter
 
-            bot.register_platform(
-                SlackAdapter(bot_token=bot_token, app_token=app_token or "")
-            )
+            bot.register_platform(SlackAdapter(bot_token=bot_token, app_token=app_token or ""))
             style.success("Slack adapter registered.")
         except ImportError as e:
             style.error(f"Slack: {e}")
@@ -433,9 +444,7 @@ def run(
         try:
             from vaultbot.platforms.teams import TeamsAdapter
 
-            bot.register_platform(
-                TeamsAdapter(app_id=app_id, app_password=app_password)
-            )
+            bot.register_platform(TeamsAdapter(app_id=app_id, app_password=app_password))
             style.success("Teams adapter registered.")
         except ImportError as e:
             style.error(f"Teams: {e}")
@@ -537,9 +546,7 @@ def run(
     style.key_value("API Status", "http://localhost:8082/dashboard/api/status")
     style.key_value("SSE Events", "http://localhost:8082/dashboard/api/events")
     style.key_value("Dashboard Token", dashboard_token)
-    style.hint(
-        "Open http://localhost:8082/dashboard in your browser for the full control panel"
-    )
+    style.hint("Open http://localhost:8082/dashboard in your browser for the full control panel")
     typer.echo()
 
     try:
@@ -557,9 +564,7 @@ def run(
 
 @credentials_app.command("set")
 def credentials_set(
-    key: str = typer.Argument(
-        help="Credential key (e.g., telegram_bot_token, llm_api_key)"
-    ),
+    key: str = typer.Argument(help="Credential key (e.g., telegram_bot_token, llm_api_key)"),
 ) -> None:
     """Store a credential securely in the OS keychain."""
     setup_logging(enable_file_logging=False)
@@ -617,10 +622,7 @@ def plugin_install(
 
     try:
         entry = loader.load_plugin(plugin_dir)
-        style.success(
-            f"Plugin '{entry.manifest.name}' "
-            f"v{entry.manifest.version} installed."
-        )
+        style.success(f"Plugin '{entry.manifest.name}' v{entry.manifest.version} installed.")
     except PluginLoadError as e:
         style.error(str(e))
         raise typer.Exit(1) from e
@@ -705,9 +707,7 @@ def plugin_uninstall(
 @plugin_app.command("sign")
 def plugin_sign(
     plugin_dir: Path = typer.Argument(help="Path to the plugin directory"),
-    key_file: Path = typer.Argument(
-        help="Path to Ed25519 private key (PEM)"
-    ),
+    key_file: Path = typer.Argument(help="Path to Ed25519 private key (PEM)"),
 ) -> None:
     """Sign a plugin with an Ed25519 private key."""
     setup_logging(enable_file_logging=False)
@@ -731,17 +731,13 @@ def plugin_sign(
         manifest_data["version"],
         plugin_dir,
     )
-    style.success(
-        f"Plugin '{sig.plugin_name}' v{sig.plugin_version} signed."
-    )
+    style.success(f"Plugin '{sig.plugin_name}' v{sig.plugin_version} signed.")
     style.key_value("Public key", sig.signer_public_key.hex()[:32] + "...")
 
 
 @plugin_app.command("keygen")
 def plugin_keygen(
-    output_dir: Path = typer.Argument(
-        help="Directory to write the keypair files"
-    ),
+    output_dir: Path = typer.Argument(help="Directory to write the keypair files"),
 ) -> None:
     """Generate an Ed25519 keypair for plugin signing."""
     setup_logging(enable_file_logging=False)
@@ -761,9 +757,7 @@ def plugin_keygen(
     style.success("Keypair generated:")
     style.key_value("Private key", str(private_path))
     style.key_value("Public key", str(public_path))
-    style.hint(
-        f"To trust this key: copy {public_path.name} to ~/.vaultbot/trust_store/"
-    )
+    style.hint(f"To trust this key: copy {public_path.name} to ~/.vaultbot/trust_store/")
 
 
 # --- Marketplace commands ---

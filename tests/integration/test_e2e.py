@@ -245,12 +245,8 @@ class TestFullMessagePipeline:
         self, router: MessageRouter, adapter: MockPlatformAdapter
     ) -> None:
         """Multiple messages in same chat maintain conversation context."""
-        await router.handle(
-            make_message("First message", chat_id="chat1", msg_id="1"), adapter
-        )
-        await router.handle(
-            make_message("Second message", chat_id="chat1", msg_id="2"), adapter
-        )
+        await router.handle(make_message("First message", chat_id="chat1", msg_id="1"), adapter)
+        await router.handle(make_message("Second message", chat_id="chat1", msg_id="2"), adapter)
 
         assert len(adapter.sent_messages) == 2
         assert "Echo: First message" in adapter.sent_messages[0].text
@@ -261,12 +257,8 @@ class TestFullMessagePipeline:
         self, router: MessageRouter, adapter: MockPlatformAdapter
     ) -> None:
         """Different chat IDs have independent conversation contexts."""
-        await router.handle(
-            make_message("Chat A msg", chat_id="chatA", msg_id="1"), adapter
-        )
-        await router.handle(
-            make_message("Chat B msg", chat_id="chatB", msg_id="2"), adapter
-        )
+        await router.handle(make_message("Chat A msg", chat_id="chatA", msg_id="1"), adapter)
+        await router.handle(make_message("Chat B msg", chat_id="chatB", msg_id="2"), adapter)
 
         assert len(adapter.sent_messages) == 2
         assert "Chat A msg" in adapter.sent_messages[0].text
@@ -412,10 +404,12 @@ class TestMultiUserIsolation:
     ) -> None:
         """Each user has their own rate limit bucket."""
         router = MessageRouter(
-            auth=AuthManager({
-                "mock:user1": Role.USER,
-                "mock:user2": Role.USER,
-            }),
+            auth=AuthManager(
+                {
+                    "mock:user1": Role.USER,
+                    "mock:user2": Role.USER,
+                }
+            ),
             rate_limiter=RateLimiter(
                 user_capacity=1.0,
                 user_refill_rate=0.0,
@@ -428,17 +422,11 @@ class TestMultiUserIsolation:
         )
 
         # user1 uses their 1 request
-        await router.handle(
-            make_message("hi", sender_id="user1", msg_id="1"), adapter
-        )
+        await router.handle(make_message("hi", sender_id="user1", msg_id="1"), adapter)
         # user1 is now rate limited
-        await router.handle(
-            make_message("hi again", sender_id="user1", msg_id="2"), adapter
-        )
+        await router.handle(make_message("hi again", sender_id="user1", msg_id="2"), adapter)
         # user2 should still be able to send
-        await router.handle(
-            make_message("hello", sender_id="user2", msg_id="3"), adapter
-        )
+        await router.handle(make_message("hello", sender_id="user2", msg_id="3"), adapter)
 
         assert "Echo:" in adapter.sent_messages[0].text  # user1 ok
         assert "rate limited" in adapter.sent_messages[1].text.lower()  # user1 blocked
@@ -449,12 +437,8 @@ class TestMultiUserIsolation:
         self, router: MessageRouter, adapter: MockPlatformAdapter
     ) -> None:
         """Both admin and regular user roles can send messages."""
-        await router.handle(
-            make_message("admin msg", sender_id="user1", msg_id="1"), adapter
-        )
-        await router.handle(
-            make_message("user msg", sender_id="user2", msg_id="2"), adapter
-        )
+        await router.handle(make_message("admin msg", sender_id="user1", msg_id="1"), adapter)
+        await router.handle(make_message("user msg", sender_id="user2", msg_id="2"), adapter)
 
         assert len(adapter.sent_messages) == 2
         assert "Echo:" in adapter.sent_messages[0].text

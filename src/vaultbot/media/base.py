@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Protocol, runtime_checkable
 
 
 class ImageSize(str, Enum):
     """Standard image sizes."""
+
     SQUARE_256 = "256x256"
     SQUARE_512 = "512x512"
     SQUARE_1024 = "1024x1024"
@@ -18,12 +19,14 @@ class ImageSize(str, Enum):
 
 class ImageQuality(str, Enum):
     """Image quality levels."""
+
     STANDARD = "standard"
     HD = "hd"
 
 
 class ImageStyle(str, Enum):
     """Image style options."""
+
     VIVID = "vivid"
     NATURAL = "natural"
 
@@ -31,6 +34,7 @@ class ImageStyle(str, Enum):
 @dataclass(frozen=True, slots=True)
 class GeneratedImage:
     """Result from an image generation request."""
+
     url: str
     revised_prompt: str = ""
     provider: str = ""
@@ -42,6 +46,7 @@ class GeneratedImage:
 @dataclass(frozen=True, slots=True)
 class ImageGenerationRequest:
     """Parameters for an image generation request."""
+
     prompt: str
     size: ImageSize = ImageSize.SQUARE_1024
     quality: ImageQuality = ImageQuality.STANDARD

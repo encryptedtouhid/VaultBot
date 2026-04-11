@@ -72,17 +72,17 @@ class AuditLogger:
             timestamp=event.timestamp,
             **event.details,
         )
-        self._buffer.append({
-            "type": event.event_type.value,
-            "platform": event.platform,
-            "user_id": event.user_id,
-            "details": event.details,
-            "timestamp": event.timestamp,
-        })
+        self._buffer.append(
+            {
+                "type": event.event_type.value,
+                "platform": event.platform,
+                "user_id": event.user_id,
+                "details": event.details,
+                "timestamp": event.timestamp,
+            }
+        )
 
-    def log_auth(
-        self, *, platform: str, user_id: str, success: bool, reason: str = ""
-    ) -> None:
+    def log_auth(self, *, platform: str, user_id: str, success: bool, reason: str = "") -> None:
         """Shorthand for logging authentication events."""
         event_type = EventType.AUTH_SUCCESS if success else EventType.AUTH_DENIED
         self.log(
@@ -114,9 +114,7 @@ class AuditLogger:
             )
         )
 
-    def log_error(
-        self, *, error: str, platform: str = "", user_id: str = "", **extra: Any
-    ) -> None:
+    def log_error(self, *, error: str, platform: str = "", user_id: str = "", **extra: Any) -> None:
         """Log an error event."""
         self.log(
             AuditEvent(
@@ -127,9 +125,7 @@ class AuditLogger:
             )
         )
 
-    def recent(
-        self, limit: int = 50, event_type: str | None = None
-    ) -> list[dict[str, Any]]:
+    def recent(self, limit: int = 50, event_type: str | None = None) -> list[dict[str, Any]]:
         """Return recent audit events from the in-memory buffer."""
         events = list(self._buffer)
         if event_type:

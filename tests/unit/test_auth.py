@@ -14,10 +14,12 @@ def test_authorized_user_is_accepted() -> None:
 
 
 def test_admin_check() -> None:
-    auth = AuthManager({
-        "telegram:admin1": Role.ADMIN,
-        "telegram:user1": Role.USER,
-    })
+    auth = AuthManager(
+        {
+            "telegram:admin1": Role.ADMIN,
+            "telegram:user1": Role.USER,
+        }
+    )
     assert auth.is_admin("telegram", "admin1") is True
     assert auth.is_admin("telegram", "user1") is False
     assert auth.is_admin("telegram", "unknown") is False
@@ -41,10 +43,12 @@ def test_get_role() -> None:
 
 
 def test_list_users() -> None:
-    auth = AuthManager({
-        "telegram:1": Role.ADMIN,
-        "discord:2": Role.USER,
-    })
+    auth = AuthManager(
+        {
+            "telegram:1": Role.ADMIN,
+            "discord:2": Role.USER,
+        }
+    )
     users = auth.list_users()
     assert users == {"telegram:1": "admin", "discord:2": "user"}
 
