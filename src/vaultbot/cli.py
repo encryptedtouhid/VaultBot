@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 
+import click
 import typer
 
 from vaultbot.config import CONFIG_FILE, VaultBotConfig
@@ -152,7 +153,7 @@ def init() -> None:
     provider = typer.prompt(
         typer.style("  LLM provider", fg=typer.colors.CYAN),
         default="claude",
-        type=typer.Choice(["claude", "openai", "local"]),
+        type=click.Choice(["claude", "openai", "local"]),
     )
     config.llm.provider = provider
 
