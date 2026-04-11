@@ -15,4 +15,8 @@ examples/
 *.md
 !README.md
 .env
+.env.example
 .venv/
+.dockerignore
+Dockerfile
+docker-compose.yml

@@ -1,21 +1,19 @@
-version: "3.8"
-
 services:
   zenbot:
     build: .
     container_name: zenbot
     restart: unless-stopped
     ports:
-      - "8080:8080"   # Webhook server
+      - "8080:8080"   # Webhook server (WhatsApp, Telegram, Teams)
       - "8081:8081"   # Healthcheck
+      - "8082:8082"   # Dashboard
     volumes:
-      # Persist bot data (config, memory, plugins, audit logs)
+      # Persist bot data (memory, plugins, audit logs, trust store)
       - zenbot-data:/home/zenbot/.zenbot
-      # Mount config file (create with `zenbot init` first)
+      # Mount config file if you have one (optional)
       # - ./config.yaml:/home/zenbot/.zenbot/config.yaml:ro
-    environment:
-      - ZENBOT_LOG_JSON=true
-      - ZENBOT_LOG_LEVEL=INFO
+    env_file:
+      - .env
     # Security: read-only root filesystem
     read_only: true
     tmpfs:
@@ -25,6 +23,17 @@ services:
       - ALL
     security_opt:
       - no-new-privileges:true
+    depends_on:
+      redis:
+        condition: service_started
+        required: false
+    networks:
+      - zenbot-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # Optional: Redis for multi-instance deployments
   redis:
@@ -41,7 +50,33 @@ services:
       - ALL
     security_opt:
       - no-new-privileges:true
+    networks:
+      - zenbot-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # Optional: Ollama for local LLM
+  ollama:
+    image: ollama/ollama:latest
+    container_name: zenbot-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - zenbot-net
+    profiles:
+      - local-llm
 
 volumes:
   zenbot-data:
   redis-data:
+  ollama-data:
+
+networks:
+  zenbot-net:
+    driver: bridge

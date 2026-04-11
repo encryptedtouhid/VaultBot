@@ -82,7 +82,13 @@ class ZenBotConfig(BaseSettings):
     # Allowlist
     allowlist: list[AllowlistEntry] = Field(default_factory=list)
 
-    model_config = {"env_prefix": "ZENBOT_", "env_nested_delimiter": "__"}
+    model_config = {
+        "env_prefix": "ZENBOT_",
+        "env_nested_delimiter": "__",
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "extra": "ignore",
+    }
 
     def get_allowlist(self) -> dict[str, Role]:
         """Convert allowlist entries to the format expected by AuthManager."""

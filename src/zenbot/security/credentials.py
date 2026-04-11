@@ -100,7 +100,20 @@ class CredentialStore:
         logger.info("credential_store_unlocked")
 
     def get(self, key: str) -> str | None:
-        """Retrieve a credential by key."""
+        """Retrieve a credential by key.
+
+        Lookup order:
+        1. Environment variable ZENBOT_{KEY} (uppercase, for Docker)
+        2. OS keychain (if available)
+        3. Encrypted file store
+        """
+        import os
+
+        env_key = f"ZENBOT_{key.upper()}"
+        env_val = os.environ.get(env_key)
+        if env_val:
+            return env_val
+
         if self._use_keyring:
             return keyring.get_password(SERVICE_NAME, key)
         return self._load_file_store().get(key)
