@@ -7,7 +7,7 @@ name = "vaultbot"
 version = "0.1.0"
 description = "V.A.U.L.T. BOT — Security-first, open-source autonomous AI agent"
 readme = "README.md"
-license = "BSL-1.1"
+license = "LicenseRef-BSL-1.1"
 requires-python = ">=3.11"
 authors = [
     { name = "Khaled Md Tuhidul Hossain" },
