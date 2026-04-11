@@ -21,6 +21,12 @@ credentials_app = typer.Typer(help="Manage credentials securely.")
 app.add_typer(credentials_app, name="credentials")
 plugin_app = typer.Typer(help="Manage plugins.")
 app.add_typer(plugin_app, name="plugin")
+marketplace_app = typer.Typer(help="Browse and install plugins from the marketplace.")
+app.add_typer(marketplace_app, name="marketplace")
+team_app = typer.Typer(help="Manage teams and multi-user access.")
+app.add_typer(team_app, name="team")
+sdk_app = typer.Typer(help="Plugin development tools.")
+app.add_typer(sdk_app, name="sdk")
 
 logger = get_logger(__name__)
 
@@ -481,3 +487,163 @@ def plugin_keygen(
     style.hint(
         f"To trust this key: copy {public_path.name} to ~/.zenbot/trust_store/"
     )
+
+
+# --- Marketplace commands ---
+
+
+@marketplace_app.command("search")
+def marketplace_search(
+    query: str = typer.Argument("", help="Search query"),
+) -> None:
+    """Search the plugin marketplace."""
+    setup_logging()
+    style.info(f"Searching marketplace for '{query}'...")
+    style.hint("Marketplace server not configured yet.")
+    style.hint("Set ZENBOT_MARKETPLACE_URL or wait for marketplace launch.")
+
+
+@marketplace_app.command("info")
+def marketplace_info(
+    name: str = typer.Argument(help="Plugin name"),
+) -> None:
+    """Get details about a marketplace plugin."""
+    setup_logging()
+    style.info(f"Looking up plugin '{name}'...")
+    style.hint("Marketplace server not configured yet.")
+
+
+# --- Team commands ---
+
+
+@team_app.command("create")
+def team_create(
+    name: str = typer.Argument(help="Team name"),
+    description: str = typer.Option("", "--desc", "-d", help="Team description"),
+) -> None:
+    """Create a new team."""
+    setup_logging()
+    from zenbot.security.teams import TeamManager
+
+    mgr = TeamManager()
+    try:
+        mgr.create_team(name, description)
+        style.success(f"Team '{name}' created.")
+    except ValueError as e:
+        style.error(str(e))
+        raise typer.Exit(1) from e
+
+
+@team_app.command("list")
+def team_list() -> None:
+    """List all teams."""
+    setup_logging()
+    style.info("Teams are stored in config. Use `zenbot init` to set up teams.")
+    style.hint("Team persistence coming in a future update.")
+
+
+# --- SDK commands ---
+
+
+@sdk_app.command("new")
+def sdk_new(
+    name: str = typer.Argument(help="Plugin name"),
+    output_dir: Path = typer.Option(".", "--output", "-o", help="Output directory"),
+    description: str = typer.Option("A ZenBot plugin", "--desc", "-d"),
+    author: str = typer.Option("", "--author", "-a"),
+) -> None:
+    """Scaffold a new plugin project."""
+    setup_logging()
+    from zenbot.plugins.sdk import scaffold_plugin
+
+    plugin_dir = scaffold_plugin(output_dir, name, description, author)
+    style.success(f"Plugin '{name}' scaffolded.")
+    style.key_value("Location", str(plugin_dir))
+    style.hint("Edit plugin.py to implement your logic.")
+    style.command_hint(f"zenbot sdk test {plugin_dir}")
+
+
+@sdk_app.command("test")
+def sdk_test(
+    plugin_dir: Path = typer.Argument(help="Path to plugin directory"),
+) -> None:
+    """Run the test harness against a plugin."""
+    setup_logging()
+    import importlib.util
+
+    from zenbot.plugins.sdk import PluginTestHarness
+
+    module_path = plugin_dir / "plugin.py"
+    if not module_path.exists():
+        style.error(f"No plugin.py found in {plugin_dir}")
+        raise typer.Exit(1)
+
+    # Load the plugin
+    spec = importlib.util.spec_from_file_location("plugin_module", module_path)
+    if spec is None or spec.loader is None:
+        style.error("Cannot load plugin module.")
+        raise typer.Exit(1)
+
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    # Find the plugin class
+    plugin_cls = None
+    for attr_name in dir(module):
+        attr = getattr(module, attr_name)
+        if (
+            isinstance(attr, type)
+            and hasattr(attr, "manifest")
+            and hasattr(attr, "handle")
+            and attr_name != "PluginBase"
+        ):
+            plugin_cls = attr
+            break
+
+    if plugin_cls is None:
+        style.error("No PluginBase subclass found in plugin.py")
+        raise typer.Exit(1)
+
+    plugin = plugin_cls()
+    harness = PluginTestHarness(plugin)
+
+    style.header(f"Testing plugin: {plugin.manifest().name}")
+    style.divider()
+
+    results = asyncio.run(harness.run_all())
+
+    for r in results:
+        if r.passed:
+            style.success(r.test_name)
+        else:
+            style.error(f"{r.test_name} — {r.message}")
+
+    style.divider()
+    passed = sum(1 for r in results if r.passed)
+    total = len(results)
+
+    if passed == total:
+        style.success(f"All {total} tests passed!")
+    else:
+        style.warning(f"{passed}/{total} tests passed.")
+        raise typer.Exit(1)
+
+
+@sdk_app.command("validate")
+def sdk_validate(
+    plugin_dir: Path = typer.Argument(help="Path to plugin directory"),
+) -> None:
+    """Validate a plugin's manifest file."""
+    setup_logging()
+    from zenbot.plugins.sdk import validate_manifest
+
+    manifest_path = plugin_dir / "zenbot_plugin.json"
+    errors = validate_manifest(manifest_path)
+
+    if not errors:
+        style.success("Manifest is valid.")
+    else:
+        style.error("Manifest validation failed:")
+        for err in errors:
+            style.hint(err)
+        raise typer.Exit(1)
