@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from zenbot.plugins.signer import PluginSigner, PluginVerifier, _hash_plugin_directory
+from vaultbot.plugins.signer import PluginSigner, PluginVerifier, _hash_plugin_directory
 
 
 @pytest.fixture
@@ -20,7 +20,7 @@ def plugin_dir() -> Path:
         d = Path(tmpdir) / "test-plugin"
         d.mkdir()
         (d / "plugin.py").write_text("print('hello')")
-        (d / "zenbot_plugin.json").write_text(json.dumps({
+        (d / "vaultbot_plugin.json").write_text(json.dumps({
             "name": "test-plugin",
             "version": "1.0.0",
             "description": "A test plugin",
@@ -103,7 +103,7 @@ def test_signer_from_key_bytes(signer: PluginSigner) -> None:
 
 def test_signature_serialization(signer: PluginSigner, plugin_dir: Path) -> None:
     sig = signer.sign_plugin("test-plugin", "1.0.0", plugin_dir)
-    from zenbot.plugins.signer import PluginSignature
+    from vaultbot.plugins.signer import PluginSignature
 
     data = sig.to_dict()
     restored = PluginSignature.from_dict(data)

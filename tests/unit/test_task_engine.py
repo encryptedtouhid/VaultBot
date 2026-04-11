@@ -5,14 +5,14 @@ from pathlib import Path
 
 import pytest
 
-from zenbot.core.task_engine import (
+from vaultbot.core.task_engine import (
     Action,
     ActionResult,
     ApprovalStatus,
     TaskEngine,
 )
-from zenbot.security.audit import AuditLogger
-from zenbot.security.policy import ActionSeverity, SecurityPolicy
+from vaultbot.security.audit import AuditLogger
+from vaultbot.security.policy import ActionSeverity, SecurityPolicy
 
 
 @pytest.fixture

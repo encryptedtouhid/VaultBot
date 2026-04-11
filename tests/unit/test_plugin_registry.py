@@ -3,8 +3,8 @@
 import tempfile
 from pathlib import Path
 
-from zenbot.plugins.base import PluginManifest
-from zenbot.plugins.registry import PluginEntry, PluginRegistry
+from vaultbot.plugins.base import PluginManifest
+from vaultbot.plugins.registry import PluginEntry, PluginRegistry
 
 
 def _make_entry(name: str = "test-plugin") -> PluginEntry:

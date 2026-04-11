@@ -1,6 +1,6 @@
 """Tests for input sanitization."""
 
-from zenbot.security.sanitizer import (
+from vaultbot.security.sanitizer import (
     contains_excessive_repetition,
     is_empty_after_sanitization,
     sanitize,

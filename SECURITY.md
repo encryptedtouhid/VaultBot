@@ -2,13 +2,13 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in ZenBot, please report it responsibly.
+If you discover a security vulnerability in VaultBot, please report it responsibly.
 
 **DO NOT** open a public GitHub issue for security vulnerabilities.
 
 ### How to Report
 
-1. Email: Send details to **security@zenbot.dev** (placeholder — update with real contact)
+1. Email: Send details to **security@vaultbot.dev** (placeholder — update with real contact)
 2. Include:
    - Description of the vulnerability
    - Steps to reproduce
@@ -25,7 +25,7 @@ If you discover a security vulnerability in ZenBot, please report it responsibly
 ### Scope
 
 The following are in scope:
-- ZenBot core application code
+- VaultBot core application code
 - Security module (credentials, auth, audit, rate limiting, policy)
 - Platform adapters
 - LLM adapters
@@ -39,7 +39,7 @@ The following are out of scope:
 
 ## Security Design Principles
 
-ZenBot is built with a security-first architecture:
+VaultBot is built with a security-first architecture:
 
 1. **Zero-trust by default**: All users must be explicitly allowlisted
 2. **Encrypted credential storage**: OS keychain or Fernet-encrypted fallback; never plain text

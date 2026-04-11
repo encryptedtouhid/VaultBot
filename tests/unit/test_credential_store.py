@@ -1,6 +1,6 @@
 """Tests for the credential store."""
 
-from zenbot.utils.crypto import decrypt, derive_key, encrypt, generate_salt
+from vaultbot.utils.crypto import decrypt, derive_key, encrypt, generate_salt
 
 
 def test_encrypt_decrypt_roundtrip() -> None:

@@ -1,6 +1,6 @@
 """Tests for prompt injection detection."""
 
-from zenbot.llm.prompt_guard import scan_input, scan_output
+from vaultbot.llm.prompt_guard import scan_input, scan_output
 
 
 class TestInputScanning:

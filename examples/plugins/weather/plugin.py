@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import httpx
 
-from zenbot.plugins.base import (
+from vaultbot.plugins.base import (
     PermissionLevel,
     PluginBase,
     PluginContext,

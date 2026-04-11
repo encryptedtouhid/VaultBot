@@ -1,7 +1,7 @@
 """Tests for conversation context management."""
 
-from zenbot.core.context import ContextManager, ConversationContext
-from zenbot.core.message import ChatMessage
+from vaultbot.core.context import ContextManager, ConversationContext
+from vaultbot.core.message import ChatMessage
 
 
 def test_sliding_window_trims_old_messages() -> None:

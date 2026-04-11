@@ -4,7 +4,7 @@ import json
 import tempfile
 from pathlib import Path
 
-from zenbot.utils.logging import get_logger, setup_logging
+from vaultbot.utils.logging import get_logger, setup_logging
 
 
 def test_file_logging_creates_log_files() -> None:
@@ -17,8 +17,8 @@ def test_file_logging_creates_log_files() -> None:
         logger.info("test_message", key="value")
 
         # Verify log files exist
-        assert (log_dir / "zenbot.log").exists()
-        assert (log_dir / "zenbot.error.log").exists()
+        assert (log_dir / "vaultbot.log").exists()
+        assert (log_dir / "vaultbot.error.log").exists()
         assert (log_dir / "audit.log").exists()
 
 
@@ -31,7 +31,7 @@ def test_app_log_contains_json_entries() -> None:
         logger = get_logger("test.json_format")
         logger.info("json_test", foo="bar", num=42)
 
-        log_file = log_dir / "zenbot.log"
+        log_file = log_dir / "vaultbot.log"
         content = log_file.read_text().strip()
         assert content  # Not empty
 
@@ -56,7 +56,7 @@ def test_error_log_only_contains_warnings_and_above() -> None:
         logger.warning("warning_msg")
         logger.error("error_msg")
 
-        error_content = (log_dir / "zenbot.error.log").read_text()
+        error_content = (log_dir / "vaultbot.error.log").read_text()
         assert "warning_msg" in error_content
         assert "error_msg" in error_content
         assert "info_msg" not in error_content
@@ -72,7 +72,7 @@ def test_log_includes_caller_info() -> None:
         logger = get_logger("test.caller_info")
         logger.info("caller_test")
 
-        content = (log_dir / "zenbot.log").read_text()
+        content = (log_dir / "vaultbot.log").read_text()
         data = json.loads(content.strip().split("\n")[-1])
         assert "filename" in data
         assert "func_name" in data
@@ -91,7 +91,7 @@ def test_log_file_permissions() -> None:
         import os
         import stat
 
-        for name in ["zenbot.log", "zenbot.error.log", "audit.log"]:
+        for name in ["vaultbot.log", "vaultbot.error.log", "audit.log"]:
             path = log_dir / name
             mode = os.stat(path).st_mode
             # Owner read+write only (0o600)
@@ -121,7 +121,7 @@ def test_audit_log_separate_from_app_log() -> None:
 
         import structlog
 
-        audit_logger = structlog.get_logger("zenbot.audit")
+        audit_logger = structlog.get_logger("vaultbot.audit")
         audit_logger.info("auth.denied", user_id="attacker", platform="telegram")
 
         audit_content = (log_dir / "audit.log").read_text()

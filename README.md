@@ -1,16 +1,18 @@
 <p align="center">
   <pre align="center">
-  ███████╗███████╗███╗   ██╗██████╗  ██████╗ ████████╗
-  ╚══███╔╝██╔════╝████╗  ██║██╔══██╗██╔═══██╗╚══██╔══╝
-    ███╔╝ █████╗  ██╔██╗ ██║██████╔╝██║   ██║   ██║
-   ███╔╝  ██╔══╝  ██║╚██╗██║██╔══██╗██║   ██║   ██║
-  ███████╗███████╗██║ ╚████║██████╔╝╚██████╔╝   ██║
-  ╚══════╝╚══════╝╚═╝  ╚═══╝╚═════╝  ╚═════╝    ╚═╝
+  ██╗   ██╗ █████╗ ██╗   ██╗██╗  ████████╗  ██████╗  ██████╗ ████████╗
+  ██║   ██║██╔══██╗██║   ██║██║  ╚══██╔══╝  ██╔══██╗██╔═══██╗╚══██╔══╝
+  ██║   ██║███████║██║   ██║██║     ██║     ██████╔╝██║   ██║   ██║
+  ╚██╗ ██╔╝██╔══██║██║   ██║██║     ██║     ██╔══██╗██║   ██║   ██║
+   ╚████╔╝ ██║  ██║╚██████╔╝███████╗██║     ██████╔╝╚██████╔╝   ██║
+    ╚═══╝  ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝     ╚═════╝  ╚═════╝    ╚═╝
   </pre>
 </p>
 
 <p align="center">
   <strong>Security-first, open-source autonomous AI agent</strong>
+  <br>
+  <em>V.A.U.L.T. — Verified Autonomous Utility & Logical Taskrunner</em>
   <br>
   <em>7 platforms &bull; 3 LLM backends &bull; 10 security layers &bull; 235 tests</em>
 </p>
@@ -28,13 +30,13 @@
 
 ---
 
-## Why ZenBot?
+## Why VaultBot?
 
 AI agent bots like OpenClaw ship with authentication disabled by default, store credentials in plain text, and let anyone upload executable plugins with zero code review. The result: [138+ CVEs](https://blink.new/blog/openclaw-security-best-practices-2026), [42,000+ exposed instances](https://www.sangfor.com/blog/cybersecurity/openclaw-ai-agent-security-risks-2026), and [824+ malicious plugins](https://www.immersivelabs.com/resources/c7-blog/openclaw-what-you-need-to-know-before-it-claws-its-way-into-your-organization) in the wild.
 
-ZenBot takes the opposite approach. Every security mechanism is **on by default and cannot be turned off**. Credentials are never stored in plain text. Plugins are cryptographically signed and run in sandboxed subprocesses. Every action is audited.
+VaultBot takes the opposite approach. Every security mechanism is **on by default and cannot be turned off**. Credentials are never stored in plain text. Plugins are cryptographically signed and run in sandboxed subprocesses. Every action is audited.
 
-| | OpenClaw | ZenBot |
+| | OpenClaw | VaultBot |
 |---|---|---|
 | **CVEs** | 138+ (41% High/Critical) | 0 (secure by design) |
 | **Auth default** | Disabled | Always on, immutable |
@@ -50,10 +52,10 @@ ZenBot takes the opposite approach. Every security mechanism is **on by default 
 pip install -e .
 
 # Interactive setup wizard — credentials stored in OS keychain
-zenbot init
+vaultbot init
 
 # Start the bot
-zenbot run
+vaultbot run
 ```
 
 Or with Docker:
@@ -107,7 +109,7 @@ All LLM calls pass through a **prompt injection guard** that scans for 13 known 
 | **Healthcheck** | `/health` and `/ready` endpoints for Kubernetes/Docker orchestration |
 | **Redis** | Optional shared memory backend for multi-instance deployments |
 | **Summarization** | LLM-powered conversation compression to manage token costs |
-| **File logging** | Rotating JSON logs: `zenbot.log`, `zenbot.error.log`, `audit.log` (10MB, 5 backups) |
+| **File logging** | Rotating JSON logs: `vaultbot.log`, `vaultbot.error.log`, `audit.log` (10MB, 5 backups) |
 | **Dashboard** | SSE-based real-time monitoring, token-authenticated, localhost by default |
 | **Teams** | Multi-user roles (Admin/User), per-team daily budgets, shared plugin configs |
 
@@ -117,7 +119,7 @@ All LLM calls pass through a **prompt injection guard** that scans for 13 known 
 
 | Layer | Implementation |
 |---|---|
-| **Credential storage** | OS keychain via `keyring`, Fernet + Argon2id fallback, `ZENBOT_*` env vars for Docker |
+| **Credential storage** | OS keychain via `keyring`, Fernet + Argon2id fallback, `VAULTBOT_*` env vars for Docker |
 | **Zero-trust auth** | Every user must be explicitly allowlisted; unknown senders are rejected and logged |
 | **Immutable defaults** | `auth.require_allowlist`, `plugins.require_signature`, `actions.require_approval`, `audit.enabled` cannot be set to false |
 | **Prompt guard** | 13 injection patterns (ignore instructions, jailbreak, DAN mode, role override, etc.) + 3 output leak patterns |
@@ -131,7 +133,7 @@ All LLM calls pass through a **prompt injection guard** that scans for 13 known 
 ## Architecture
 
 ```
-src/zenbot/                          54 source files across 8 modules
+src/vaultbot/                          54 source files across 8 modules
 ├── core/                            Bot orchestrator, router, context, summarizer,
 │                                    task engine, healthcheck
 ├── platforms/                       Telegram, Discord, WhatsApp, Signal, Slack,
@@ -150,11 +152,11 @@ src/zenbot/                          54 source files across 8 modules
 
 ## Configuration
 
-ZenBot reads configuration from three sources (highest priority first):
+VaultBot reads configuration from three sources (highest priority first):
 
-1. **Environment variables** — `ZENBOT_*` prefix, best for Docker
+1. **Environment variables** — `VAULTBOT_*` prefix, best for Docker
 2. **`.env` file** — auto-loaded by pydantic-settings
-3. **YAML config** — `~/.zenbot/config.yaml`, created by `zenbot init`
+3. **YAML config** — `~/.vaultbot/config.yaml`, created by `vaultbot init`
 
 ### Environment Variables
 
@@ -169,7 +171,7 @@ All 30+ variables are documented in [`.env.example`](.env.example), organized by
 
 | Priority | Source | Best for |
 |---|---|---|
-| 1 | `ZENBOT_*` env var | Docker, CI/CD |
+| 1 | `VAULTBOT_*` env var | Docker, CI/CD |
 | 2 | OS keychain (`keyring`) | Desktop (macOS, Windows, Linux) |
 | 3 | Encrypted file store | Headless servers |
 
@@ -189,10 +191,10 @@ All 30+ variables are documented in [`.env.example`](.env.example), organized by
 
 ```bash
 # Standard: bot + Claude API
-docker compose up -d zenbot
+docker compose up -d vaultbot
 
 # With Redis for multi-instance shared state
-docker compose up -d zenbot redis
+docker compose up -d vaultbot redis
 
 # With local LLM (Ollama)
 docker compose --profile local-llm up -d
@@ -202,14 +204,14 @@ docker compose --profile local-llm up -d
 
 | Measure | Details |
 |---|---|
-| Non-root user | Runs as `zenbot:zenbot` (UID/GID created at build) |
+| Non-root user | Runs as `vaultbot:vaultbot` (UID/GID created at build) |
 | Read-only filesystem | Root FS is read-only; `/tmp` is tmpfs (noexec, nosuid, 64MB) |
 | Capability dropping | All Linux capabilities dropped via `cap_drop: ALL` |
 | Privilege escalation | Blocked via `no-new-privileges: true` |
-| Network isolation | Bridge network (`zenbot-net`) between services |
+| Network isolation | Bridge network (`vaultbot-net`) between services |
 | Log rotation | Docker json-file driver, 10MB max, 3 files |
 | Health checks | Bot: HTTP `/health` every 30s; Redis: `redis-cli ping` every 10s |
-| Persistent volumes | `zenbot-data` (config/memory/logs), `redis-data`, `ollama-data` |
+| Persistent volumes | `vaultbot-data` (config/memory/logs), `redis-data`, `ollama-data` |
 
 ### Exposed Ports
 
@@ -224,46 +226,46 @@ docker compose --profile local-llm up -d
 ### Core
 
 ```bash
-zenbot init                            # Interactive setup wizard with colorful output
-zenbot run                             # Start the bot with all enabled platforms
-zenbot run -c ./config.yaml            # Start with custom config file
+vaultbot init                            # Interactive setup wizard with colorful output
+vaultbot run                             # Start the bot with all enabled platforms
+vaultbot run -c ./config.yaml            # Start with custom config file
 ```
 
 ### Credentials
 
 ```bash
-zenbot credentials set <key>           # Store in OS keychain (hidden input)
-zenbot credentials check <key>         # Check existence without revealing value
-zenbot credentials delete <key>        # Remove from keychain
+vaultbot credentials set <key>           # Store in OS keychain (hidden input)
+vaultbot credentials check <key>         # Check existence without revealing value
+vaultbot credentials delete <key>        # Remove from keychain
 ```
 
 ### Plugins
 
 ```bash
-zenbot plugin install <dir>            # Install a signed plugin
-zenbot plugin list                     # List installed plugins with status
-zenbot plugin enable <name>            # Enable a disabled plugin
-zenbot plugin disable <name>           # Disable without uninstalling
-zenbot plugin uninstall <name>         # Remove from registry
-zenbot plugin sign <dir> <key-file>    # Sign with Ed25519 private key
-zenbot plugin keygen <output-dir>      # Generate Ed25519 signing keypair
+vaultbot plugin install <dir>            # Install a signed plugin
+vaultbot plugin list                     # List installed plugins with status
+vaultbot plugin enable <name>            # Enable a disabled plugin
+vaultbot plugin disable <name>           # Disable without uninstalling
+vaultbot plugin uninstall <name>         # Remove from registry
+vaultbot plugin sign <dir> <key-file>    # Sign with Ed25519 private key
+vaultbot plugin keygen <output-dir>      # Generate Ed25519 signing keypair
 ```
 
 ### Plugin SDK
 
 ```bash
-zenbot sdk new <name>                  # Scaffold plugin with boilerplate
-zenbot sdk test <dir>                  # Run 5-test validation harness
-zenbot sdk validate <dir>              # Check manifest for errors
+vaultbot sdk new <name>                  # Scaffold plugin with boilerplate
+vaultbot sdk test <dir>                  # Run 5-test validation harness
+vaultbot sdk validate <dir>              # Check manifest for errors
 ```
 
 ### Marketplace & Teams
 
 ```bash
-zenbot marketplace search <query>      # Search plugin marketplace
-zenbot marketplace info <name>         # Get plugin details
-zenbot team create <name>              # Create a new team
-zenbot team list                       # List all teams
+vaultbot marketplace search <query>      # Search plugin marketplace
+vaultbot marketplace info <name>         # Get plugin details
+vaultbot team create <name>              # Create a new team
+vaultbot team list                       # List all teams
 ```
 
 ## Plugin Development
@@ -272,29 +274,29 @@ zenbot team list                       # List all teams
 
 ```bash
 # 1. Scaffold
-zenbot sdk new weather-lookup --desc "Weather by location" --author "you"
+vaultbot sdk new weather-lookup --desc "Weather by location" --author "you"
 
 # 2. Implement logic in weather-lookup/plugin.py
 #    (see examples/plugins/ for reference)
 
 # 3. Test locally (runs 5 automated checks)
-zenbot sdk test ./weather-lookup
+vaultbot sdk test ./weather-lookup
 
 # 4. Validate manifest
-zenbot sdk validate ./weather-lookup
+vaultbot sdk validate ./weather-lookup
 
 # 5. Generate signing key (one time)
-zenbot plugin keygen ./my-keys
+vaultbot plugin keygen ./my-keys
 
 # 6. Sign the plugin
-zenbot plugin sign ./weather-lookup ./my-keys/zenbot_signing_key.pem
+vaultbot plugin sign ./weather-lookup ./my-keys/vaultbot_signing_key.pem
 
 # 7. Trust the key and install
-cp ./my-keys/zenbot_signing_key.pub ~/.zenbot/trust_store/
-zenbot plugin install ./weather-lookup
+cp ./my-keys/vaultbot_signing_key.pub ~/.vaultbot/trust_store/
+vaultbot plugin install ./weather-lookup
 ```
 
-### Plugin Manifest (`zenbot_plugin.json`)
+### Plugin Manifest (`vaultbot_plugin.json`)
 
 ```json
 {
@@ -302,7 +304,7 @@ zenbot plugin install ./weather-lookup
     "version": "1.0.0",
     "description": "Look up weather by location",
     "author": "you@example.com",
-    "min_zenbot_version": "0.1.0",
+    "min_vaultbot_version": "0.1.0",
     "network_domains": ["api.openweathermap.org"],
     "filesystem": "none",
     "secrets": ["OPENWEATHER_API_KEY"],
@@ -356,12 +358,12 @@ mypy src/
 
 ## Logging
 
-ZenBot writes structured JSON logs to `~/.zenbot/logs/`:
+VaultBot writes structured JSON logs to `~/.vaultbot/logs/`:
 
 | File | Content | Level | Rotation |
 |---|---|---|---|
-| `zenbot.log` | All application events | Configured (default INFO) | 10MB, 5 backups |
-| `zenbot.error.log` | Warnings and errors only | WARNING+ | 10MB, 5 backups |
+| `vaultbot.log` | All application events | Configured (default INFO) | 10MB, 5 backups |
+| `vaultbot.error.log` | Warnings and errors only | WARNING+ | 10MB, 5 backups |
 | `audit.log` | Security audit events | All | 10MB, 5 backups |
 
 Every log entry includes: ISO timestamp, log level, event name, source filename, function name, and line number. File permissions are `0600` (owner read/write only).

@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from zenbot.plugins.base import PluginContext, PluginResultStatus
-from zenbot.plugins.sandbox import PluginSandbox, SandboxConfig
+from vaultbot.plugins.base import PluginContext, PluginResultStatus
+from vaultbot.plugins.sandbox import PluginSandbox, SandboxConfig
 
 
 @pytest.fixture
@@ -35,7 +35,7 @@ def _write_plugin(tmpdir: str, code: str) -> Path:
 async def test_execute_simple_plugin(sandbox: PluginSandbox, context: PluginContext) -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         plugin_path = _write_plugin(tmpdir, '''
-from zenbot.plugins.base import (
+from vaultbot.plugins.base import (
     PluginBase, PluginContext, PluginManifest,
     PluginResult, PluginResultStatus)
 
@@ -57,7 +57,7 @@ async def test_timeout_kills_plugin(context: PluginContext) -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         plugin_path = _write_plugin(tmpdir, '''
 import time
-from zenbot.plugins.base import (
+from vaultbot.plugins.base import (
     PluginBase, PluginContext, PluginManifest,
     PluginResult, PluginResultStatus)
 
@@ -78,7 +78,7 @@ class SlowPlugin(PluginBase):
 async def test_plugin_error_captured(sandbox: PluginSandbox, context: PluginContext) -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         plugin_path = _write_plugin(tmpdir, '''
-from zenbot.plugins.base import (
+from vaultbot.plugins.base import (
     PluginBase, PluginContext, PluginManifest,
     PluginResult, PluginResultStatus)
 

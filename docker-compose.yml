@@ -1,7 +1,7 @@
 services:
-  zenbot:
+  vaultbot:
     build: .
-    container_name: zenbot
+    container_name: vaultbot
     restart: unless-stopped
     ports:
       - "8080:8080"   # Webhook server (WhatsApp, Telegram, Teams)
@@ -9,9 +9,9 @@ services:
       - "8082:8082"   # Dashboard
     volumes:
       # Persist bot data (memory, plugins, audit logs, trust store)
-      - zenbot-data:/home/zenbot/.zenbot
+      - vaultbot-data:/home/vaultbot/.vaultbot
       # Mount config file if you have one (optional)
-      # - ./config.yaml:/home/zenbot/.zenbot/config.yaml:ro
+      # - ./config.yaml:/home/vaultbot/.vaultbot/config.yaml:ro
     env_file:
       - .env
     # Security: read-only root filesystem
@@ -28,7 +28,7 @@ services:
         condition: service_started
         required: false
     networks:
-      - zenbot-net
+      - vaultbot-net
     logging:
       driver: json-file
       options:
@@ -38,7 +38,7 @@ services:
   # Optional: Redis for multi-instance deployments
   redis:
     image: redis:7-alpine
-    container_name: zenbot-redis
+    container_name: vaultbot-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -51,7 +51,7 @@ services:
     security_opt:
       - no-new-privileges:true
     networks:
-      - zenbot-net
+      - vaultbot-net
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -61,22 +61,22 @@ services:
   # Optional: Ollama for local LLM
   ollama:
     image: ollama/ollama:latest
-    container_name: zenbot-ollama
+    container_name: vaultbot-ollama
     restart: unless-stopped
     ports:
       - "11434:11434"
     volumes:
       - ollama-data:/root/.ollama
     networks:
-      - zenbot-net
+      - vaultbot-net
     profiles:
       - local-llm
 
 volumes:
-  zenbot-data:
+  vaultbot-data:
   redis-data:
   ollama-data:
 
 networks:
-  zenbot-net:
+  vaultbot-net:
     driver: bridge

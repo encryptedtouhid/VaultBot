@@ -1,6 +1,6 @@
 """Tests for the authentication and authorization module."""
 
-from zenbot.security.auth import AuthManager, Role
+from vaultbot.security.auth import AuthManager, Role
 
 
 def test_unauthorized_user_is_rejected() -> None:

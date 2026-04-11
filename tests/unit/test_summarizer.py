@@ -6,9 +6,9 @@ from collections.abc import AsyncIterator
 
 import pytest
 
-from zenbot.core.message import ChatMessage
-from zenbot.core.summarizer import ConversationSummarizer
-from zenbot.llm.base import LLMChunk, LLMResponse, ToolDefinition
+from vaultbot.core.message import ChatMessage
+from vaultbot.core.summarizer import ConversationSummarizer
+from vaultbot.llm.base import LLMChunk, LLMResponse, ToolDefinition
 
 
 class MockLLMProvider:

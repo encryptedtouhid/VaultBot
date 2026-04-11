@@ -2,8 +2,8 @@
 
 import pytest
 
-from zenbot.security.auth import Role
-from zenbot.security.teams import Team, TeamManager
+from vaultbot.security.auth import Role
+from vaultbot.security.teams import Team, TeamManager
 
 
 class TestTeam:

@@ -1,6 +1,6 @@
 """Tests for webhook server utilities."""
 
-from zenbot.platforms.webhook_server import parse_query_params
+from vaultbot.platforms.webhook_server import parse_query_params
 
 
 def test_parse_empty_query() -> None:

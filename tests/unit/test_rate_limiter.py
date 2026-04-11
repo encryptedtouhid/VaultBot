@@ -1,6 +1,6 @@
 """Tests for the rate limiter module."""
 
-from zenbot.security.rate_limiter import RateLimiter, TokenBucket
+from vaultbot.security.rate_limiter import RateLimiter, TokenBucket
 
 
 def test_token_bucket_allows_within_capacity() -> None:

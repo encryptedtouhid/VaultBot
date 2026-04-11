@@ -13,19 +13,19 @@ from pathlib import Path
 
 import pytest
 
-from zenbot.dashboard.server import DashboardConfig, DashboardEvent, SSEBroadcaster
-from zenbot.plugins.base import PluginContext, PluginResultStatus
-from zenbot.plugins.marketplace import MarketplaceEntry, ReviewStatus
-from zenbot.plugins.sandbox import PluginSandbox
-from zenbot.plugins.sdk import (
+from vaultbot.dashboard.server import DashboardConfig, DashboardEvent, SSEBroadcaster
+from vaultbot.plugins.base import PluginContext, PluginResultStatus
+from vaultbot.plugins.marketplace import MarketplaceEntry, ReviewStatus
+from vaultbot.plugins.sandbox import PluginSandbox
+from vaultbot.plugins.sdk import (
     PluginTestHarness,
     mock_context,
     scaffold_plugin,
     validate_manifest,
 )
-from zenbot.plugins.signer import PluginSigner, PluginVerifier
-from zenbot.security.auth import Role
-from zenbot.security.teams import Team, TeamManager
+from vaultbot.plugins.signer import PluginSigner, PluginVerifier
+from vaultbot.security.auth import Role
+from vaultbot.security.teams import Team, TeamManager
 
 # =============================================================================
 # E2E: Plugin SDK full workflow
@@ -46,10 +46,10 @@ class TestPluginSDKWorkflow:
                 base, "greeting", "Greets the user", "developer@test.com"
             )
             assert (plugin_dir / "plugin.py").exists()
-            assert (plugin_dir / "zenbot_plugin.json").exists()
+            assert (plugin_dir / "vaultbot_plugin.json").exists()
 
             # 2. Validate manifest
-            errors = validate_manifest(plugin_dir / "zenbot_plugin.json")
+            errors = validate_manifest(plugin_dir / "vaultbot_plugin.json")
             assert errors == [], f"Manifest errors: {errors}"
 
             # 3. Load and test with harness
@@ -116,7 +116,7 @@ class TestPluginSDKWorkflow:
             plugin_dir.mkdir()
 
             (plugin_dir / "plugin.py").write_text(
-                "from zenbot.plugins.base import (\n"
+                "from vaultbot.plugins.base import (\n"
                 "    PluginBase, PluginContext, PluginManifest,\n"
                 "    PluginResult, PluginResultStatus,\n"
                 ")\n\n"

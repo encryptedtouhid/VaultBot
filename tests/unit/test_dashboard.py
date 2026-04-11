@@ -2,7 +2,7 @@
 
 import asyncio
 
-from zenbot.dashboard.server import DashboardConfig, DashboardEvent, SSEBroadcaster
+from vaultbot.dashboard.server import DashboardConfig, DashboardEvent, SSEBroadcaster
 
 
 class TestDashboardEvent:
@@ -60,7 +60,7 @@ class TestDashboardConfig:
 
 class TestMarketplaceEntry:
     def test_from_dict(self) -> None:
-        from zenbot.plugins.marketplace import MarketplaceEntry, ReviewStatus
+        from vaultbot.plugins.marketplace import MarketplaceEntry, ReviewStatus
 
         entry = MarketplaceEntry.from_dict({
             "name": "weather",

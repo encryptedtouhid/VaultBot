@@ -1,4 +1,4 @@
-"""End-to-end tests for ZenBot.
+"""End-to-end tests for VaultBot.
 
 Tests the full message pipeline: platform adapter → auth → rate limiter →
 prompt guard → LLM → response, using mock adapters and LLM providers.
@@ -15,24 +15,24 @@ from pathlib import Path
 
 import pytest
 
-from zenbot.config import ZenBotConfig
-from zenbot.core.bot import ZenBot
-from zenbot.core.context import ContextManager
-from zenbot.core.message import ChatMessage, InboundMessage, OutboundMessage
-from zenbot.core.router import MessageRouter
-from zenbot.llm.base import LLMChunk, LLMResponse, ToolDefinition
-from zenbot.llm.prompt_guard import GuardedLLMProvider
-from zenbot.memory.sqlite_store import SQLiteMemoryStore
-from zenbot.plugins.base import (
+from vaultbot.config import VaultBotConfig
+from vaultbot.core.bot import VaultBot
+from vaultbot.core.context import ContextManager
+from vaultbot.core.message import ChatMessage, InboundMessage, OutboundMessage
+from vaultbot.core.router import MessageRouter
+from vaultbot.llm.base import LLMChunk, LLMResponse, ToolDefinition
+from vaultbot.llm.prompt_guard import GuardedLLMProvider
+from vaultbot.memory.sqlite_store import SQLiteMemoryStore
+from vaultbot.plugins.base import (
     PluginContext,
     PluginResultStatus,
 )
-from zenbot.plugins.sandbox import PluginSandbox
-from zenbot.plugins.signer import PluginSigner, PluginVerifier
-from zenbot.security.audit import AuditLogger
-from zenbot.security.auth import AuthManager, Role
-from zenbot.security.rate_limiter import RateLimiter
-from zenbot.security.sanitizer import sanitize
+from vaultbot.plugins.sandbox import PluginSandbox
+from vaultbot.plugins.signer import PluginSigner, PluginVerifier
+from vaultbot.security.audit import AuditLogger
+from vaultbot.security.auth import AuthManager, Role
+from vaultbot.security.rate_limiter import RateLimiter
+from vaultbot.security.sanitizer import sanitize
 
 # =============================================================================
 # Mock adapters and providers
@@ -478,7 +478,7 @@ class TestPluginPipeline:
 
             # Write a simple plugin
             (plugin_dir / "plugin.py").write_text(
-                "from zenbot.plugins.base import (\n"
+                "from vaultbot.plugins.base import (\n"
                 "    PluginBase, PluginContext, PluginManifest,\n"
                 "    PluginResult, PluginResultStatus,\n"
                 ")\n\n"
@@ -561,7 +561,7 @@ class TestMemoryPipeline:
 
             # Instance 1: save data
             store1 = SQLiteMemoryStore(db_path=db_path)
-            from zenbot.memory.base import ConversationTurn
+            from vaultbot.memory.base import ConversationTurn
 
             await store1.save_turn(
                 ConversationTurn(
@@ -591,12 +591,12 @@ class TestMemoryPipeline:
 
 
 class TestBotOrchestrator:
-    """Test the ZenBot orchestrator integration."""
+    """Test the VaultBot orchestrator integration."""
 
     def test_bot_requires_platform(self) -> None:
         """Bot refuses to start without any platform registered."""
-        config = ZenBotConfig()
-        bot = ZenBot(config)
+        config = VaultBotConfig()
+        bot = VaultBot(config)
         bot.set_llm(MockLLMProvider())
 
         with pytest.raises(RuntimeError, match="No platforms registered"):
@@ -604,8 +604,8 @@ class TestBotOrchestrator:
 
     def test_bot_requires_llm(self) -> None:
         """Bot refuses to start without an LLM provider."""
-        config = ZenBotConfig()
-        bot = ZenBot(config)
+        config = VaultBotConfig()
+        bot = VaultBot(config)
         bot.register_platform(MockPlatformAdapter())
 
         with pytest.raises(RuntimeError, match="No LLM provider"):
@@ -613,8 +613,8 @@ class TestBotOrchestrator:
 
     def test_bot_registers_components(self) -> None:
         """Bot accepts platform and LLM registration."""
-        config = ZenBotConfig()
-        bot = ZenBot(config)
+        config = VaultBotConfig()
+        bot = VaultBot(config)
         adapter = MockPlatformAdapter()
         llm = MockLLMProvider()
 

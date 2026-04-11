@@ -1,6 +1,6 @@
 """Tests for healthcheck status tracking."""
 
-from zenbot.core.healthcheck import HealthStatus
+from vaultbot.core.healthcheck import HealthStatus
 
 
 def test_healthy_when_platform_connected() -> None:

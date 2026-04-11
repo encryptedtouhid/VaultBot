@@ -1,6 +1,6 @@
 """Tests for the security policy engine."""
 
-from zenbot.security.policy import ActionSeverity, SecurityPolicy
+from vaultbot.security.policy import ActionSeverity, SecurityPolicy
 
 
 def test_immutable_defaults_cannot_be_overridden() -> None:

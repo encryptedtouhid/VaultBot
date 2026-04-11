@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "examples" / "plugi
 
 from plugin import CalculatorPlugin  # noqa: E402
 
-from zenbot.plugins.base import PluginContext, PluginResultStatus  # noqa: E402
+from vaultbot.plugins.base import PluginContext, PluginResultStatus  # noqa: E402
 
 
 @pytest.fixture

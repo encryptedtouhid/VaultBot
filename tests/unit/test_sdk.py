@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from zenbot.plugins.sdk import (
+from vaultbot.plugins.sdk import (
     PluginTestHarness,
     mock_context,
     scaffold_plugin,
@@ -21,12 +21,12 @@ class TestScaffolding:
                 Path(tmpdir), "my-plugin", "A test plugin", "tester"
             )
             assert (plugin_dir / "plugin.py").exists()
-            assert (plugin_dir / "zenbot_plugin.json").exists()
+            assert (plugin_dir / "vaultbot_plugin.json").exists()
 
     def test_scaffold_manifest_is_valid(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             plugin_dir = scaffold_plugin(Path(tmpdir), "test-plug", "desc", "me")
-            manifest = json.loads((plugin_dir / "zenbot_plugin.json").read_text())
+            manifest = json.loads((plugin_dir / "vaultbot_plugin.json").read_text())
             assert manifest["name"] == "test-plug"
             assert manifest["description"] == "desc"
             assert manifest["author"] == "me"
@@ -68,7 +68,7 @@ class TestMockContext:
 class TestValidateManifest:
     def test_valid_manifest(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
-            path = Path(tmpdir) / "zenbot_plugin.json"
+            path = Path(tmpdir) / "vaultbot_plugin.json"
             path.write_text(json.dumps({
                 "name": "test",
                 "version": "1.0",
@@ -80,7 +80,7 @@ class TestValidateManifest:
 
     def test_missing_fields(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
-            path = Path(tmpdir) / "zenbot_plugin.json"
+            path = Path(tmpdir) / "vaultbot_plugin.json"
             path.write_text(json.dumps({"name": "test"}))
             errors = validate_manifest(path)
             assert len(errors) >= 2  # missing version, description, author
@@ -92,7 +92,7 @@ class TestValidateManifest:
 
     def test_invalid_json(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
-            path = Path(tmpdir) / "zenbot_plugin.json"
+            path = Path(tmpdir) / "vaultbot_plugin.json"
             path.write_text("{bad json")
             errors = validate_manifest(path)
             assert len(errors) == 1
@@ -100,7 +100,7 @@ class TestValidateManifest:
 
     def test_invalid_filesystem_permission(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
-            path = Path(tmpdir) / "zenbot_plugin.json"
+            path = Path(tmpdir) / "vaultbot_plugin.json"
             path.write_text(json.dumps({
                 "name": "test",
                 "version": "1.0",

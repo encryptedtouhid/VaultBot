@@ -14,19 +14,19 @@ from pathlib import Path
 
 import pytest
 
-from zenbot.core.context import ContextManager
-from zenbot.core.healthcheck import HealthStatus
-from zenbot.core.message import ChatMessage, InboundMessage, OutboundMessage
-from zenbot.core.router import MessageRouter
-from zenbot.core.summarizer import ConversationSummarizer
-from zenbot.llm.base import LLMChunk, LLMResponse, ToolDefinition
-from zenbot.llm.prompt_guard import GuardedLLMProvider
-from zenbot.memory.base import ConversationTurn
-from zenbot.memory.sqlite_store import SQLiteMemoryStore
-from zenbot.platforms.webhook_server import parse_query_params
-from zenbot.security.audit import AuditLogger
-from zenbot.security.auth import AuthManager, Role
-from zenbot.security.rate_limiter import RateLimiter
+from vaultbot.core.context import ContextManager
+from vaultbot.core.healthcheck import HealthStatus
+from vaultbot.core.message import ChatMessage, InboundMessage, OutboundMessage
+from vaultbot.core.router import MessageRouter
+from vaultbot.core.summarizer import ConversationSummarizer
+from vaultbot.llm.base import LLMChunk, LLMResponse, ToolDefinition
+from vaultbot.llm.prompt_guard import GuardedLLMProvider
+from vaultbot.memory.base import ConversationTurn
+from vaultbot.memory.sqlite_store import SQLiteMemoryStore
+from vaultbot.platforms.webhook_server import parse_query_params
+from vaultbot.security.audit import AuditLogger
+from vaultbot.security.auth import AuthManager, Role
+from vaultbot.security.rate_limiter import RateLimiter
 
 # =============================================================================
 # Shared mocks
@@ -323,7 +323,7 @@ class TestMemoryPersistence:
     @pytest.mark.asyncio
     async def test_user_preferences_persist(self) -> None:
         """User preferences survive bot restarts."""
-        from zenbot.memory.base import UserPreferences
+        from vaultbot.memory.base import UserPreferences
 
         with tempfile.TemporaryDirectory() as tmpdir:
             db_path = Path(tmpdir) / "memory.db"

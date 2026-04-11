@@ -12,7 +12,7 @@ import ast
 import operator
 from typing import Any
 
-from zenbot.plugins.base import (
+from vaultbot.plugins.base import (
     PluginBase,
     PluginContext,
     PluginManifest,

@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from zenbot.memory.base import ConversationTurn, UserPreferences
-from zenbot.memory.sqlite_store import SQLiteMemoryStore
+from vaultbot.memory.base import ConversationTurn, UserPreferences
+from vaultbot.memory.sqlite_store import SQLiteMemoryStore
 
 
 @pytest.fixture
