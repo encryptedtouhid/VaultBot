@@ -50,7 +50,8 @@ class TestSandboxBackend:
     async def test_sandbox_manager(self) -> None:
         mgr = SandboxManager()
         mgr.register_backend(LocalSandbox())
-        inst = await mgr.create_sandbox(SandboxConfig(sandbox_type=SandboxType.LOCAL, working_dir=""))
+        config = SandboxConfig(sandbox_type=SandboxType.LOCAL, working_dir="")
+        inst = await mgr.create_sandbox(config)
         assert mgr.instance_count == 1
         await mgr.start_sandbox(inst.instance_id)
         code, stdout, _ = await mgr.execute_in_sandbox(inst.instance_id, ["echo", "test"])
