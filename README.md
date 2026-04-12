@@ -41,7 +41,7 @@
 
 ## Overview
 
-VaultBot is a **security-first, autonomous AI agent platform** that connects 14+ messaging platforms to 16+ LLM providers through a hardened, auditable pipeline. Every credential is encrypted, every plugin is cryptographically signed, every action is logged, and every security mechanism is on by default and cannot be turned off.
+VaultBot is a **Security-first, Your Personal Autonomous AI assistant.** that connects 14+ messaging platforms to 16+ LLM providers through a hardened, auditable pipeline. Every credential is encrypted, every plugin is cryptographically signed, every action is logged, and every security mechanism is on by default and cannot be turned off.
 
 Built for teams and individuals who need an AI assistant they can trust with production systems.
 
