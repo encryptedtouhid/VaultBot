@@ -5,7 +5,9 @@ from __future__ import annotations
 import httpx
 
 from vaultbot.media.video_generation import (
-    VideoGenerationRequest, VideoGenerationResult, VideoStatus,
+    VideoGenerationRequest,
+    VideoGenerationResult,
+    VideoStatus,
 )
 from vaultbot.utils.logging import get_logger
 

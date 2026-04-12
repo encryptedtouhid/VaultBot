@@ -66,7 +66,9 @@ class ControlPlane:
     def get_instances(self) -> dict[str, BotInstance]:
         return dict(self._instances)
 
-    def register_instance(self, instance_id: str, name: str = "", platforms: list[str] | None = None) -> BotInstance:
+    def register_instance(
+        self, instance_id: str, name: str = "", platforms: list[str] | None = None,
+    ) -> BotInstance:
         instance = BotInstance(
             instance_id=instance_id,
             name=name or instance_id,
@@ -125,7 +127,8 @@ class ControlPlane:
             return self.stop_instance(command.target)
         if command.action == "status":
             health = self.check_health()
-            return ControlResult(success=True, data={"instances": {k: v.value for k, v in health.items()}})
+            inst_map = {k: v.value for k, v in health.items()}
+            return ControlResult(success=True, data={"instances": inst_map})
         if command.action == "list":
             names = {iid: inst.name for iid, inst in self._instances.items()}
             return ControlResult(success=True, data={"instances": names})

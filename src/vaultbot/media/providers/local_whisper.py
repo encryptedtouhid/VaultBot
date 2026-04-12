@@ -48,7 +48,6 @@ class LocalWhisperProvider:
                 "Local Whisper model not available. Install faster-whisper."
             )
 
-        import io
         import tempfile
         from pathlib import Path
 

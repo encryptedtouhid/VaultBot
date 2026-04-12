@@ -4,6 +4,11 @@ from __future__ import annotations
 
 import pytest
 
+from vaultbot.gateway.control_plane import (
+    ControlCommand,
+    ControlPlane,
+    InstanceStatus,
+)
 from vaultbot.gateway.protocol import (
     ClientInfo,
     ConnectionState,
@@ -11,14 +16,6 @@ from vaultbot.gateway.protocol import (
     WSMessage,
 )
 from vaultbot.gateway.websocket_server import WebSocketGateway
-from vaultbot.gateway.control_plane import (
-    BotInstance,
-    ControlCommand,
-    ControlPlane,
-    ControlResult,
-    InstanceStatus,
-)
-
 
 # ---------------------------------------------------------------------------
 # Protocol

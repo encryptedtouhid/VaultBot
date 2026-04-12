@@ -15,7 +15,6 @@ from vaultbot.media.stt import (
     TranscriptionMode,
 )
 
-
 # ---------------------------------------------------------------------------
 # Mock provider
 # ---------------------------------------------------------------------------
@@ -277,7 +276,7 @@ class TestVADEngine:
         assert engine.state == VADState.SILENCE
 
     def test_config_defaults(self) -> None:
-        from vaultbot.media.vad import VADConfig, VADEngine
+        from vaultbot.media.vad import VADEngine
 
         engine = VADEngine()
         assert engine.config.sensitivity == 0.5
@@ -349,7 +348,11 @@ class TestAudioPipeline:
             pipeline.validate(b"")
 
     def test_validate_too_large_raises(self) -> None:
-        from vaultbot.media.audio_pipeline import AudioPipeline, AudioPipelineConfig, AudioValidationError
+        from vaultbot.media.audio_pipeline import (
+            AudioPipeline,
+            AudioPipelineConfig,
+            AudioValidationError,
+        )
 
         config = AudioPipelineConfig(max_size_bytes=100)
         pipeline = AudioPipeline(config=config)

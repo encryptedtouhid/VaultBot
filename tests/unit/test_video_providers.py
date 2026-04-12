@@ -7,7 +7,9 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from vaultbot.media.video_generation import (
-    VideoGenerationRequest, VideoGenerationResult, VideoProvider, VideoStatus,
+    VideoGenerationRequest,
+    VideoProvider,
+    VideoStatus,
 )
 
 

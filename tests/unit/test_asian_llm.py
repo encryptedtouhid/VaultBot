@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from vaultbot.core.message import ChatMessage
-from vaultbot.llm.base import LLMProvider, LLMResponse
+from vaultbot.llm.base import LLMProvider
 
 
 class TestQwenProvider:
