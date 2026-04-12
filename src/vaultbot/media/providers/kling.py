@@ -18,7 +18,8 @@ class KlingProvider:
 
     def __init__(self, api_key: str) -> None:
         self._client = httpx.AsyncClient(
-            base_url=_API_URL, timeout=120.0,
+            base_url=_API_URL,
+            timeout=120.0,
             headers={"Authorization": f"Bearer {api_key}"},
         )
 
@@ -27,15 +28,20 @@ class KlingProvider:
         return "kling"
 
     async def generate(self, request: VideoGenerationRequest) -> VideoGenerationResult:
-        resp = await self._client.post("/video/generate", json={
-            "prompt": request.prompt,
-            "aspect_ratio": request.aspect_ratio.value,
-            "duration": request.duration_seconds,
-        })
+        resp = await self._client.post(
+            "/video/generate",
+            json={
+                "prompt": request.prompt,
+                "aspect_ratio": request.aspect_ratio.value,
+                "duration": request.duration_seconds,
+            },
+        )
         resp.raise_for_status()
         data = resp.json()
         return VideoGenerationResult(
-            job_id=data.get("task_id", ""), status=VideoStatus.PENDING, provider="kling",
+            job_id=data.get("task_id", ""),
+            status=VideoStatus.PENDING,
+            provider="kling",
         )
 
     async def check_status(self, job_id: str) -> VideoGenerationResult:
@@ -46,7 +52,8 @@ class KlingProvider:
         return VideoGenerationResult(
             job_id=job_id,
             status=status_map.get(data.get("status", ""), VideoStatus.PROCESSING),
-            video_url=data.get("video_url", ""), provider="kling",
+            video_url=data.get("video_url", ""),
+            provider="kling",
         )
 
     async def close(self) -> None:

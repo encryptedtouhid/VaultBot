@@ -44,9 +44,7 @@ class LocalWhisperProvider:
 
     async def transcribe(self, request: STTRequest) -> STTResult:
         if self._model is None:
-            raise RuntimeError(
-                "Local Whisper model not available. Install faster-whisper."
-            )
+            raise RuntimeError("Local Whisper model not available. Install faster-whisper.")
 
         import tempfile
         from pathlib import Path

@@ -67,7 +67,10 @@ class ControlPlane:
         return dict(self._instances)
 
     def register_instance(
-        self, instance_id: str, name: str = "", platforms: list[str] | None = None,
+        self,
+        instance_id: str,
+        name: str = "",
+        platforms: list[str] | None = None,
     ) -> BotInstance:
         instance = BotInstance(
             instance_id=instance_id,

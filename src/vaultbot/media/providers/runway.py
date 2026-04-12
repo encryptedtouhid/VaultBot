@@ -22,7 +22,8 @@ class RunwayProvider:
     def __init__(self, api_key: str) -> None:
         self._api_key = api_key
         self._client = httpx.AsyncClient(
-            base_url=_API_URL, timeout=120.0,
+            base_url=_API_URL,
+            timeout=120.0,
             headers={"Authorization": f"Bearer {api_key}"},
         )
 
@@ -31,12 +32,15 @@ class RunwayProvider:
         return "runway"
 
     async def generate(self, request: VideoGenerationRequest) -> VideoGenerationResult:
-        resp = await self._client.post("/generations", json={
-            "prompt": request.prompt,
-            "aspect_ratio": request.aspect_ratio.value,
-            "duration": request.duration_seconds,
-            "image_url": request.image_url or None,
-        })
+        resp = await self._client.post(
+            "/generations",
+            json={
+                "prompt": request.prompt,
+                "aspect_ratio": request.aspect_ratio.value,
+                "duration": request.duration_seconds,
+                "image_url": request.image_url or None,
+            },
+        )
         resp.raise_for_status()
         data = resp.json()
         return VideoGenerationResult(

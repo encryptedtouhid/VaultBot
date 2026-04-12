@@ -166,12 +166,14 @@ class TestWhisperAPIProvider:
         provider = WhisperAPIProvider(api_key="test")
         mock_resp = MagicMock()
         mock_resp.raise_for_status = MagicMock()
-        mock_resp.json = MagicMock(return_value={
-            "text": "hello world",
-            "language": "en",
-            "duration": 2.5,
-            "segments": [],
-        })
+        mock_resp.json = MagicMock(
+            return_value={
+                "text": "hello world",
+                "language": "en",
+                "duration": 2.5,
+                "segments": [],
+            }
+        )
         provider._client = AsyncMock()
         provider._client.post = AsyncMock(return_value=mock_resp)
 
@@ -208,15 +210,19 @@ class TestDeepgramProvider:
         provider = DeepgramProvider(api_key="test")
         mock_resp = MagicMock()
         mock_resp.raise_for_status = MagicMock()
-        mock_resp.json = MagicMock(return_value={
-            "results": {
-                "channels": [{
-                    "alternatives": [{"transcript": "hello", "confidence": 0.98}],
-                    "detected_language": "en",
-                }],
-            },
-            "metadata": {"duration": 1.5},
-        })
+        mock_resp.json = MagicMock(
+            return_value={
+                "results": {
+                    "channels": [
+                        {
+                            "alternatives": [{"transcript": "hello", "confidence": 0.98}],
+                            "detected_language": "en",
+                        }
+                    ],
+                },
+                "metadata": {"duration": 1.5},
+            }
+        )
         provider._client = AsyncMock()
         provider._client.post = AsyncMock(return_value=mock_resp)
 

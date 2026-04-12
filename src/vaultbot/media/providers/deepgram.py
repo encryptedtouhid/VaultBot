@@ -71,8 +71,7 @@ class DeepgramProvider:
 
         return STTResult(
             text=alt.get("transcript", ""),
-            language=results.get("channels", [{}])[0]
-            .get("detected_language", "")
+            language=results.get("channels", [{}])[0].get("detected_language", "")
             if channels
             else "",
             provider="deepgram",

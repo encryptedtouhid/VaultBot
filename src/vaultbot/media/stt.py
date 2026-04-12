@@ -108,9 +108,7 @@ class STTEngine:
         provider_name = provider or self._default_provider
         if not provider_name or provider_name not in self._providers:
             available = ", ".join(self._providers.keys()) or "none"
-            raise ValueError(
-                f"Unknown STT provider '{provider_name}'. Available: {available}"
-            )
+            raise ValueError(f"Unknown STT provider '{provider_name}'. Available: {available}")
 
         stt_provider = self._providers[provider_name]
         request = STTRequest(

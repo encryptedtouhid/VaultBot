@@ -12,8 +12,12 @@ logger = get_logger(__name__)
 _API_URL = "https://api.openai.com/v1/audio/transcriptions"
 
 _SUPPORTED_FORMATS = [
-    AudioFormat.MP3, AudioFormat.WAV, AudioFormat.OGG,
-    AudioFormat.FLAC, AudioFormat.WEBM, AudioFormat.M4A,
+    AudioFormat.MP3,
+    AudioFormat.WAV,
+    AudioFormat.OGG,
+    AudioFormat.FLAC,
+    AudioFormat.WEBM,
+    AudioFormat.M4A,
 ]
 
 

@@ -28,21 +28,35 @@ class QwenProvider:
         return "qwen"
 
     async def complete(
-        self, messages: list[ChatMessage], *, model: str | None = None,
-        temperature: float = 0.7, max_tokens: int = 4096,
+        self,
+        messages: list[ChatMessage],
+        *,
+        model: str | None = None,
+        temperature: float = 0.7,
+        max_tokens: int = 4096,
         tools: list[ToolDefinition] | None = None,
     ) -> LLMResponse:
         return await self._inner.complete(
-            messages, model=model, temperature=temperature,
-            max_tokens=max_tokens, tools=tools,
+            messages,
+            model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            tools=tools,
         )
 
     async def stream(
-        self, messages: list[ChatMessage], *, model: str | None = None,
-        temperature: float = 0.7, max_tokens: int = 4096,
+        self,
+        messages: list[ChatMessage],
+        *,
+        model: str | None = None,
+        temperature: float = 0.7,
+        max_tokens: int = 4096,
     ) -> AsyncIterator[LLMChunk]:
         async for chunk in self._inner.stream(
-            messages, model=model, temperature=temperature, max_tokens=max_tokens,
+            messages,
+            model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
         ):
             yield chunk
 
