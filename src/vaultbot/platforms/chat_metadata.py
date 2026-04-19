@@ -54,7 +54,7 @@ class MentionMatcher:
     """Matches mentions against allowlists and patterns."""
 
     def __init__(self, bot_names: list[str] | None = None) -> None:
-        self._bot_names = set(n.lower() for n in (bot_names or ["vaultbot"]))
+        self._bot_names = {n.lower() for n in (bot_names or ["vaultbot"])}
 
     def is_bot_mentioned(self, text: str, platform: str = "generic") -> bool:
         mentions = extract_mentions(text, platform)
